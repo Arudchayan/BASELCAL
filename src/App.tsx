@@ -22,7 +22,7 @@ import { Timetable } from './Timetable';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
 import { evaluatePlan } from './degreeRules';
-import { parseOffering } from './offering';
+import { matchesSemesterFilter, parseOffering } from './offering';
 import {
   STORAGE_KEYS,
   loadPlanFromStorage,
@@ -56,6 +56,7 @@ function App() {
   const [search, setSearch] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState<SemesterId | ''>('');
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
 
   useEffect(() => {
@@ -114,10 +115,11 @@ function App() {
       const matchModule = moduleFilter ? c.module === moduleFilter : true;
       const matchPriority = priorityFilter ? c.priority === priorityFilter : true;
       const matchShortlist = showShortlistOnly ? shortlist.includes(c.id) : true;
+      const matchSemester = matchesSemesterFilter(c, semesterFilter);
       const notPlanned = !plannedCourseIds.includes(c.id);
-      return matchSearch && matchModule && matchPriority && matchShortlist && notPlanned;
+      return matchSearch && matchModule && matchPriority && matchShortlist && matchSemester && notPlanned;
     }) as Course[];
-  }, [search, moduleFilter, priorityFilter, plannedCourseIds, showShortlistOnly, shortlist]);
+  }, [search, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, showShortlistOnly, shortlist]);
 
   const preferredSemesterFor = (course: Course): SemesterId => {
     const meta = parseOffering(course.when);
@@ -132,7 +134,7 @@ function App() {
 
   const quickAddCourse = (course: Course) => {
     if (plannedCourseIds.includes(course.id)) return;
-    const sem = preferredSemesterFor(course);
+    const sem = semesterFilter || preferredSemesterFor(course);
     updatePlan((prev) => ({
       ...prev,
       [sem]: [...prev[sem], course],
@@ -486,6 +488,19 @@ function App() {
                         <option value="Very high">Very high</option>
                         <option value="High">High</option>
                         <option value="Medium">Medium</option>
+                      </select>
+                      <select
+                        value={semesterFilter}
+                        onChange={(e) => setSemesterFilter(e.target.value as SemesterId | '')}
+                        aria-label="Filter by semester offering"
+                        style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                      >
+                        <option value="">All semesters</option>
+                        {SEMESTERS.filter((s) => s.id !== 'catalog').map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.title}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>

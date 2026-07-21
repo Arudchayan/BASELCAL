@@ -129,3 +129,9 @@ export function primaryMismatchMessage(course: Course, semesterId: SemesterId): 
   if (warn) return warn.message;
   return null;
 }
+
+/** True when a course can be placed in the given plan semester (no offering-season errors). */
+export function matchesSemesterFilter(course: Course, semesterId: SemesterId | ''): boolean {
+  if (!semesterId) return true;
+  return !getPlacementWarnings(course, semesterId).some((w) => w.level === 'error');
+}
