@@ -1,9 +1,17 @@
 import { COURSES } from './courses';
-import { INITIAL_PLAN, SEMESTER_IDS, type Course, type PlanState, type SemesterId } from './types';
+import {
+  ML_PHD_PRESET_IDS,
+  SEMESTER_IDS,
+  type Course,
+  type PlanState,
+  type SemesterId,
+} from './types';
 
 export const STORAGE_KEYS = {
-  plan: 'basel-ds-plan-v2',
-  planLegacy: 'basel-ds-plan',
+  /** Bumped to v3 so old local plans are discarded and the new default preset seeds fresh. */
+  plan: 'basel-ds-plan-v3',
+  planLegacy: 'basel-ds-plan-v2',
+  planLegacyV1: 'basel-ds-plan',
   notes: 'basel-ds-notes',
   shortlist: 'basel-ds-shortlist',
   theme: 'basel-ds-theme',
@@ -12,13 +20,21 @@ export const STORAGE_KEYS = {
 export type PlanExport = {
   version: 2;
   exportedAt: string;
+  disclaimer: string;
   plan: Record<SemesterId, string[]>;
   notes?: Record<string, string>;
   shortlist?: string[];
 };
 
+export const PLAN_DISCLAIMER =
+  'Unofficial personal planner — not an official University of Basel tool. Verify CP rules, module membership, and VV offerings before enrolling.';
+
+const COURSE_BY_ID: Map<string, Course> = new Map(
+  COURSES.map((c) => [c.id, c as Course]),
+);
+
 function courseById(id: string): Course | undefined {
-  return COURSES.find((c) => c.id === id) as Course | undefined;
+  return COURSE_BY_ID.get(id);
 }
 
 /** Dedupe IDs while preserving first occurrence order */
@@ -33,21 +49,40 @@ export function dedupeIds(ids: string[]): string[] {
   return out;
 }
 
+export type RehydrateResult = {
+  plan: PlanState;
+  droppedIds: string[];
+  /** Same course ID appeared in more than one semester (or twice); later placements skipped */
+  duplicateIds: string[];
+};
+
 export function rehydratePlan(idMap: Record<string, string[]>): PlanState {
+  return rehydratePlanDetailed(idMap).plan;
+}
+
+export function rehydratePlanDetailed(idMap: Record<string, string[]>): RehydrateResult {
   const plan: PlanState = { s1: [], s2: [], s3: [], s4: [] };
   const used = new Set<string>();
+  const droppedIds: string[] = [];
+  const duplicateIds: string[] = [];
 
   for (const sem of SEMESTER_IDS) {
     const ids = dedupeIds(idMap[sem] || []);
     for (const id of ids) {
-      if (used.has(id)) continue;
+      if (used.has(id)) {
+        duplicateIds.push(id);
+        continue;
+      }
       const course = courseById(id);
-      if (!course) continue;
+      if (!course) {
+        droppedIds.push(id);
+        continue;
+      }
       plan[sem].push(course);
       used.add(id);
     }
   }
-  return plan;
+  return { plan, droppedIds, duplicateIds };
 }
 
 export function planToIds(plan: PlanState): Record<SemesterId, string[]> {
@@ -59,7 +94,7 @@ export function planToIds(plan: PlanState): Record<SemesterId, string[]> {
   };
 }
 
-function migrateLegacyPlan(raw: unknown): PlanState | null {
+function migrateLegacyPlan(raw: unknown): RehydrateResult | null {
   if (!raw || typeof raw !== 'object') return null;
   const obj = raw as Record<string, unknown>;
   const idMap: Record<string, string[]> = {};
@@ -81,37 +116,37 @@ function migrateLegacyPlan(raw: unknown): PlanState | null {
       .filter((id): id is string => !!id);
   }
 
-  return rehydratePlan(idMap);
+  return rehydratePlanDetailed(idMap);
 }
 
 export function loadPlanFromStorage(): PlanState {
-  try {
-    const v2 = localStorage.getItem(STORAGE_KEYS.plan);
-    if (v2) {
-      const parsed = JSON.parse(v2) as Record<string, string[]>;
-      return rehydratePlan(parsed);
-    }
-    const legacy = localStorage.getItem(STORAGE_KEYS.planLegacy);
-    if (legacy) {
-      const parsed = JSON.parse(legacy);
-      const migrated = migrateLegacyPlan(parsed);
-      if (migrated) {
-        savePlanToStorage(migrated);
-        localStorage.removeItem(STORAGE_KEYS.planLegacy);
-        return migrated;
-      }
-    }
-  } catch {
-    // Corrupt storage — fall through to empty plan
-  }
-  return { ...INITIAL_PLAN, s1: [], s2: [], s3: [], s4: [] };
+  return loadPlanFromStorageDetailed().plan;
 }
 
-export function savePlanToStorage(plan: PlanState): void {
+export function loadPlanFromStorageDetailed(): RehydrateResult {
+  try {
+    const current = localStorage.getItem(STORAGE_KEYS.plan);
+    if (current) {
+      const parsed = JSON.parse(current) as Record<string, string[]>;
+      return rehydratePlanDetailed(parsed);
+    }
+    // Do not migrate v2 — that revision had unschedulable packs; seed the new default instead.
+    localStorage.removeItem(STORAGE_KEYS.planLegacy);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV1);
+  } catch {
+    // Corrupt storage — fall through to default preset
+  }
+  const seeded = rehydratePlanDetailed(ML_PHD_PRESET_IDS);
+  savePlanToStorage(seeded.plan);
+  return seeded;
+}
+
+export function savePlanToStorage(plan: PlanState): boolean {
   try {
     localStorage.setItem(STORAGE_KEYS.plan, JSON.stringify(planToIds(plan)));
+    return true;
   } catch {
-    // Quota / private mode — ignore
+    return false;
   }
 }
 
@@ -125,11 +160,12 @@ export function loadJson<T>(key: string, fallback: T): T {
   }
 }
 
-export function saveJson(key: string, value: unknown): void {
+export function saveJson(key: string, value: unknown): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
-    // ignore
+    return false;
   }
 }
 
@@ -141,6 +177,7 @@ export function exportPlanPayload(
   return {
     version: 2,
     exportedAt: new Date().toISOString(),
+    disclaimer: PLAN_DISCLAIMER,
     plan: planToIds(plan),
     notes,
     shortlist,
@@ -151,22 +188,32 @@ export function importPlanPayload(data: unknown): {
   plan: PlanState;
   notes?: Record<string, string>;
   shortlist?: string[];
+  droppedIds: string[];
+  duplicateIds: string[];
 } | null {
   if (!data || typeof data !== 'object') return null;
   const obj = data as Record<string, unknown>;
 
   if (obj.version === 2 && obj.plan && typeof obj.plan === 'object') {
-    const plan = rehydratePlan(obj.plan as Record<string, string[]>);
+    const { plan, droppedIds, duplicateIds } = rehydratePlanDetailed(obj.plan as Record<string, string[]>);
     return {
       plan,
       notes: (obj.notes as Record<string, string>) || undefined,
       shortlist: Array.isArray(obj.shortlist) ? (obj.shortlist as string[]) : undefined,
+      droppedIds,
+      duplicateIds,
     };
   }
 
   // Accept bare { s1: [...], ... } id or course maps
   const migrated = migrateLegacyPlan(obj);
-  if (migrated) return { plan: migrated };
+  if (migrated) {
+    return {
+      plan: migrated.plan,
+      droppedIds: migrated.droppedIds,
+      duplicateIds: migrated.duplicateIds,
+    };
+  }
   return null;
 }
 

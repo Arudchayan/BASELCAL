@@ -878,7 +878,7 @@
     "lang": "English",
     "priority": "Medium",
     "type": "Foundation",
-    "note": "Good if you want biomedical/computational biology ML.",
+    "note": "Good if you want biomedical/computational biology ML. MODULE DISPUTED: catalog=Machine Learning Foundations; VV Modules tab also lists Electives — confirm against program PDF before counting.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301990",
     "description": "In this lecture, an introduction into main bioinformatics algorithms is provided. We will discuss both \"classical\" topics such as Hidden Markov Models, Markov chains, phylogenetic trees and \"modern\" approaches based on sophisticated (deep) learning models.",
     "prerequisites": "Mathematische Methoden IMathematische Methoden IIEinführung in die Statistik",

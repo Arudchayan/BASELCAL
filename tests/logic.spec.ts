@@ -23,31 +23,20 @@ test.describe('Degree accuracy & storage', () => {
     }
   });
 
-  test('legacy duplicate localStorage plan is deduped on migrate', async ({ page }) => {
+  test('fresh storage seeds ML/PhD default preset', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => {
-      const mockCourse = {
-        id: 'AD-10489-1',
-        title: 'Analysis I',
-        code: '10489',
-        module: 'Admission requirement',
-        cp: 8,
-        priority: 'Must',
-        type: 'Admission',
-      };
-      localStorage.setItem(
-        'basel-ds-plan',
-        JSON.stringify({ s1: [mockCourse, mockCourse], s2: [], s3: [], s4: [] }),
-      );
+      localStorage.removeItem('basel-ds-plan-v3');
       localStorage.removeItem('basel-ds-plan-v2');
+      localStorage.removeItem('basel-ds-plan');
     });
     await page.reload();
 
     const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
-    // Rehydrated from live catalog (4 CP Analysis I), and deduped → single card
-    await expect(sem1.locator('span', { hasText: /CP/ }).first()).toContainText('4 CP');
-    const analysisCards = sem1.locator('.glass-panel', { hasText: 'Analysis I' });
-    await expect(analysisCards).toHaveCount(1);
+    await expect(sem1.getByText(/Planning and Optimization/i)).toBeVisible();
+    const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
+    await expect(sem2.getByText(/Machine Learning/i).first()).toBeVisible();
+    await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
   });
 
   test('ML/PhD preset hits exact 120/148 and flags no spring/fall mismatch for Causal', async ({
@@ -73,7 +62,7 @@ test.describe('Degree accuracy & storage', () => {
     await page.getByRole('button', { name: /Load ML\/PhD Preset/i }).click();
 
     await expect(page.getByText(/Modern Reinforcement Learning|From Agents to LLMs/i)).toBeVisible();
-    await expect(page.getByText(/Timetable conflicts across plan/i)).toBeVisible();
+    await expect(page.getByText(/Mandatory timetable conflicts/i)).toBeVisible();
     await expect(page.getByText(/Verify VV offering before enrolling/i)).toHaveCount(0);
   });
 
@@ -81,7 +70,7 @@ test.describe('Degree accuracy & storage', () => {
     await page.goto('/');
     await page.evaluate(() => {
       localStorage.setItem(
-        'basel-ds-plan-v2',
+        'basel-ds-plan-v3',
         JSON.stringify({
           s1: [],
           s2: [],
@@ -94,13 +83,40 @@ test.describe('Degree accuracy & storage', () => {
     await expect(page.getByText(/Usually only offered in Spring/i).first()).toBeVisible();
   });
 
-  test('wishlist modal uses Wishlist wording', async ({ page }) => {
+  test('unknown course IDs are dropped on rehydrate', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /Course Discovery/i }).click();
-    await page.locator('button', { hasText: 'Read Details' }).first().click();
-    const addBtn = page.locator('button', { hasText: /^Add to Wishlist$/ });
-    await expect(addBtn).toBeVisible();
-    await addBtn.click();
-    await expect(addBtn).toBeHidden();
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'basel-ds-plan-v3',
+        JSON.stringify({
+          s1: ['NOT-A-REAL-COURSE', 'AD-10489-1'],
+          s2: [],
+          s3: [],
+          s4: [],
+        }),
+      );
+    });
+    await page.reload();
+    const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
+    await expect(sem1.getByText(/Analysis I/i)).toBeVisible();
+    await expect(sem1.getByText(/NOT-A-REAL-COURSE/i)).toHaveCount(0);
+  });
+
+  test('header shows unofficial planner disclaimer', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText(/not an official University of Basel tool/i)).toBeVisible();
+  });
+
+  test('ML-45401 disputed module surfaces when in plan', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'basel-ds-plan-v3',
+        JSON.stringify({ s1: ['ML-45401'], s2: [], s3: [], s4: [] }),
+      );
+    });
+    await page.reload();
+    await expect(page.getByText(/Disputed module membership/i)).toBeVisible();
+    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
   });
 });

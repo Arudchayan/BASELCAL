@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -15,17 +15,16 @@ import {
   Undo2,
 } from 'lucide-react';
 import { COURSES } from './courses';
-import { CourseExplorer } from './CourseExplorer';
 import { CourseCard } from './CourseCard';
 import { CourseDetailsModal } from './CourseDetailsModal';
-import { Timetable } from './Timetable';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
-import { evaluatePlan } from './degreeRules';
+import { evaluatePlan, DEGREE_RULES } from './degreeRules';
 import { matchesSemesterFilter, parseOffering } from './offering';
+import { findConflicts } from './conflicts';
 import {
   STORAGE_KEYS,
-  loadPlanFromStorage,
+  loadPlanFromStorageDetailed,
   savePlanToStorage,
   loadJson,
   saveJson,
@@ -33,9 +32,19 @@ import {
   importPlanPayload,
   buildPresetPlan,
   allPlannedCourses,
+  PLAN_DISCLAIMER,
 } from './planStorage';
-import { ML_PHD_PRESET_IDS, SEMESTERS, type Course, type PlanState, type SemesterId } from './types';
+import { DATA_FRESHNESS } from './dataFreshness';
+import { isDisputedModule } from './coveragePolicy';
+import { ML_PHD_PRESET_IDS, SEMESTERS, SEMESTER_IDS, type Course, type PlanState, type SemesterId } from './types';
 import './index.css';
+
+const CourseExplorer = lazy(() =>
+  import('./CourseExplorer').then((m) => ({ default: m.CourseExplorer })),
+);
+const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Timetable })));
+
+const boot = loadPlanFromStorageDetailed();
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
@@ -45,7 +54,11 @@ function App() {
   const [activeSem, setActiveSem] = useState<SemesterId>('s1');
   const [showExplorer, setShowExplorer] = useState(false);
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
-  const [plan, setPlan] = useState<PlanState>(() => loadPlanFromStorage());
+  const [plan, setPlan] = useState<PlanState>(() => boot.plan);
+  const [startupDrops] = useState<string[]>(() => boot.droppedIds);
+  const [startupDupes] = useState<string[]>(() => boot.duplicateIds);
+  const [storageOk, setStorageOk] = useState(true);
+  const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true });
   const [undoStack, setUndoStack] = useState<PlanState[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,29 +67,42 @@ function App() {
   );
   const [shortlist, setShortlist] = useState<string[]>(() => loadJson(STORAGE_KEYS.shortlist, []));
   const [search, setSearch] = useState('');
+  const [searchLower, setSearchLower] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [semesterFilter, setSemesterFilter] = useState<SemesterId | ''>('');
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
 
+  const reportStorage = (key: keyof typeof storageFlags.current, ok: boolean) => {
+    storageFlags.current[key] = ok;
+    const allOk = Object.values(storageFlags.current).every(Boolean);
+    setStorageOk(allOk);
+  };
+
   useEffect(() => {
     document.body.classList.toggle('light', theme === 'light');
-    saveJson(STORAGE_KEYS.theme, theme);
+    reportStorage('theme', saveJson(STORAGE_KEYS.theme, theme));
   }, [theme]);
 
   useEffect(() => {
-    savePlanToStorage(plan);
+    reportStorage('plan', savePlanToStorage(plan));
   }, [plan]);
 
   useEffect(() => {
-    saveJson(STORAGE_KEYS.notes, personalNotes);
+    const t = window.setTimeout(() => {
+      reportStorage('notes', saveJson(STORAGE_KEYS.notes, personalNotes));
+    }, 300);
+    return () => window.clearTimeout(t);
   }, [personalNotes]);
 
   useEffect(() => {
-    saveJson(STORAGE_KEYS.shortlist, shortlist);
+    reportStorage('shortlist', saveJson(STORAGE_KEYS.shortlist, shortlist));
   }, [shortlist]);
 
-  const pushUndo = (prev: PlanState) => {
+  useEffect(() => {
+    const t = window.setTimeout(() => setSearchLower(search.toLowerCase()), 150);
+    return () => window.clearTimeout(t);
+  }, [search]);  const pushUndo = (prev: PlanState) => {
     setUndoStack((stack) => [...stack.slice(-19), prev]);
   };
 
@@ -105,21 +131,21 @@ function App() {
     setPersonalNotes((prev) => ({ ...prev, [id]: text }));
   };
 
-  const plannedCourseIds = useMemo(() => allPlannedCourses(plan).map((c) => c.id), [plan]);
+  const plannedCourseIds = useMemo(() => new Set(allPlannedCourses(plan).map((c) => c.id)), [plan]);
 
   const catalogCourses = useMemo(() => {
     return COURSES.filter((c) => {
       const matchSearch = (c.title + ' ' + c.code + ' ' + (c.note || ''))
         .toLowerCase()
-        .includes(search.toLowerCase());
+        .includes(searchLower);
       const matchModule = moduleFilter ? c.module === moduleFilter : true;
       const matchPriority = priorityFilter ? c.priority === priorityFilter : true;
       const matchShortlist = showShortlistOnly ? shortlist.includes(c.id) : true;
       const matchSemester = matchesSemesterFilter(c, semesterFilter);
-      const notPlanned = !plannedCourseIds.includes(c.id);
+      const notPlanned = !plannedCourseIds.has(c.id);
       return matchSearch && matchModule && matchPriority && matchShortlist && matchSemester && notPlanned;
     }) as Course[];
-  }, [search, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, showShortlistOnly, shortlist]);
+  }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, showShortlistOnly, shortlist]);
 
   const preferredSemesterFor = (course: Course): SemesterId => {
     const meta = parseOffering(course.when);
@@ -133,7 +159,7 @@ function App() {
   };
 
   const quickAddCourse = (course: Course) => {
-    if (plannedCourseIds.includes(course.id)) return;
+    if (plannedCourseIds.has(course.id)) return;
     const sem = semesterFilter || preferredSemesterFor(course);
     updatePlan((prev) => ({
       ...prev,
@@ -160,7 +186,7 @@ function App() {
     if (source.droppableId === 'catalog') {
       const courseId = draggableId;
       const course = COURSES.find((c) => c.id === courseId) as Course | undefined;
-      if (!course || plannedCourseIds.includes(course.id)) return;
+      if (!course || plannedCourseIds.has(course.id)) return;
       const destSem = destination.droppableId as SemesterId;
       updatePlan((prev) => {
         const newDestItems = Array.from(prev[destSem]);
@@ -205,9 +231,11 @@ function App() {
   const loadPreset = () => {
     const ok = confirm(
       'Load ML/PhD Starter Plan? This replaces your current plan.\n\n' +
-        'This preset satisfies 148 CP but is a template, not a schedulable semester plan:\n' +
-        '• Sem 1 has known timetable conflicts (see Curriculum Progress)\n' +
-        '• Sem 3 includes ML-78174 (irregular RL — verify VV offering for your cohort)\n\n' +
+        `This preset satisfies ${DEGREE_RULES.grandTotal.target} CP with balanced semester loads:\n` +
+        '• Sci Comp practical and Distributed Systems are in different falls (no Fri double-book)\n' +
+        '• Algorithms is in Sem 4 so it does not clash with Machine Learning\n' +
+        '• One known admission clash remains: Analysis I exercise vs Sci Comp lecture (Tue)\n' +
+        '• Sem 2 includes ML-78174 (irregular — verify VV); Sem 3 needs project supervisors\n\n' +
         'Continue?',
     );
     if (ok) {
@@ -238,11 +266,38 @@ function App() {
       updatePlan(() => imported.plan);
       if (imported.notes) setPersonalNotes(imported.notes);
       if (imported.shortlist) setShortlist(imported.shortlist);
-      const ev = evaluatePlan(allPlannedCourses(imported.plan));
+      const courses = allPlannedCourses(imported.plan);
+      const ev = evaluatePlan(courses);
+      const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
+      const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
+      const missingSched = courses.filter(
+        (c) =>
+          c.type !== 'Admission' &&
+          c.module !== 'Thesis' &&
+          !(c.when || '').toLowerCase().includes('learning contract') &&
+          (!c.schedule || c.schedule.length === 0),
+      ).length;
+      const caveats: string[] = [];
+      if (conflictCount > 0) caveats.push(`${conflictCount} timetable conflict(s)`);
+      if (disputedCount > 0) caveats.push(`${disputedCount} disputed module(s)`);
+      if (missingSched > 0) caveats.push(`${missingSched} schedule-unknown`);
+      const status = ev.isComplete
+        ? caveats.length
+          ? `Buckets OK — but check: ${caveats.join('; ')}.`
+          : 'All buckets OK and no conflict/dispute/schedule caveats flagged.'
+        : ev.issues.slice(0, 3).join('; ');
+      const dropped =
+        imported.droppedIds.length > 0
+          ? ` Dropped unknown IDs: ${imported.droppedIds.slice(0, 8).join(', ')}${
+              imported.droppedIds.length > 8 ? '…' : ''
+            }.`
+          : '';
+      const dups =
+        imported.duplicateIds.length > 0
+          ? ` Skipped duplicate placements: ${imported.duplicateIds.slice(0, 6).join(', ')}.`
+          : '';
       alert(
-        `Imported plan. MSc ${ev.stats.mscTotal}/120, grand ${ev.stats.grandTotal}/148. ${
-          ev.isComplete ? 'All buckets OK.' : ev.issues.slice(0, 3).join('; ')
-        }`,
+        `Imported plan. MSc ${ev.stats.mscTotal}/${DEGREE_RULES.mscTotal.target}, grand ${ev.stats.grandTotal}/${DEGREE_RULES.grandTotal.target}. ${status}${dropped}${dups}`,
       );
     } catch {
       alert('Failed to import plan JSON.');
@@ -251,6 +306,45 @@ function App() {
 
   return (
     <div className="app-shell" style={{ padding: '32px 40px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
+      {(startupDrops.length > 0 || startupDupes.length > 0 || !storageOk) && (
+        <div
+          role="status"
+          style={{
+            marginBottom: 16,
+            padding: '12px 16px',
+            borderRadius: 12,
+            background: 'rgba(217, 119, 6, 0.12)',
+            border: '1px solid rgba(217, 119, 6, 0.35)',
+            color: '#d97706',
+            fontSize: 13,
+            lineHeight: 1.45,
+          }}
+        >
+          {!storageOk && (
+            <p style={{ margin: '0 0 6px' }}>
+              Browser storage is unavailable (private mode or quota). Changes may not persist after reload.
+            </p>
+          )}
+          {startupDrops.length > 0 && (
+            <p style={{ margin: '0 0 6px' }}>
+              Dropped {startupDrops.length} unknown course ID(s) from saved plan:{' '}
+              {startupDrops.slice(0, 8).join(', ')}
+              {startupDrops.length > 8 ? '…' : ''}.
+            </p>
+          )}
+          {startupDupes.length > 0 && (
+            <p style={{ margin: 0 }}>
+              Skipped {startupDupes.length} duplicate cross-semester placement(s):{' '}
+              {startupDupes.slice(0, 8).join(', ')}
+              {startupDupes.length > 8 ? '…' : ''}.
+            </p>
+          )}
+        </div>
+      )}
+      <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 12px' }}>
+        Catalog reviewed {DATA_FRESHNESS.lastReviewed}
+        {!DATA_FRESHNESS.moduleManifestComplete ? ' · VV module membership still incomplete' : ''}.
+      </p>
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -270,8 +364,25 @@ function App() {
               MSc Data Science Curriculum Architect
             </h1>
             <p style={{ color: 'var(--text-secondary)', marginTop: '8px', maxWidth: '800px', lineHeight: 1.5 }}>
-              Plan your University of Basel Data Science Master&apos;s. Validates exact admission (28 CP), MSc (120 CP),
-              and grand total (148 CP). Wishlist in Discovery is separate from your committed board plan.
+              Plan your University of Basel Data Science Master&apos;s. Validates exact admission ({DEGREE_RULES.admission.target}{' '}
+              CP), MSc ({DEGREE_RULES.mscTotal.target} CP), and grand total ({DEGREE_RULES.grandTotal.target} CP). Wishlist
+              in Discovery is separate from your committed board plan.
+            </p>
+            <p
+              role="note"
+              style={{
+                marginTop: 12,
+                maxWidth: 800,
+                fontSize: 12,
+                lineHeight: 1.45,
+                color: 'var(--text-muted)',
+                background: 'rgba(217, 119, 6, 0.08)',
+                border: '1px solid rgba(217, 119, 6, 0.25)',
+                borderRadius: 10,
+                padding: '10px 12px',
+              }}
+            >
+              {PLAN_DISCLAIMER}
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -611,7 +722,9 @@ function App() {
           </motion.div>
         ) : (
           <motion.div key="timetable" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} style={{ minHeight: 600 }}>
-            <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} />
+            <Suspense fallback={<div style={{ padding: 24, color: 'var(--text-muted)' }}>Loading timetable…</div>}>
+              <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} />
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>
@@ -624,11 +737,13 @@ function App() {
 
       <AnimatePresence>
         {showExplorer && (
-          <CourseExplorer
-            shortlist={shortlist}
-            toggleShortlist={toggleShortlist}
-            onClose={() => setShowExplorer(false)}
-          />
+          <Suspense fallback={null}>
+            <CourseExplorer
+              shortlist={shortlist}
+              toggleShortlist={toggleShortlist}
+              onClose={() => setShowExplorer(false)}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
     </div>

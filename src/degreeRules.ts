@@ -1,24 +1,28 @@
 /**
  * Official Uni Basel MSc Data Science (2026) requirement targets.
  * Single source of truth for UI, Explorer, and validation.
+ * Targets live in degree_rules.json (shared with validate_all.cjs).
  */
 import type { Course } from './types';
+import rulesJson from '../degree_rules.json';
 
 export type RuleKind = 'exact' | 'min';
 
 export type BucketStatus = 'empty' | 'short' | 'met' | 'overshoot';
 
-export const DEGREE_RULES = {
-  admission: { target: 28, kind: 'exact' as RuleKind, module: 'Admission requirement' },
-  math: { target: 18, kind: 'min' as RuleKind, module: 'Mathematical Foundations' },
-  ml: { target: 18, kind: 'min' as RuleKind, module: 'Machine Learning Foundations' },
-  systems: { target: 18, kind: 'min' as RuleKind, module: 'Systems Foundations' },
-  foundationsSum: { target: 64, kind: 'min' as RuleKind },
-  electives: { target: 20, kind: 'exact' as RuleKind, module: 'Electives in Data Science' },
-  thesis: { target: 36, kind: 'exact' as RuleKind, module: 'Thesis' },
-  mscTotal: { target: 120, kind: 'exact' as RuleKind },
-  grandTotal: { target: 148, kind: 'exact' as RuleKind },
-} as const;
+type RuleEntry = { target: number; kind: RuleKind; module?: string };
+
+export const DEGREE_RULES = rulesJson as {
+  admission: RuleEntry & { module: string };
+  math: RuleEntry & { module: string };
+  ml: RuleEntry & { module: string };
+  systems: RuleEntry & { module: string };
+  foundationsSum: RuleEntry;
+  electives: RuleEntry & { module: string };
+  thesis: RuleEntry & { module: string };
+  mscTotal: RuleEntry;
+  grandTotal: RuleEntry;
+};
 
 export type DegreeStats = {
   admission: number;

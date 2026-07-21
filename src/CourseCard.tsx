@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { AlertCircle, Maximize2, Plus, X, Zap } from 'lucide-react';
 import { parseOffering, primaryMismatchMessage } from './offering';
@@ -6,17 +6,7 @@ import { isStaleWatch } from './dataFreshness';
 import { getModuleColor, getPriorityBg, getPriorityColor } from './uiHelpers';
 import type { Course, SemesterId } from './types';
 
-export function CourseCard({
-  course,
-  index,
-  isPlanned,
-  currentSemId,
-  onRemove,
-  noteText,
-  onNoteChange,
-  onShowDetails,
-  onQuickAdd,
-}: {
+type CourseCardProps = {
   course: Course;
   index: number;
   isPlanned: boolean;
@@ -26,11 +16,62 @@ export function CourseCard({
   onNoteChange?: (text: string) => void;
   onShowDetails: () => void;
   onQuickAdd?: () => void;
-}) {
+};
+
+function CourseCardInner({
+  course,
+  index,
+  isPlanned,
+  currentSemId,
+  onRemove,
+  noteText,
+  onNoteChange,
+  onShowDetails,
+  onQuickAdd,
+}: CourseCardProps) {
   const [copyToast, setCopyToast] = useState<string | null>(null);
+  // Keep note draft local so typing does not re-render the full DnD board every keystroke
+  const [draftNote, setDraftNote] = useState(noteText || '');
+  const draftRef = useRef(draftNote);
+  const flushTimer = useRef<number | null>(null);
   const mismatchWarning =
     isPlanned && currentSemId ? primaryMismatchMessage(course, currentSemId) : null;
   const offering = parseOffering(course.when);
+
+  useEffect(() => {
+    setDraftNote(noteText || '');
+    draftRef.current = noteText || '';
+  }, [noteText, course.id]);
+
+  const flushNote = useCallback(() => {
+    if (!onNoteChange) return;
+    if (flushTimer.current !== null) {
+      window.clearTimeout(flushTimer.current);
+      flushTimer.current = null;
+    }
+    const next = draftRef.current;
+    if (next !== (noteText || '')) onNoteChange(next);
+  }, [onNoteChange, noteText]);
+
+  const scheduleFlush = useCallback(
+    (value: string) => {
+      draftRef.current = value;
+      setDraftNote(value);
+      if (!onNoteChange) return;
+      if (flushTimer.current !== null) window.clearTimeout(flushTimer.current);
+      flushTimer.current = window.setTimeout(() => {
+        flushTimer.current = null;
+        if (draftRef.current !== (noteText || '')) onNoteChange(draftRef.current);
+      }, 400);
+    },
+    [onNoteChange, noteText],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (flushTimer.current !== null) window.clearTimeout(flushTimer.current);
+    };
+  }, []);
 
   const copyCode = async () => {
     try {
@@ -50,7 +91,7 @@ export function CourseCard({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="glass-panel"
+          className="course-card"
           style={{
             ...provided.draggableProps.style,
             marginBottom: '12px',
@@ -59,7 +100,7 @@ export function CourseCard({
             borderLeft: mismatchWarning
               ? '4px solid #ef4444'
               : `4px solid ${getModuleColor(course.module)}`,
-            background: snapshot.isDragging ? 'var(--glass-dragging-bg)' : 'var(--glass-hover-bg)',
+            background: snapshot.isDragging ? 'var(--glass-dragging-bg)' : 'var(--bg-secondary)',
             transition: snapshot.isDragging ? 'none' : 'background 0.2s ease, box-shadow 0.2s ease',
             cursor: snapshot.isDragging ? 'grabbing' : 'grab',
             boxShadow: snapshot.isDragging ? '0 8px 32px var(--glass-shadow)' : 'none',
@@ -147,7 +188,7 @@ export function CourseCard({
               onPointerDown={(e) => e.stopPropagation()}
               aria-label={`Details for ${course.title}`}
               style={{
-                background: 'var(--bg-secondary)',
+                background: 'var(--bg-tertiary)',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: '6px',
                 color: 'var(--text-secondary)',
@@ -327,8 +368,9 @@ export function CourseCard({
 
           {onNoteChange && (
             <textarea
-              value={noteText || ''}
-              onChange={(e) => onNoteChange(e.target.value)}
+              value={draftNote}
+              onChange={(e) => scheduleFlush(e.target.value)}
+              onBlur={flushNote}
               placeholder="Add personal notes here (e.g. prerequisite missing)..."
               style={{
                 width: '100%',
@@ -352,3 +394,5 @@ export function CourseCard({
     </Draggable>
   );
 }
+
+export const CourseCard = memo(CourseCardInner);

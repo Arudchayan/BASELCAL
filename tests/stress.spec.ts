@@ -22,8 +22,8 @@ test.describe('BASELCAL App Stress Tests', () => {
       // Click to open
       await viewDetailsBtns.nth(i).click();
       
-      // Wait for modal close button
-      const closeBtn = page.locator('button', { has: page.locator('.lucide-x') }).last();
+      // Prefer explicit modal close control (board cards also use lucide-x for remove)
+      const closeBtn = page.getByRole('button', { name: /Close course details/i });
       await expect(closeBtn).toBeVisible();
       
       // Click to close
@@ -33,7 +33,6 @@ test.describe('BASELCAL App Stress Tests', () => {
       await expect(closeBtn).toBeHidden();
     }
   });
-
   test('should handle extreme data in search fields', async ({ page }) => {
     // Ensure search input is visible or open explorer if it's there
     // In App.tsx, there's a search state but we need to see where the input is.
@@ -78,9 +77,10 @@ test.describe('BASELCAL App Stress Tests', () => {
         'ML-45366',
       ];
       localStorage.setItem(
-        'basel-ds-plan-v2',
+        'basel-ds-plan-v3',
         JSON.stringify({ s1: ids, s2: [], s3: [], s4: [] }),
       );
+      localStorage.removeItem('basel-ds-plan-v2');
       localStorage.removeItem('basel-ds-plan');
     });
 
