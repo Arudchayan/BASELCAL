@@ -1,0 +1,662 @@
+[
+  {
+    "code": "10489",
+    "title": "",
+    "cp": 8,
+    "sem": "?",
+    "lecturer": "Gianluca Crippa",
+    "exam": "",
+    "module": "Admission requirement",
+    "vvId": "302796"
+  },
+  {
+    "code": "10489",
+    "title": "Analysis II",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Enno Lenzmann",
+    "exam": "exam",
+    "module": "Admission requirement",
+    "vvId": "299326"
+  },
+  {
+    "code": "11037",
+    "title": "Analysis I (Standardprogramm)",
+    "cp": 2,
+    "sem": "HS",
+    "lecturer": "Gianluca Crippa",
+    "exam": "continuous assessment",
+    "module": "Admission requirement",
+    "vvId": "302773"
+  },
+  {
+    "code": "11039",
+    "title": "Analysis II (Standardprogramm)",
+    "cp": 2,
+    "sem": "FS",
+    "lecturer": "Eva Ernst",
+    "exam": "continuous assessment",
+    "module": "Admission requirement",
+    "vvId": "298443"
+  },
+  {
+    "code": "20980",
+    "title": "Scientific Computing",
+    "cp": 6,
+    "sem": "HS",
+    "lecturer": "Volker Roth",
+    "exam": "exam",
+    "module": "Admission requirement",
+    "vvId": "301984"
+  },
+  {
+    "code": "62060",
+    "title": "Scientific Computing",
+    "cp": 2,
+    "sem": "HS",
+    "lecturer": "Volker Roth",
+    "exam": "continuous assessment",
+    "module": "Admission requirement",
+    "vvId": "302113"
+  },
+  {
+    "code": "10906",
+    "title": "Algorithms and Data Structures",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Gabriele Röger",
+    "exam": "exam",
+    "module": "Admission requirement",
+    "vvId": "297682"
+  },
+  {
+    "code": "62061",
+    "title": "Algorithms and Data Structures",
+    "cp": 2,
+    "sem": "FS",
+    "lecturer": "Gabriele Röger",
+    "exam": "continuous assessment",
+    "module": "Admission requirement",
+    "vvId": "297723"
+  },
+  {
+    "code": "12246",
+    "title": "Numerical Methods for Partial Differential Equations",
+    "cp": 8,
+    "sem": "HS",
+    "lecturer": "Helmut Harbrecht",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "302777"
+  },
+  {
+    "code": "13358",
+    "title": "Numerical Methods for Wave Propagation",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Marcus J. Grote",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "298376"
+  },
+  {
+    "code": "16948",
+    "title": "Project: Numerical Methods for Wave Propagation",
+    "cp": 2,
+    "sem": "FS",
+    "lecturer": "Marcus J. Grote",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "298379"
+  },
+  {
+    "code": "19300",
+    "title": "Random processes: Theory and applications from physics to finance",
+    "cp": 4,
+    "sem": "HS",
+    "lecturer": "Jörg Lehmann",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "302622"
+  },
+  {
+    "code": "22738",
+    "title": "Iterative Verfahren der Numerik",
+    "cp": 4,
+    "sem": "HS",
+    "lecturer": "Alexandra Rohrbach",
+    "exam": "exam",
+    "module": "Mathematical Foundations",
+    "vvId": "293805"
+  },
+  {
+    "code": "22740",
+    "title": "Iterative Verfahren der Numerik",
+    "cp": 4,
+    "sem": "HS",
+    "lecturer": "Hans Faulhaber\nAlexandra Rohrbach",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "293803"
+  },
+  {
+    "code": "27334",
+    "title": "Funktionalanalysis und partielle Differentialgleichungen",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Luis Martinez Zoroa",
+    "exam": "exam",
+    "module": "Mathematical Foundations",
+    "vvId": "289256"
+  },
+  {
+    "code": "27335",
+    "title": "Funktionalanalysis und partielle Differentialgleichungen",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Riccardo Tiziano Grieco",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "292337"
+  },
+  {
+    "code": "66096",
+    "title": "Mathematics of Data Science",
+    "cp": 8,
+    "sem": "HS",
+    "lecturer": "Foivos Alimisis",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "301338"
+  },
+  {
+    "code": "74781",
+    "title": "Hochdimensionale Approximationsmethoden",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Helmut Harbrecht",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "291055"
+  },
+  {
+    "code": "78105",
+    "title": "Introduction to Dynamical Systems",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Kwan Woo",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "299421"
+  },
+  {
+    "code": "58951",
+    "title": "Stochastic Analysis",
+    "cp": 8,
+    "sem": "HS",
+    "lecturer": "Jens-Peter Heymann",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "293653"
+  },
+  {
+    "code": "77600",
+    "title": "Selected Topics in Probability Theory",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Jiří Černý",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "298499"
+  },
+  {
+    "code": "79161",
+    "title": "Concentration",
+    "cp": 6,
+    "sem": "HS",
+    "lecturer": "Jiří Černý",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "302802"
+  },
+  {
+    "code": "77777",
+    "title": "Randomized Algorithms",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Patrick Schnider",
+    "exam": "continuous assessment",
+    "module": "Mathematical Foundations",
+    "vvId": "299253"
+  },
+  {
+    "code": "13548",
+    "title": "Foundations of Artificial Intelligence",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Malte Helmert",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "297690"
+  },
+  {
+    "code": "78174",
+    "title": "Modern Reinforcement Learning: From Agents to LLMs",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Ilija Bogunovic",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "300177"
+  },
+  {
+    "code": "17165",
+    "title": "Machine Learning",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Volker Roth",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "297696"
+  },
+  {
+    "code": "45366",
+    "title": "Machine Intelligence",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Volker Roth",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "297695"
+  },
+  {
+    "code": "45401",
+    "title": "Bioinformatics Algorithms",
+    "cp": 4,
+    "sem": "HS",
+    "lecturer": "Volker Roth",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "301990"
+  },
+  {
+    "code": "60835",
+    "title": "Machine Learning on Graphs, Groups, and Manifolds",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Ivan Dokmanić",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "265698"
+  },
+  {
+    "code": "60876",
+    "title": "Mathematical and Computational Biology in Drug Discovery",
+    "cp": 2,
+    "sem": "FS",
+    "lecturer": "Jitao David Zhang",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "298446"
+  },
+  {
+    "code": "66937",
+    "title": "Foundations of Deep Learning",
+    "cp": 6,
+    "sem": "HS",
+    "lecturer": "Aurelien Lucchi",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "301995"
+  },
+  {
+    "code": "67343",
+    "title": "Inverse Problems: Computational Aspects and Machine Learning",
+    "cp": 3,
+    "sem": "FS",
+    "lecturer": "Marcus J. Grote",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "273415"
+  },
+  {
+    "code": "77778",
+    "title": "Generative Modeling with Diffusion Models and Stochastic Interpolants",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Ivan Dokmanić",
+    "exam": "continuous assessment",
+    "module": "Machine Learning Foundations",
+    "vvId": "299235"
+  },
+  {
+    "code": "15728",
+    "title": "Computer Networks",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Christian Tschudin",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "297693"
+  },
+  {
+    "code": "15729",
+    "title": "Distributed Information Systems",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Heiko Schuldt",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "297694"
+  },
+  {
+    "code": "15731",
+    "title": "Multimedia Retrieval",
+    "cp": 6,
+    "sem": "HS",
+    "lecturer": "Roger Weber",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "301992"
+  },
+  {
+    "code": "17164",
+    "title": "High Performance Computing",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Florina M. Ciorba",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "299489"
+  },
+  {
+    "code": "45402",
+    "title": "Foundations of Distributed Systems",
+    "cp": 8,
+    "sem": "HS",
+    "lecturer": "Florina M. Ciorba",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "301991"
+  },
+  {
+    "code": "67923",
+    "title": "Continuous Optimization",
+    "cp": 8,
+    "sem": "FS",
+    "lecturer": "Aurelien Lucchi",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "297697"
+  },
+  {
+    "code": "67924",
+    "title": "Privacy-Preserving Methods for Data Science and Distributed Systems",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Isabel Wagner",
+    "exam": "continuous assessment",
+    "module": "Systems Foundations",
+    "vvId": "297698"
+  },
+  {
+    "code": "10684",
+    "title": "Univariate Time Series Analysis",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Patrick Schmidt",
+    "exam": "exam",
+    "module": "Electives in Data Science",
+    "vvId": "302021"
+  },
+  {
+    "code": "11680",
+    "title": "Computational Physics",
+    "cp": 4,
+    "sem": "HS",
+    "lecturer": "Stefan Goedecker",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "302602"
+  },
+  {
+    "code": "11681",
+    "title": "Internship: Computational Physics",
+    "cp": 2,
+    "sem": "HS",
+    "lecturer": "Stefan Goedecker",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "302603"
+  },
+  {
+    "code": "18545",
+    "title": "Advanced Mathematics for Economics",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Thomas Zehrt",
+    "exam": "record of achievement",
+    "module": "Electives in Data Science",
+    "vvId": "302006"
+  },
+  {
+    "code": "20901",
+    "title": "Quantum Computation and Error Correction",
+    "cp": 4,
+    "sem": "HS",
+    "lecturer": "Pierre Fromholz",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "302620"
+  },
+  {
+    "code": "25637",
+    "title": "Molecular Simulations with Chemical and Biological Applications",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Markus Meuwly",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "302413"
+  },
+  {
+    "code": "28420",
+    "title": "Principles of Medical Imaging",
+    "cp": 3,
+    "sem": "FS",
+    "lecturer": "Oliver Bieri",
+    "exam": "record of achievement",
+    "module": "Electives in Data Science",
+    "vvId": "299025"
+  },
+  {
+    "code": "28935",
+    "title": "Computer Modeling of Adverse Effects",
+    "cp": 1,
+    "sem": "FS",
+    "lecturer": "Martin Smiesko",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "297310"
+  },
+  {
+    "code": "45400",
+    "title": "Planning and Optimization",
+    "cp": 8,
+    "sem": "HS",
+    "lecturer": "Malte Helmert",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "301993"
+  },
+  {
+    "code": "49935",
+    "title": "Lecture with internship: Applied Statistics Using R",
+    "cp": 1,
+    "sem": "FS",
+    "lecturer": "Thomas Fabbro",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "297916"
+  },
+  {
+    "code": "53822",
+    "title": "Deep Learning for Medical Image Analysis",
+    "cp": 3,
+    "sem": "FS",
+    "lecturer": "Florentin Bieder",
+    "exam": "record of achievement",
+    "module": "Electives in Data Science",
+    "vvId": "299034"
+  },
+  {
+    "code": "55048",
+    "title": "The AI Economy: Business Strategies and Policy Issues",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Stephen Weymouth",
+    "exam": "record of achievement",
+    "module": "Electives in Data Science",
+    "vvId": "301664"
+  },
+  {
+    "code": "55662",
+    "title": "Applied Mathematics and Informatics in Drug Discovery",
+    "cp": 2,
+    "sem": "HS",
+    "lecturer": "Jitao David Zhang",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "302761"
+  },
+  {
+    "code": "58492",
+    "title": "Insurance Data Analytics",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Frank Weber",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "289773"
+  },
+  {
+    "code": "58920",
+    "title": "Colloquium: Causal Inference for Policy Evaluation",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Mario Bernasconi",
+    "exam": "record of achievement",
+    "module": "Electives in Data Science",
+    "vvId": "298058"
+  },
+  {
+    "code": "62229",
+    "title": "Modern Aspects of Bayesian Statistics",
+    "cp": 2,
+    "sem": "HS",
+    "lecturer": "Kai Hencken",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "286079"
+  },
+  {
+    "code": "64323",
+    "title": "Applied Programming Projects",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Lukas Rosenthaler",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "303302"
+  },
+  {
+    "code": "64324",
+    "title": "History and Technology of Computers and the Internet",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Heidelinde Knab",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "296159"
+  },
+  {
+    "code": "64375",
+    "title": "Databases in the Digital Humanities",
+    "cp": 2,
+    "sem": "FS",
+    "lecturer": "Lukas Rosenthaler",
+    "exam": "record of achievement",
+    "module": "Electives in Data Science",
+    "vvId": "299693"
+  },
+  {
+    "code": "64376",
+    "title": "Databases in the Digital Humanities",
+    "cp": 2,
+    "sem": "FS",
+    "lecturer": "Lukas Rosenthaler",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "299694"
+  },
+  {
+    "code": "66152",
+    "title": "Advanced Python for Humanities",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Sepideh Alassi",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "299695"
+  },
+  {
+    "code": "69469",
+    "title": "Introduction to LTI-Systems and Control",
+    "cp": 3,
+    "sem": "HS",
+    "lecturer": "Nicolas Gerig",
+    "exam": "exam",
+    "module": "Electives in Data Science",
+    "vvId": "301223"
+  },
+  {
+    "code": "13369",
+    "title": "Predictive Analytics",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Michael Merz",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "297636"
+  },
+  {
+    "code": "44811",
+    "title": "Grundlagen der Finanz- und Versicherungsmathematik",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Michael Merz",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "297632"
+  },
+  {
+    "code": "52377",
+    "title": "Introduction to Topology",
+    "cp": 6,
+    "sem": "FS",
+    "lecturer": "Hang Fu",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "299319"
+  },
+  {
+    "code": "74535",
+    "title": "From Data to Physical Models in Biology",
+    "cp": 4,
+    "sem": "FS",
+    "lecturer": "Richard Neher",
+    "exam": "continuous assessment",
+    "module": "Electives in Data Science",
+    "vvId": "297979"
+  }
+]

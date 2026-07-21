@@ -39,11 +39,11 @@ Defined in `src/types.ts` as `ML_PHD_PRESET_IDS`:
 | Semester | Approx CP | Notes |
 |----------|-----------|--------|
 | S1 Fall | 38 | Heavy physical + admission start |
-| S2 Spring | 46 | Peak ML; Causal Inference (spring-only); Systems uses Computer Networks (4 CP) |
-| S3 Fall | 28 | Thesis prep starts; irregular ML flagged |
+| S2 Spring | 48 | Peak ML; Causal Inference (spring-only); Distributed Information Systems (6 CP) |
+| S3 Fall | 26 | Thesis prep starts; Modern RL (ML-78174, irregular — verify VV semester) |
 | S4 Spring | 36 | Thesis 30 + Data Science Project 6 — no lectures |
 
-Module totals in preset: Admission 28, Math 18, ML 28, Systems 18, Foundations 64, Electives 20, Thesis 36, **MSc 120**, **Grand 148**.
+Module totals in preset: Admission 28, Math 18, ML 26, Systems 20, Foundations 64, Electives 20, Thesis 36, **MSc 120**, **Grand 148**.
 
 ## Domain rules
 - **Jahreskurs:** Analysis split into `AD-10489-1` (Fall 4 CP) and `AD-10489-2` (Spring 4 CP)
@@ -61,6 +61,8 @@ vv_scrape_cache.json  →  scrape_and_apply_vv.cjs  →  src/courses.ts
 ```
 
 See [DATA.md](DATA.md) for which root JSON files to trust vs ignore.
+
+VV **completeness** (all MSc DS module courses on VV): [COVERAGE_VERIFICATION_PLAN.md](COVERAGE_VERIFICATION_PLAN.md). Phase 0 policy: `coverage_policy.json`.
 
 ## Commands
 - `npm run dev` — local UI

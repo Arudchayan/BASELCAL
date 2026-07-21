@@ -167,7 +167,7 @@ function applyScrape(courses, scrapedById) {
     const data = scrapedById[course.id];
     if (!data || data.status !== 'ok') continue;
     course.url = data.url;
-    if (data.title) course.title = data.title.replace(/^[^:]+:\s*/, '').trim() || data.title;
+    if (data.title) course.title = data.title.trim();
     if (Number.isFinite(data.cp) && !PRESERVE_CP_IDS.has(course.id)) course.cp = data.cp;
     if (data.description) course.description = data.description;
     if (data.prerequisites) course.prerequisites = data.prerequisites;

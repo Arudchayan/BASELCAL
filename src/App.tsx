@@ -203,7 +203,14 @@ function App() {
   };
 
   const loadPreset = () => {
-    if (confirm('Load ML/PhD Starter Plan? This will replace your current plan.')) {
+    const ok = confirm(
+      'Load ML/PhD Starter Plan? This replaces your current plan.\n\n' +
+        'This preset satisfies 148 CP but is a template, not a schedulable semester plan:\n' +
+        '• Sem 1 has known timetable conflicts (see Curriculum Progress)\n' +
+        '• Sem 3 includes ML-78174 (irregular RL — verify VV offering for your cohort)\n\n' +
+        'Continue?',
+    );
+    if (ok) {
       updatePlan(() => buildPresetPlan(ML_PHD_PRESET_IDS));
     }
   };
