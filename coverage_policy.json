@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "academicPeriod": {
+    "fall": "2026004",
+    "spring": "2025005",
+    "fallLabel": "HS 2026",
+    "springLabel": "FS 2026"
+  },
+  "moduleObjids": {
+    "root": 289451,
+    "mathematicalFoundations": 289453,
+    "machineLearningFoundations": 289454,
+    "systemsFoundations": 289455,
+    "electivesInDataScience": 289456,
+    "preparationMastersThesis": 289457
+  },
+  "titleNormalization": "full_vv_title",
+  "titleNormalizationNotes": "Do not strip text before colons in scrape apply step. ML-78174 canonical title is the full VV string.",
+  "preserveCpIds": ["AD-10489-1", "AD-10489-2"],
+  "syntheticIds": ["T-PREP", "T-THESIS", "E-PROJ6", "ML-PROJ6", "S-PROJ6"],
+  "lastVerified": {
+    "date": "2026-07-21",
+    "method": "vv_msc_ds_official_scrape.cjs live Playwright scrape",
+    "catalogCoursesWithVvDetail": 66,
+    "moduleManifestComplete": false,
+    "notes": "All coded catalog courses verified on live VV detail pages. VV module-tree objids still return empty result tables."
+  },
+  "verificationCyclesRequired": 3,
+  "staleWatchIds": [
+    "ML-60835",
+    "ML-67343",
+    "M-22738",
+    "M-22740",
+    "M-27334",
+    "M-27335",
+    "M-74781",
+    "M-58951",
+    "E-58492",
+    "E-62229",
+    "E-64324"
+  ],
+  "staleWatchNotes": "VV semester metadata not HS/FS 2026 — irregular or biennial; keep in catalog but flag for planners.",
+  "moduleDiscrepancies": [
+    {
+      "id": "ML-45401",
+      "code": "45401",
+      "catalogModule": "Machine Learning Foundations",
+      "vvModulesTab": "Electives in Data Science (Master's Studies: Data Science)",
+      "resolution": "pending_program_pdf",
+      "note": "Catalog follows program PDF; VV Modules tab lists elective. Do not auto-retag without PDF authority."
+    }
+  ],
+  "vvAuditArtifacts": [
+    "vv_msc_ds_official.json",
+    "vv_audit_table.json",
+    "vv_msc_ds_official_scrape.cjs",
+    "vv_audit_probe.json"
+  ],
+  "vvSearchQuirks": [
+    {
+      "code": "78174",
+      "note": "Numeric keyword search returns 0 rows; use ?id=300177 or title search Reinforcement"
+    }
+  ]
+}

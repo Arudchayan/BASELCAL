@@ -40,9 +40,9 @@ export const INITIAL_PLAN: PlanState = {
 /** ML/PhD starter: exactly 28 admission + 120 MSc = 148 CP */
 export const ML_PHD_PRESET_IDS: Record<SemesterId, string[]> = {
   s1: ['AD-10489-1', 'AD-20980', 'AD-62060', 'M-66096', 'S-45402', 'E-11680', 'E-11681', 'M-19300'],
-  // S-15728 (4 CP) replaces S-15729 (6 CP) to hit foundations 64 / MSc 120
+  // S-15729 (6 CP) keeps Systems at 20 CP alongside ML-78174 (4 CP) replacing ML-60835 (6 CP)
   // E-58920 Causal Inference moved here (spring) from former S3 Fall placement
-  s2: ['AD-10489-2', 'AD-11039', 'AD-10906', 'AD-62061', 'ML-17165', 'ML-13548', 'ML-45366', 'S-15728', 'E-58920'],
-  s3: ['AD-11037', 'M-77777', 'ML-60835', 'S-67924', 'E-55662', 'T-PREP'],
+  s2: ['AD-10489-2', 'AD-11039', 'AD-10906', 'AD-62061', 'ML-17165', 'ML-13548', 'ML-45366', 'S-15729', 'E-58920'],
+  s3: ['AD-11037', 'M-77777', 'ML-78174', 'S-67924', 'E-55662', 'T-PREP'],
   s4: ['T-THESIS', 'E-PROJ6'],
 };

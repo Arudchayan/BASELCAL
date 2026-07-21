@@ -773,7 +773,7 @@
   {
     "id": "ML-78174",
     "code": "78174",
-    "title": "From Agents to LLMs",
+    "title": "Modern Reinforcement Learning: From Agents to LLMs",
     "cp": 4,
     "module": "Machine Learning Foundations",
     "when": "Irregular",

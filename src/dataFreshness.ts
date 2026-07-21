@@ -1,16 +1,23 @@
 /**
  * Known catalog freshness signals for UI / validation.
- * Update when re-scraping VV for HS26/FS26.
+ * Canonical list: coverage_policy.json → staleWatchIds (keep in sync).
  */
 export const DATA_FRESHNESS = {
-  catalogNote: 'Catalog synced with vv_scrape_cache (prefer VV over archived scrapes).',
+  catalogNote: 'Catalog synced with vv_scrape_cache; live audit in vv_msc_ds_official.json (2026-07-21).',
   lastReviewed: '2026-07-21',
-  /** Courses whose VV cache semester may be older than HS26/FS26 — verify before relying on rooms/times */
+  /** VV detail pages show semester metadata older than HS/FS 2026 — verify before planning */
   staleWatchIds: [
-    'ML-60835', // Machine Learning on Graphs (irregular / older cache semester)
-    'ML-67343', // Computational Aspects and ML (irregular)
-    'ML-66937', // Foundations of Deep Learning (irregular)
-    'ML-77778', // Generative Modeling (irregular)
+    'ML-60835',
+    'ML-67343',
+    'M-22738',
+    'M-22740',
+    'M-27334',
+    'M-27335',
+    'M-74781',
+    'M-58951',
+    'E-58492',
+    'E-62229',
+    'E-64324',
   ] as string[],
 };
 

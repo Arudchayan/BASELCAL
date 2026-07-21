@@ -67,6 +67,16 @@ test.describe('Degree accuracy & storage', () => {
     await expect(sem3.getByText(/Causal Inference/i)).toHaveCount(0);
   });
 
+  test('ML/PhD preset includes ML-78174 and Sem 1 timetable conflicts', async ({ page }) => {
+    page.on('dialog', (d) => d.accept());
+    await page.goto('/');
+    await page.getByRole('button', { name: /Load ML\/PhD Preset/i }).click();
+
+    await expect(page.getByText(/Modern Reinforcement Learning|From Agents to LLMs/i)).toBeVisible();
+    await expect(page.getByText(/Timetable conflicts across plan/i)).toBeVisible();
+    await expect(page.getByText(/Verify VV offering before enrolling/i)).toHaveCount(0);
+  });
+
   test('spring-only course in Fall shows offering mismatch', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => {

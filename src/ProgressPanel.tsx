@@ -5,7 +5,7 @@ import { evaluatePlan } from './degreeRules';
 import { findConflicts } from './conflicts';
 import { getPlacementWarnings } from './offering';
 import { allPlannedCourses } from './planStorage';
-import { DATA_FRESHNESS } from './dataFreshness';
+import { DATA_FRESHNESS, isStaleWatch } from './dataFreshness';
 import type { PlanState, SemesterId } from './types';
 import { SEMESTER_IDS } from './types';
 
@@ -44,6 +44,8 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
       (c) => `${sem.toUpperCase()} ${c.day}: ${c.courseA.title} ↔ ${c.courseB.title}`,
     ),
   );
+
+  const staleInPlan = courses.filter((c) => isStaleWatch(c.id));
 
   return (
     <motion.div
@@ -197,6 +199,23 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
               <li key={i}>{issue}</li>
             ))}
             {allConflicts.length > 12 && <li>…and {allConflicts.length - 12} more</li>}
+          </ul>
+        </div>
+      )}
+
+      {staleInPlan.length > 0 && (
+        <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
+          <strong>Verify VV offering before enrolling</strong>
+          <p style={{ margin: '8px 0 0', lineHeight: 1.5 }}>
+            {staleInPlan.length} course(s) in your plan have VV semester metadata older than HS/FS 2026
+            (irregular or biennial). CP counts still apply; confirm the course runs in your target semester.
+          </p>
+          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+            {staleInPlan.map((c) => (
+              <li key={c.id}>
+                {c.title} ({c.id})
+              </li>
+            ))}
           </ul>
         </div>
       )}

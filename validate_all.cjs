@@ -24,8 +24,8 @@ const agentMd = fs.readFileSync('agent.md', 'utf8');
 // Must match ML_PHD_PRESET_IDS in src/types.ts
 const PRESET = {
   s1: ["AD-10489-1", "AD-20980", "AD-62060", "M-66096", "S-45402", "E-11680", "E-11681", "M-19300"],
-  s2: ["AD-10489-2", "AD-11039", "AD-10906", "AD-62061", "ML-17165", "ML-13548", "ML-45366", "S-15728", "E-58920"],
-  s3: ["AD-11037", "M-77777", "ML-60835", "S-67924", "E-55662", "T-PREP"],
+  s2: ["AD-10489-2", "AD-11039", "AD-10906", "AD-62061", "ML-17165", "ML-13548", "ML-45366", "S-15729", "E-58920"],
+  s3: ["AD-11037", "M-77777", "ML-78174", "S-67924", "E-55662", "T-PREP"],
   s4: ["T-THESIS", "E-PROJ6"],
 };
 
@@ -220,6 +220,79 @@ if (agentMd.includes('exactly 120') || agentMd.includes('Exactly 120') || agentM
   pass('agent.md references 120 CP MSc');
 } else {
   warn('agent.md may not state exact 120 MSc');
+}
+
+function parseStaleWatchIdsFromFreshness(src) {
+  const block = src.match(/staleWatchIds:\s*\[([\s\S]*?)\]\s*as\s*string\[\]/);
+  if (!block) return [];
+  return [...block[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+}
+
+function setDiff(a, b) {
+  const bs = new Set(b);
+  return [...a].filter((x) => !bs.has(x));
+}
+
+console.log('\nCHECK 10: VV coverage audit (vv_msc_ds_official.json)');
+if (fs.existsSync('coverage_policy.json')) {
+  const policy = JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8'));
+  const freshnessSrc = fs.readFileSync('src/dataFreshness.ts', 'utf8');
+  const uiStale = parseStaleWatchIdsFromFreshness(freshnessSrc);
+  const policyStale = policy.staleWatchIds || [];
+  const staleDiff = [
+    ...setDiff(uiStale, policyStale),
+    ...setDiff(policyStale, uiStale),
+  ];
+  if (staleDiff.length) {
+    warn(`staleWatchIds mismatch UI vs coverage_policy: ${staleDiff.join(', ')}`);
+  } else if (policyStale.length) {
+    pass(`${policyStale.length} stale-watch IDs aligned (coverage_policy ↔ dataFreshness)`);
+  }
+  if (policy.moduleDiscrepancies?.length) {
+    policy.moduleDiscrepancies.forEach((d) => {
+      warn(`Module discrepancy ${d.id}: catalog=${d.catalogModule}, VV=${d.vvModulesTab} (${d.resolution})`);
+    });
+  }
+  if (policy.lastVerified?.date) {
+    pass(`VV audit stamped ${policy.lastVerified.date} (${policy.lastVerified.catalogCoursesWithVvDetail || '?'} detail pages)`);
+  }
+} else {
+  warn('coverage_policy.json not found');
+}
+
+if (fs.existsSync('vv_msc_ds_official.json')) {
+  const audit = JSON.parse(fs.readFileSync('vv_msc_ds_official.json', 'utf8'));
+  const realIds = courses.filter((c) => !['T-PREP', 'T-THESIS', 'E-PROJ6', 'ML-PROJ6', 'S-PROJ6'].includes(c.id));
+  const auditIds = new Set(audit.courses.map((c) => c.localId));
+  const missing = realIds.filter((c) => !auditIds.has(c.id)).map((c) => c.id);
+  const extra = [...auditIds].filter((id) => !realIds.some((c) => c.id === id));
+  if (missing.length) fail(`VV audit missing catalog IDs: ${missing.join(', ')}`);
+  else pass(`VV audit covers all ${realIds.length} non-synthetic catalog IDs`);
+  if (extra.length) warn(`VV audit has extra IDs vs catalog: ${extra.join(', ')}`);
+  const not2026 = audit.courses.filter(
+    (c) => c.semester && !/2026/.test(String(c.semester))
+  );
+  const auditStaleIds = not2026.map((c) => c.localId).sort();
+  const policyStaleSorted = [...(JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8')).staleWatchIds || [])].sort();
+  const auditPolicyDiff = [
+    ...setDiff(auditStaleIds, policyStaleSorted),
+    ...setDiff(policyStaleSorted, auditStaleIds),
+  ];
+  if (auditPolicyDiff.length) {
+    warn(`VV audit non-2026 IDs differ from coverage_policy staleWatchIds: ${auditPolicyDiff.join(', ')}`);
+  } else if (auditStaleIds.length === 11) {
+    pass('11 stale VV semester entries match coverage_policy staleWatchIds (set equality)');
+  } else {
+    warn(`VV audit shows ${auditStaleIds.length} non-2026 semester entries (expected 11)`);
+  }
+  const rl = audit.courses.find((c) => c.code === '78174');
+  if (rl && /2026/.test(String(rl.semester))) {
+    pass('ML-78174 confirmed on VV for 2026');
+  } else {
+    warn('ML-78174 not confirmed FS/HS 2026 in vv_msc_ds_official.json');
+  }
+} else {
+  warn('vv_msc_ds_official.json not found — run node vv_msc_ds_official_scrape.cjs');
 }
 
 console.log('\n=== SUMMARY ===');
