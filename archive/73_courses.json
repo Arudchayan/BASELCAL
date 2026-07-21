@@ -1,0 +1,1870 @@
+[
+  {
+    "id": "AD-10489-2",
+    "code": "10489",
+    "title": "Main lecture Analysis II",
+    "cp": 4,
+    "module": "Admission requirement",
+    "when": "Spring",
+    "lang": "German listed",
+    "priority": "Medium",
+    "type": "Admission",
+    "note": "Part 2 of the annual Analysis course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=10489",
+    "description": "In Analysis I, fundamental concepts of analysis are introduced: real numbers, sequences and series, convergence, continuity, differentiation, integration, approximation of functions.",
+    "prerequisites": "",
+    "exam": "Oral exam, 30 min, together with Analysis I/II.",
+    "lecturer": "Gianluca Crippa",
+    "syllabus": [
+      "Understand fundamental concepts and use proof techniques."
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "08:15 - 10:00",
+        "room": "Alte Universität, Hörsaal -101"
+      },
+      {
+        "day": "Friday",
+        "time": "08:15 - 10:00",
+        "room": "Alte Universität, Hörsaal -101"
+      }
+    ]
+  },
+  {
+    "id": "AD-11037",
+    "code": "11037",
+    "title": "Practical course Analysis I",
+    "cp": 2,
+    "module": "Admission requirement",
+    "when": "Fall",
+    "lang": "German listed",
+    "priority": "Medium",
+    "type": "Admission",
+    "note": "Weekly practical + exercise sheets + Klausur.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=11037",
+    "description": "Exercise course accompanying Analysis I.",
+    "prerequisites": "",
+    "exam": "Active participation; exercise series; exam.",
+    "lecturer": "Maria Ahrend, Gianluca Crippa",
+    "syllabus": [
+      "Deepen lecture topics by solving exercises."
+    ],
+    "schedule": []
+  },
+  {
+    "id": "AD-11039",
+    "code": "11039",
+    "title": "Practical course Analysis II",
+    "cp": 2,
+    "module": "Admission requirement",
+    "when": "Spring",
+    "lang": "German listed",
+    "priority": "Medium",
+    "type": "Admission",
+    "note": "Weekly practical + exercise sheets + Klausur.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=11039",
+    "description": "Exercise course accompanying Analysis II.",
+    "prerequisites": "",
+    "exam": "Exercise-series requirements; details according to lecture.",
+    "lecturer": "Florian Lanz, Gianluca Crippa",
+    "syllabus": [
+      "Deepen lecture topics by solving exercises."
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "12:15 - 14:00",
+        "room": "Bernoullistrasse 30/32, kleiner Hörsaal 120"
+      }
+    ]
+  },
+  {
+    "id": "AD-20980",
+    "code": "20980",
+    "title": "Main lecture Scientific Computing",
+    "cp": 6,
+    "module": "Admission requirement",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Admission",
+    "note": "Good first-semester target because you already have materials.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=20980",
+    "description": "Overview of scientific computing with emphasis on optimization, modelling, signal processing, numerical methods, regression/classification, linear programming, string/image alignment and Python implementation.",
+    "prerequisites": "",
+    "exam": "Written exam.",
+    "lecturer": "Volker Roth",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "10:15 - 12:00",
+        "room": "Biozentrum, Hörsaal U1.101"
+      },
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Biozentrum, Hörsaal U1.101"
+      }
+    ]
+  },
+  {
+    "id": "AD-62060",
+    "code": "62060",
+    "title": "Practical course Scientific Computing",
+    "cp": 2,
+    "module": "Admission requirement",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Admission",
+    "note": "Pair with Scientific Computing lecture.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=62060",
+    "description": "Practical course accompanying Scientific Computing; programming and exercise work.",
+    "prerequisites": "",
+    "exam": "Pass/fail practical assessment.",
+    "lecturer": "Volker Roth",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Kollegienhaus, Hörsaal 001"
+      }
+    ]
+  },
+  {
+    "id": "AD-10906",
+    "code": "10906",
+    "title": "Main lecture Algorithms and Data Structures",
+    "cp": 6,
+    "module": "Admission requirement",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Admission",
+    "note": "Good second-semester target.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=10906",
+    "description": "Runtime analysis, divide and conquer, abstract data types, trees/heaps/search/red-black trees, hash tables, sorting and graph algorithms.",
+    "prerequisites": "",
+    "exam": "Written exam.",
+    "lecturer": "Gabriele Röger",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Hörsaal U1.131"
+      },
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Hörsaal U1.141"
+      }
+    ]
+  },
+  {
+    "id": "AD-62061",
+    "code": "62061",
+    "title": "Practical course Algorithms and Data Structures",
+    "cp": 2,
+    "module": "Admission requirement",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Admission",
+    "note": "Pair with Algorithms and Data Structures lecture.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=62061",
+    "description": "Exercises accompanying the lecture Algorithms and Data Structures.",
+    "prerequisites": "",
+    "exam": "Two mid-term written exams.",
+    "lecturer": "Patrick Schnider, Gabriele Röger",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "14:15 - 16:00",
+        "room": "Pharmazentrum, Seminarraum U1075"
+      }
+    ]
+  },
+  {
+    "id": "E-12246",
+    "code": "12246",
+    "title": "Numerical Methods for Partial Differential Equations",
+    "cp": 8,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Also listed in Mathematical Foundations; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=12246",
+    "description": "Finite element methods for elliptic and parabolic PDEs; implementation; convergence theory.",
+    "prerequisites": "",
+    "exam": "Weekly homework and 30-minute oral exam.",
+    "lecturer": "Marcus J. Grote",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 116"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 116"
+      }
+    ]
+  },
+  {
+    "id": "M-13358",
+    "code": "13358",
+    "title": "Numerical Methods for Wave Propagation",
+    "cp": 8,
+    "module": "Mathematical Foundations",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Useful for computational science / applied math research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=13358",
+    "description": "Simulation of acoustic/electromagnetic/elastic waves; finite difference and finite element methods; wave and Helmholtz equations; unbounded domains, DtN maps, nonreflecting boundary conditions, PMLs.",
+    "prerequisites": "",
+    "exam": "Weekly homework and 30-minute oral exam.",
+    "lecturer": "Marcus J. Grote",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 114"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 114"
+      }
+    ]
+  },
+  {
+    "id": "M-16948",
+    "code": "16948",
+    "title": "Numerical Methods for Wave Propagation — Project",
+    "cp": 2,
+    "module": "Mathematical Foundations",
+    "when": "Spring",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Small project option.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=16948",
+    "description": "Programming project related to numerical wave propagation; report and presentation.",
+    "prerequisites": "",
+    "exam": "Programming project, report, presentation; pass/fail.",
+    "lecturer": "Oussama Al Jarroudi, Marcus J. Grote",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Kollegienhaus, Seminarraum 211"
+      }
+    ]
+  },
+  {
+    "id": "E-19300",
+    "code": "19300",
+    "title": "Random Processes: Theory and Applications from Physics to Finance",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Also listed in Math; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=19300",
+    "description": "Probability basics; random processes; Markov processes; master equation; Fokker-Planck equation; stochastic differential equations; mathematical finance applications.",
+    "prerequisites": "",
+    "exam": "Graded continuous assessment; no repeat exam.",
+    "lecturer": "Aaron Daniel, Jörg Lehmann",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "09:00 - 10:15",
+        "room": "Physik, Seminarzimmer 4.1"
+      },
+      {
+        "day": "Wednesday",
+        "time": "10:15 - 12:00",
+        "room": "Physik, Seminarzimmer 4.1"
+      }
+    ]
+  },
+  {
+    "id": "M-22738",
+    "code": "22738",
+    "title": "Iterative Verfahren der Numerik",
+    "cp": 4,
+    "module": "Mathematical Foundations",
+    "when": "Fall",
+    "lang": "German likely",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Numerical methods; useful but German title/course may matter.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=22738",
+    "description": "Iterative methods for large sparse systems (CG, GMRES), nonlinear optimization (Newton, quasi-Newton, Gauss-Newton, BFGS), inverse problems with SVD/regularization, eigenvalue algorithms (vector iteration, QR, Lanczos).",
+    "prerequisites": "",
+    "exam": "Oral examination; one repetition allowed.",
+    "lecturer": "Marc Schmidlin",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      },
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "M-22740",
+    "code": "22740",
+    "title": "Iterative Verfahren der Numerik — Exercise",
+    "cp": 4,
+    "module": "Mathematical Foundations",
+    "when": "Fall",
+    "lang": "German likely",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Exercise component.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=22740",
+    "description": "Exercise course for Iterative Verfahren der Numerik; programming sheets and written test.",
+    "prerequisites": "",
+    "exam": "Programming sheets and written exam.",
+    "lecturer": "Valentin Comment, Marc Schmidlin",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "M-27334",
+    "code": "27334",
+    "title": "Funktionalanalysis und partielle Differentialgleichungen",
+    "cp": 4,
+    "module": "Mathematical Foundations",
+    "when": "Spring",
+    "lang": "German likely",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Strong theoretical math.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=27334",
+    "description": "Banach and Hilbert spaces, bounded and compact operators, weak convergence, duality, Hahn-Banach, Sobolev spaces, PDE applications.",
+    "prerequisites": "",
+    "exam": "Oral exam 30 min for lecture; exercise requirements and written exam.",
+    "lecturer": "Luis Martinez Zoroa",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "08:15 - 10:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "M-27335",
+    "code": "27335",
+    "title": "Funktionalanalysis und partielle Differentialgleichungen — Exercise",
+    "cp": 4,
+    "module": "Mathematical Foundations",
+    "when": "Spring",
+    "lang": "German likely",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Exercise component.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=27335",
+    "description": "Exercises for Functional Analysis and PDE.",
+    "prerequisites": "",
+    "exam": "See lecture details.",
+    "lecturer": "Matteo Nesi, Luis Martinez Zoroa",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "id": "M-66096",
+    "code": "66096",
+    "title": "Mathematics of Data Science ★",
+    "cp": 8,
+    "module": "Mathematical Foundations",
+    "when": "Fall",
+    "lang": "English program / check",
+    "priority": "Must",
+    "type": "Foundation",
+    "note": "Mandatory MSc Data Science course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=66096",
+    "description": "Mathematical foundations for data science; course-directory search listing did not expose a full content paragraph.",
+    "prerequisites": "",
+    "exam": "Details not exposed in retrieved snippet.",
+    "lecturer": "Foivos Alimisis, Lorenzo Baldassari, Aurelien Lucchi",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Kollegienhaus, Hörsaal 116"
+      },
+      {
+        "day": "Tuesday",
+        "time": "16:15 - 18:00",
+        "room": "Kollegienhaus, Seminarraum 104"
+      },
+      {
+        "day": "Thursday",
+        "time": "08:15 - 10:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      }
+    ]
+  },
+  {
+    "id": "M-74781",
+    "code": "74781",
+    "title": "Hochdimensionale Approximationsmethoden",
+    "cp": 8,
+    "module": "Mathematical Foundations",
+    "when": "Irregular",
+    "lang": "German likely",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Very relevant to high-dimensional ML approximation theory.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=74781",
+    "description": "High-dimensional functions, curse of dimensionality, numerical techniques for high-dimensional problems, integration and big data applications.",
+    "prerequisites": "",
+    "exam": "No repeat exam.",
+    "lecturer": "Helmut Harbrecht",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "id": "M-78105",
+    "code": "78105",
+    "title": "Introduction to Dynamical Systems",
+    "cp": 6,
+    "module": "Mathematical Foundations",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Useful for time-series, control, dynamical modeling.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=78105",
+    "description": "Qualitative methods for ODEs, fundamental ODE theory, local nonlinear dynamics, stability, global behaviour, planar systems, linearization and trajectory analysis.",
+    "prerequisites": "",
+    "exam": "Weekly exercises; final written exam; exercise points required for admission.",
+    "lecturer": "Kwan Woo, Alessandro Violini",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "08:15 - 10:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Wednesday",
+        "time": "12:15 - 14:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      }
+    ]
+  },
+  {
+    "id": "M-58951",
+    "code": "58951",
+    "title": "Stochastic Analysis",
+    "cp": 8,
+    "module": "Mathematical Foundations",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Strong theoretical foundation for probabilistic research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=58951",
+    "description": "Brownian motion, martingales, Markov processes, stochastic calculus and stochastic differential equations.",
+    "prerequisites": "",
+    "exam": "Oral exam 30 min.",
+    "lecturer": "Jiří Černý",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "M-77600",
+    "code": "77600",
+    "title": "Selected Topics in Probability Theory",
+    "cp": 8,
+    "module": "Mathematical Foundations",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Useful for ML theory / probabilistic modeling.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=77600",
+    "description": "Percolation theory; random walks on random graphs; heat kernel bounds; Gaussian free field.",
+    "prerequisites": "",
+    "exam": "Active participation in exercises and homework.",
+    "lecturer": "Jiří Černý",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "10:15 - 12:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      },
+      {
+        "day": "Tuesday",
+        "time": "08:15 - 10:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      }
+    ]
+  },
+  {
+    "id": "M-79161",
+    "code": "79161",
+    "title": "Concentration",
+    "cp": 6,
+    "module": "Mathematical Foundations",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Excellent for ML theory: concentration inequalities/generalization.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=79161",
+    "description": "Concentration phenomena and inequalities such as Hoeffding, Bernstein and McDiarmid; geometric/probabilistic viewpoints; random matrices, statistics, ML and theoretical CS applications.",
+    "prerequisites": "",
+    "exam": "Written test related to exercises and oral exam 20 min.",
+    "lecturer": "Jiří Černý",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Alte Universität, Seminarraum -201"
+      }
+    ]
+  },
+  {
+    "id": "E-77777",
+    "code": "77777",
+    "title": "Randomized Algorithms",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Also listed in Math; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=77777",
+    "description": "Discrete probability; Las Vegas and Monte Carlo algorithms; Markov/Chebyshev/Chernoff inequalities; randomized search trees; random graphs; Lovasz Local Lemma; Markov chains.",
+    "prerequisites": "",
+    "exam": "Short presentation about one algorithm required for admission.",
+    "lecturer": "Patrick Schnider",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "id": "ML-13548",
+    "code": "13548",
+    "title": "Foundations of Artificial Intelligence",
+    "cp": 8,
+    "module": "Machine Learning Foundations",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Strong ML/AI PhD foundation.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=13548",
+    "description": "AI history, rational agents, state-space search, combinatorial optimization, CSPs, formal logic, automated planning and board games.",
+    "prerequisites": "",
+    "exam": "Weekly homework and final written exam; homework threshold required.",
+    "lecturer": "Malte Helmert",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Biozentrum, Hörsaal U1.141"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Hörsaal U1.101"
+      }
+    ]
+  },
+  {
+    "id": "ML-78174",
+    "code": "78174",
+    "title": "Modern Reinforcement Learning: From Agents to LLMs",
+    "cp": 4,
+    "module": "Machine Learning Foundations",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Foundation",
+    "note": "Very relevant for modern ML/AI research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=78174",
+    "description": "Modern reinforcement-learning methods, agents and LLM-related applications; retrieved course page did not expose detailed content text.",
+    "prerequisites": "",
+    "exam": "Expected written exam date shown by course page.",
+    "lecturer": "Ilija Bogunovic",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      },
+      {
+        "day": "Friday",
+        "time": "16:15 - 17:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "ML-17165",
+    "code": "17165",
+    "title": "Machine Learning ★",
+    "cp": 8,
+    "module": "Machine Learning Foundations",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "Must",
+    "type": "Foundation",
+    "note": "Mandatory MSc Data Science course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=17165",
+    "description": "Probabilities; generative models; classification and regression; Bayesian and frequentist methods; model selection; sparse models; neural networks; statistical learning theory; SVMs/kernels; Gaussian processes; mixtures; PCA/CCA; VAEs; information bottleneck; sequence-to-sequence and LLMs.",
+    "prerequisites": "",
+    "exam": "Online quizzes; final written exam.",
+    "lecturer": "Volker Roth",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Physik, Neuer Hörsaal 1, Foyer EG"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Alte Universität, Hörsaal -101"
+      },
+      {
+        "day": "Wednesday",
+        "time": "16:15 - 18:00",
+        "room": "Biozentrum, Hörsaal U1.141"
+      }
+    ]
+  },
+  {
+    "id": "ML-45366",
+    "code": "45366",
+    "title": "Machine Intelligence",
+    "cp": 6,
+    "module": "Machine Learning Foundations",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Foundation",
+    "note": "Strong PhD-facing AI/ML choice.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=45366",
+    "description": "Reasoning under uncertainty, representation/quantification of uncertainty, probability theory under uncertainty, decisions with uncertain information, learning from data including reinforcement learning, applications in NLP.",
+    "prerequisites": "",
+    "exam": "Presentation of assigned topic and poster presentation.",
+    "lecturer": "Volker Roth",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "E-45401",
+    "code": "45401",
+    "title": "Bioinformatics Algorithms",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "English likely / check",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Also listed in ML; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=45401",
+    "description": "Classical bioinformatics algorithms; HMMs, Markov chains, phylogenetic trees; sequence alignment; motif finding; phylogenetic inference; deep learning for biomedical problems.",
+    "prerequisites": "",
+    "exam": "70% exercise sheets required; oral exam for lecture; continuous assessment for practical.",
+    "lecturer": "Volker Roth",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Seminarraum U1.197"
+      },
+      {
+        "day": "Tuesday",
+        "time": "13:15 - 14:00",
+        "room": "Biozentrum, Seminarraum U1.191"
+      }
+    ]
+  },
+  {
+    "id": "ML-60835",
+    "code": "60835",
+    "title": "Machine Learning on Graphs, Groups and Manifolds",
+    "cp": 6,
+    "module": "Machine Learning Foundations",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Foundation",
+    "note": "Excellent for geometric deep learning / graph ML PhD direction.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=60835",
+    "description": "High-dimensional probability for ML/data science; nonlinear dimensionality reduction and manifold learning; learning on graphs; graph neural networks; invariance/equivariance; scientific ML applications.",
+    "prerequisites": "",
+    "exam": "30% homework, 40% project writeup/presentation, 30% written exam; homework threshold required.",
+    "lecturer": "Ivan Dokmanić",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "15:15 - 17:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "E-60876",
+    "code": "60876",
+    "title": "Mathematical and Computational Biology in Drug Discovery",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Also listed in ML; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=60876",
+    "description": "Computational biology for disease understanding, target identification and drug discovery; bioinformatics, mathematical/statistical modelling and practitioner view of drug discovery research.",
+    "prerequisites": "",
+    "exam": "Offline activities 100%; pass/fail; no repeat.",
+    "lecturer": "Jitao David Zhang",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "E-66937",
+    "code": "66937",
+    "title": "Foundations of Deep Learning",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Elective",
+    "note": "Also listed in ML; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=66937",
+    "description": "Theory behind deep learning: linear networks, activations, approximation theory, complexity, architectures, optimization, optimization landscape, neural tangent kernel, regularization, generalization, adversarial examples.",
+    "prerequisites": "",
+    "exam": "15% exercises/Q&A, 25% mid-term written exam, 25% project writeup/presentation, 35% final written exam.",
+    "lecturer": "Aurelien Lucchi",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Kollegienhaus, Hörsaal 115"
+      }
+    ]
+  },
+  {
+    "id": "E-67343",
+    "code": "67343",
+    "title": "Inverse Problems: Computational Aspects and Machine Learning",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Also listed in ML; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=67343",
+    "description": "Computational aspects of inverse problems and machine learning; full content text not exposed in retrieved page snippet.",
+    "prerequisites": "",
+    "exam": "Likely seminar/project/presentation; assessment detail not retrieved.",
+    "lecturer": "Marcus J. Grote, Volker Roth",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "ML-77778",
+    "code": "77778",
+    "title": "Generative Modeling with Diffusion Models and Stochastic Interpolants",
+    "cp": 6,
+    "module": "Machine Learning Foundations",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Foundation",
+    "note": "Excellent for modern generative AI research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=77778",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Written exam; expected Monday, June 29, 2026, 10-12, Biozentrum U1.101",
+    "lecturer": "Ivan Dokmanić",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      },
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "id": "ML-PROJ6",
+    "code": "Learning contract",
+    "title": "Machine Learning Project",
+    "cp": 6,
+    "module": "Machine Learning Foundations",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "Very high",
+    "type": "Project",
+    "note": "Research/project experience is very useful for a PhD application.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Written Exam (90 min) & Project (30%)",
+    "lecturer": "Prof. Volker Roth",
+    "syllabus": [
+      "Deep Neural Networks & Backpropagation",
+      "Optimization Landscapes",
+      "Transformers & Attention Mechanisms",
+      "Generative Models (GANs/VAEs)"
+    ],
+    "schedule": []
+  },
+  {
+    "id": "ML-PROJ12",
+    "code": "Learning contract",
+    "title": "Machine Learning Project",
+    "cp": 12,
+    "module": "Machine Learning Foundations",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "Very high",
+    "type": "Project",
+    "note": "Stronger research signal, but heavier workload.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Written Exam (90 min) & Project (30%)",
+    "lecturer": "Prof. Volker Roth",
+    "syllabus": [
+      "Deep Neural Networks & Backpropagation",
+      "Optimization Landscapes",
+      "Transformers & Attention Mechanisms",
+      "Generative Models (GANs/VAEs)"
+    ],
+    "schedule": []
+  },
+  {
+    "id": "S-15728",
+    "code": "15728",
+    "title": "Computer Networks",
+    "cp": 4,
+    "module": "Systems Foundations",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "Medium",
+    "type": "Foundation",
+    "note": "Useful systems background.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=15728",
+    "description": "Advanced computer networks; revisits Internet artefacts in a wider context; addresses vs names for data; named data synchronization; software defined networking in data centers; push-only networking for novelty/data deltas.",
+    "prerequisites": "",
+    "exam": "Oral Exam (20 mins) & Assignments",
+    "lecturer": "Christian Tschudin",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "S-15729",
+    "code": "15729",
+    "title": "Distributed Information Systems",
+    "cp": 4,
+    "module": "Systems Foundations",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Good for scalable ML/data systems.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=15729",
+    "description": "Distributed information systems for data science/data analytics; mechanisms and protocols for coordinating and accessing distributed resources such as distributed databases; infrastructures for distributed applications; architecture paradigms; practical experiments with selected systems; small project.",
+    "prerequisites": "Bachelor-level programming, programming project, databases/introduction to databases/database systems and preferably Foundations of Distributed Systems.",
+    "exam": "Oral Exam (20 mins) & Assignments",
+    "lecturer": "Heiko Schuldt, Marco Vogt",
+    "syllabus": [
+      "Understand basic principles of distributed information systems, architecture paradigms, and practical systems."
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "E-15731",
+    "code": "15731",
+    "title": "Multimedia Retrieval",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Also listed in Systems; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=15731",
+    "description": "Introduction to multimedia retrieval, classical text retrieval, web retrieval, extraction and machine learning of image/audio/video features, index structures, search algorithms, concrete implementations, information retrieval techniques.",
+    "prerequisites": "Basics of programming; mathematical foundations for some parts.",
+    "exam": "Project & Presentation",
+    "lecturer": "Roger Weber",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "15:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "S-17164",
+    "code": "17164",
+    "title": "High Performance Computing",
+    "cp": 4,
+    "module": "Systems Foundations",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Foundation",
+    "note": "Very useful for large-scale ML training/research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=17164",
+    "description": "HPC for scientific discovery, large-scale data analysis and computational science; parallel programming models, system architectures, scalable computation; OpenMP, MPI, OpenACC, CUDA; fault tolerance/resilience; performance engineering/reproducibility; HPC in the age of AI; novel computation models.",
+    "prerequisites": "Basic programming and Foundations of Distributed Systems are helpful but not prerequisites.",
+    "exam": "Oral Exam (20 mins) & Assignments",
+    "lecturer": "Florina M. Ciorba",
+    "syllabus": [
+      "Parallelize/distribute computational problems across diverse compute entities; understand performance, scalability and resource utilization; use modern HPC tools, programming models and profiling techniques."
+    ],
+    "schedule": []
+  },
+  {
+    "id": "S-45402",
+    "code": "45402",
+    "title": "Foundations of Distributed Systems ★",
+    "cp": 8,
+    "module": "Systems Foundations",
+    "when": "Fall",
+    "lang": "English likely / check",
+    "priority": "Must",
+    "type": "Foundation",
+    "note": "Mandatory MSc Data Science course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=45402",
+    "description": "Basic algorithms and protocols for parallel and distributed systems; foundations for Computer Networks, HPC, Distributed Information Systems and Privacy-Preserving Methods.",
+    "prerequisites": "Programming, programming project, computer architecture & operating systems, databases and internet technologies.",
+    "exam": "Oral Exam (20 mins) & Assignments",
+    "lecturer": "Florina M. Ciorba, Heiko Schuldt, Christian Tschudin, Isabel Wagner",
+    "syllabus": [
+      "Understand basic principles of distributed and parallel systems, parallelization/distribution across compute entities and privacy threats/mitigations."
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "S-67923",
+    "code": "67923",
+    "title": "Continuous Optimization",
+    "cp": 6,
+    "module": "Systems Foundations",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Foundation",
+    "note": "Excellent for ML theory and optimization-heavy PhD work.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=67923",
+    "description": "In-depth theory of classical and modern optimization: convex analysis, subgradient methods, gradient descent, convergence rates, optimality/lower bounds, stochastic optimization and non-convex optimization.",
+    "prerequisites": "",
+    "exam": "Continuous assessment; expected date Monday 8 July 2024, 10-12.",
+    "lecturer": "Aurelien Lucchi",
+    "syllabus": [
+      "Understand why optimization algorithms work and their limits; select algorithms for practical applications; understand and derive mathematical proofs."
+    ],
+    "schedule": []
+  },
+  {
+    "id": "E-67924",
+    "code": "67924",
+    "title": "Privacy-Preserving Methods for Data Science and Distributed Systems",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "English likely / check",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Also listed in Systems; don't double count the same course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=67924",
+    "description": "Privacy-preserving data sharing and analysis: anonymization/de-anonymization, k-anonymity, differential privacy/local DP, synthetic data generation, homomorphic encryption, secret sharing, secure multi-party computation, privacy-preserving ML (DPSGD, PATE), federated learning.",
+    "prerequisites": "Foundations of Distributed Systems is prerequisite; programming in Python helpful; reduced-background students should discuss with lecturer.",
+    "exam": "Project & Presentation",
+    "lecturer": "Isabel Wagner",
+    "syllabus": [
+      "Understand privacy risks in distributed systems/data science; understand PET principles; implement/configure/evaluate privacy-preserving solutions."
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      },
+      {
+        "day": "Friday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "S-PROJ6",
+    "code": "Learning contract",
+    "title": "Systems Foundations Project",
+    "cp": 6,
+    "module": "Systems Foundations",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "High",
+    "type": "Project",
+    "note": "Useful if your PhD target includes ML systems.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Oral Exam (20 mins) & Assignments",
+    "lecturer": "Prof. Christian Tschudin",
+    "syllabus": [
+      "Distributed Algorithms",
+      "Database Internals",
+      "Cloud Computing Architectures",
+      "Concurrency & Fault Tolerance"
+    ],
+    "schedule": []
+  },
+  {
+    "id": "S-PROJ12",
+    "code": "Learning contract",
+    "title": "Systems Foundations Project",
+    "cp": 12,
+    "module": "Systems Foundations",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "High",
+    "type": "Project",
+    "note": "Heavier research/project option.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Oral Exam (20 mins) & Assignments",
+    "lecturer": "Prof. Enno Lenzmann",
+    "syllabus": [
+      "Distributed Algorithms",
+      "Database Internals",
+      "Cloud Computing Architectures",
+      "Concurrency & Fault Tolerance"
+    ],
+    "schedule": []
+  },
+  {
+    "id": "E-10684",
+    "code": "10684",
+    "title": "Univariate Time Series Analysis",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Relevant to sequential data and forecasting.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=10684",
+    "description": "Basic concepts of univariate time series analysis with emphasis on methods and models used in economics, finance and related fields; multivariate models such as VARs and cointegration are treated in a follow-up course.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Patrick Schmidt",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Wirtschaftswissenschaftliche Fakultät, Auditorium"
+      }
+    ]
+  },
+  {
+    "id": "E-11680",
+    "code": "11680",
+    "title": "Computational Physics",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Good for scientific computing / scientific ML context.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=11680",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Stefan Goedecker",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-11681",
+    "code": "11681",
+    "title": "Computational Physics — Practical",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Practical component.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=11681",
+    "description": "",
+    "prerequisites": "Taking the Computational Physics lecture.",
+    "exam": "Project & Presentation",
+    "lecturer": "Stefan Goedecker",
+    "syllabus": [
+      "Practical application of simulation methods."
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "12:00 - 13:00",
+        "room": "Physik, Seminarzimmer 4.1"
+      }
+    ]
+  },
+  {
+    "id": "E-18545",
+    "code": "18545",
+    "title": "Advanced Mathematics for Economics",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Math/econ background.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=18545",
+    "description": "Linear algebra: independence, matrices, eigenvalues/eigenvectors, spectral theorem, spectral decomposition, quadratic forms; multivariable calculus: differentiability, gradient, Taylor formula, concavity/convexity, quasi-concavity/quasi-convexity; static optimization: local/global extrema, unconstrained/constrained optimization, Lagrange and Kuhn-Tucker.",
+    "prerequisites": "Good to very good knowledge of mathematical fundamentals as in 10135 Mathematik 1 and 10136 Mathematik 2.",
+    "exam": "Project & Presentation",
+    "lecturer": "Thomas Zehrt",
+    "syllabus": [
+      "Complete understanding of the topics."
+    ],
+    "schedule": []
+  },
+  {
+    "id": "E-20901",
+    "code": "20901",
+    "title": "Quantum Computation and Error Correction",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Specialized topic.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=20901",
+    "description": "Quantum information theory as the basis of quantum computation and quantum cryptography; harnessing quantum effects in physical systems for communication and information processing.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Pierre Fromholz, James Wootton",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "14:00 - 16:00",
+        "room": "Physik, Alter Hörsaal 2, 1.22"
+      }
+    ]
+  },
+  {
+    "id": "E-25637",
+    "code": "25637",
+    "title": "Molecular Simulations with Chemical and Biological Applications",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Useful for scientific/biomedical data science.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=25637",
+    "description": "Electronic structure theory and calculations; molecular dynamics and Monte Carlo simulations; force fields; reactions in gas phase and solution; conformational sampling.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Markus Meuwly",
+    "syllabus": [
+      "Ability to carry out meaningful computations for chemical and biological systems."
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Chemie, Physikalische, Kleiner Hörsaal PC 4.04"
+      }
+    ]
+  },
+  {
+    "id": "E-28420",
+    "code": "28420",
+    "title": "Principles of Medical Imaging",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Good if you want medical imaging/deep learning research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=28420",
+    "description": "Physical principles, reconstruction mathematics, anatomical/physiological information content and limitations of MRI, X-ray, CT, ultrasound, PET and SPECT.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Oliver Bieri, Philippe Claude Cattin",
+    "syllabus": [
+      "Introduce basic physical principles of medical imaging systems and necessary background to understand medical imaging devices."
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "10:15 - 12:00",
+        "room": "Hegenheimermattweg 167B, Lecture Hall 02.097"
+      }
+    ]
+  },
+  {
+    "id": "E-28935",
+    "code": "28935",
+    "title": "Computer Modeling of Adverse Effects",
+    "cp": 1,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Small pharma/biomed elective.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=28935",
+    "description": "Lectures and practical work on evaluating toxic potential of chemical compounds/lead compounds/drug candidates using available in silico methods; motivation is pre-clinical toxicity as a reason for drug attrition.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Martin Smiesko",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-45400",
+    "code": "45400",
+    "title": "Planning and Optimization",
+    "cp": 8,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Elective",
+    "note": "Excellent for AI planning, optimization, algorithms research.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=45400",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Malte Helmert, Gabriele Röger",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      },
+      {
+        "day": "Wednesday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "id": "E-49935",
+    "code": "49935",
+    "title": "Applied Statistics Using R",
+    "cp": 1,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Small applied statistics option.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=49935",
+    "description": "3-day course on applied statistics using R; statistics and graphics; combining lectures and practical exercises using R; producing tables and publication-quality graphics.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Thomas Fabbro",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-53822",
+    "code": "53822",
+    "title": "Deep Learning for Medical Image Analysis",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Elective",
+    "note": "Strong applied deep learning course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=53822",
+    "description": "Introduction to deep learning and its application to medical image analysis with exercises using PyTorch.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Florentin Bieder, Philippe Claude Cattin, Alicia Durrer, Martin Styner",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "15:15 - 17:00",
+        "room": "Hegenheimermattweg 167B, Lecture Hall 02.097"
+      }
+    ]
+  },
+  {
+    "id": "E-55048",
+    "code": "55048",
+    "title": "The AI Economy: Business Strategies and Policy Issues",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Less technical; useful if interested in AI policy/business.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=55048",
+    "description": "The rise of AI is transforming business strategies, reshaping economies, and creating social and political debates; examines AI-driven strategies, industry restructuring, value creation, competition, case studies and group projects.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Stephen Weymouth",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-55662",
+    "code": "55662",
+    "title": "Applied Mathematics and Informatics in Drug Discovery",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Pharma/biomed data science.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=55662",
+    "description": "Practitioner's review of mathematical concepts, informatics tools and industrial approaches in drug discovery: bioinformatics, molecular modelling, cheminformatics, mathematical modelling, experiment design/statistical inference and machine learning.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Jitao David Zhang",
+    "syllabus": [
+      "Explore the drug-discovery process and applications of mathematics and informatics with case studies across molecular, cellular/omics, organ/system and population levels."
+    ],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "id": "E-58492",
+    "code": "58492",
+    "title": "Insurance Data Analytics",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Spring every 2nd year",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Applied analytics.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=58492",
+    "description": "Combination of lecture and student/auditor contributions; machine learning methods and use in actuarial mathematics/insurance; lecturer introduces foundations and students present prepared contributions.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Frank Weber",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-58920",
+    "code": "58920",
+    "title": "Causal Inference for Policy Evaluation",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "English likely / check",
+    "priority": "Very high",
+    "type": "Elective",
+    "note": "Excellent for rigorous ML/data science research and causal ML.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=58920",
+    "description": "Causal effect measurement for policies and measures; examples include welfare spending, minimum wage, trade liberalisation, development aid, sentencing, tax incentives and office productivity; state-of-the-art causal analysis techniques and practical application.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Mario Bernasconi, Conny Wunsch",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-62229",
+    "code": "62229",
+    "title": "Modern Aspects of Bayesian Statistics",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Very high",
+    "type": "Elective",
+    "note": "Strong PhD-oriented statistical ML background.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=62229",
+    "description": "Modern aspects of Bayesian statistics: foundations and applications of MCMC (Gibbs sampling, HMC), computational techniques for posterior distributions (SMC, ABC, variational Bayes), modelling approaches (hierarchical models, sparsity-enforcing priors), Bayesian workflow.",
+    "prerequisites": "General knowledge of mathematics and Bayesian statistics; programming capabilities expected.",
+    "exam": "Project & Presentation",
+    "lecturer": "Kai Hencken",
+    "syllabus": [
+      "Focus on modern methods that solve formerly difficult or computationally expensive problems."
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:00 - 18:00",
+        "room": "Physik, Seminarzimmer 4.1"
+      }
+    ]
+  },
+  {
+    "id": "E-64323",
+    "code": "64323",
+    "title": "Applied Programming Projects",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Project-based programming.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=64323",
+    "description": "Accompanied realisation of programming projects on a self-chosen topic; hands-on seminar for programming ideas; apply skills and explore computer science and AI/ML projects.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Lukas Rosenthaler",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Seminarraum 103"
+      }
+    ]
+  },
+  {
+    "id": "E-64324",
+    "code": "64324",
+    "title": "History and Technology of Computers and Internet",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Less ML-focused.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=64324",
+    "description": "Evolution of computers and the internet from early inception to today; theoretical and technological advancements shaping computer and network technology; practical understanding of how computers and the internet function.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Lukas Rosenthaler",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-64375",
+    "code": "64375",
+    "title": "Databases in the Digital Humanities",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Niche data elective.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=64375",
+    "description": "Databases for humanities and social-science research; organizing and analysing digital copies and metadata; database models and applications, with focus on humanities and social science research.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Lukas Rosenthaler",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-64376",
+    "code": "64376",
+    "title": "Databases in the Digital Humanities — Exercise",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Exercise component.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=64376",
+    "description": "Hands-on extension of the Databases in the Digital Humanities lecture; students implement concepts by creating a database with different technologies on a chosen topic.",
+    "prerequisites": "Enrollment in or completion of lecture 64375; limited participants; Digital Humanities students prioritised.",
+    "exam": "Project & Presentation",
+    "lecturer": "Lukas Rosenthaler",
+    "syllabus": [
+      "Gain hands-on experience designing/developing/using databases in humanities research; manage/analyse data for digital humanities."
+    ],
+    "schedule": []
+  },
+  {
+    "id": "E-66152",
+    "code": "66152",
+    "title": "Advanced Python for Humanities",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Useful if you want applied Python practice.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=66152",
+    "description": "Python for data analysis, data visualization, image processing, text analysis, NLP, GUI/application design, advanced OOP, data serialization and HTTP APIs, web scraping, HTML/XML data.",
+    "prerequisites": "Prior Python knowledge; Introduction to Python for Humanities recommended or equivalent experience.",
+    "exam": "Project & Presentation",
+    "lecturer": "Sepideh Alassi",
+    "syllabus": [
+      "Deep knowledge of Python programming; proficiency with Python packages; ability to use algorithms for projects and develop new ones."
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 117"
+      }
+    ]
+  },
+  {
+    "id": "E-69469",
+    "code": "69469",
+    "title": "Introduction to LTI-Systems and Control",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Fall",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Useful for control, dynamical systems, RL/control links.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=69469",
+    "description": "Inverted-classroom lecture on continuous linear time-invariant systems and control; videos before class and in-class explanations/questions. Biomedical Engineering Basics C14.",
+    "prerequisites": "",
+    "exam": "Earlier catalog: weekly exercises/quiz; exact current details not fully retrieved.",
+    "lecturer": "Nicolas Gerig, Aysegül Kilic, Georg Rauter, Cédric Schicklin, Carina Schmidt",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "08:15 - 10:00",
+        "room": "Hegenheimermattweg 167B, Lecture Hall 02.097"
+      }
+    ]
+  },
+  {
+    "id": "E-13369",
+    "code": "13369",
+    "title": "Predictive Analytics",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Spring every 2nd year",
+    "lang": "Check course page",
+    "priority": "High",
+    "type": "Elective",
+    "note": "Applied ML/prediction course.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=13369",
+    "description": "Introduction; foundations of statistical learning theory; linear models for regression; linear models for classification; neural networks; classification and regression trees; principal component analysis/regression; cluster analysis.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Michael Merz",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "time not fully visible in snippet",
+        "room": "room not fully visible in snippet"
+      }
+    ]
+  },
+  {
+    "id": "E-44811",
+    "code": "44811",
+    "title": "Grundlagen der Finanz- und Versicherungsmathematik",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "German likely",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Finance/insurance math.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=44811",
+    "description": "Probability foundations; discrete distributions and random variables; probability measures on R; absolutely continuous distributions and random variables; general random variables; integration w.r.t. probability measures; Lebesgue integrals; stochastic independence and product measures.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Michael Merz",
+    "syllabus": [
+      "Ease entry into the Master Actuarial Science by teaching selected foundations needed at the beginning of the programme using practical examples."
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "09:15 - 12:00",
+        "room": "Kollegienhaus, Hörsaal 114"
+      }
+    ]
+  },
+  {
+    "id": "E-52377",
+    "code": "52377",
+    "title": "Introduction to Typology",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Irregular",
+    "lang": "Check course page",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Less ML-focused unless NLP/linguistics interests you.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=52377",
+    "description": "Note: original user text said 'Typology', but University search for code 52377 resolves to 'Introduction to Topology'. Full lecture content not retrieved; practical-course record identified.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Simone Coccia, Hang Fu",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-74535",
+    "code": "74535",
+    "title": "From Data to Physical Models in Biology",
+    "cp": 4,
+    "module": "Electives in Data Science",
+    "when": "Spring",
+    "lang": "Check course page",
+    "priority": "Medium",
+    "type": "Elective",
+    "note": "Scientific/biological modeling.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/details?id=74535",
+    "description": "Course listing found; detail page snippet did not expose content text.",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Richard Neher, Erik van Nimwegen",
+    "syllabus": [],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "14:15 - 16:00",
+        "room": "room not visible in retrieved snippet"
+      }
+    ]
+  },
+  {
+    "id": "E-PROJ6",
+    "code": "Learning contract",
+    "title": "Data Science Project",
+    "cp": 6,
+    "module": "Electives in Data Science",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "Very high",
+    "type": "Project",
+    "note": "Very useful for a PhD application if research-oriented.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Prof. Ivan Dokmanić",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "E-PROJ12",
+    "code": "Learning contract",
+    "title": "Data Science Project",
+    "cp": 12,
+    "module": "Electives in Data Science",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "Very high",
+    "type": "Project",
+    "note": "Stronger research signal, heavier workload.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Project & Presentation",
+    "lecturer": "Dr. Silvia Santini",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "T-PREP",
+    "code": "Learning contract",
+    "title": "Preparation for Master’s thesis",
+    "cp": 6,
+    "module": "Thesis",
+    "when": "Usually after third-semester lectures",
+    "lang": "Agree with supervisor",
+    "priority": "Must",
+    "type": "Thesis",
+    "note": "Pass/fail. Usually one month full-time.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Master Thesis & Oral Defense",
+    "lecturer": "Dr. Silvia Santini",
+    "syllabus": [],
+    "schedule": []
+  },
+  {
+    "id": "T-THESIS",
+    "code": "Learning contract",
+    "title": "Master’s thesis",
+    "cp": 30,
+    "module": "Thesis",
+    "when": "Usually final semester",
+    "lang": "Agree with supervisor",
+    "priority": "Must",
+    "type": "Thesis",
+    "note": "Usually six months. For you, admission requirements must be complete before starting thesis.",
+    "description": "",
+    "prerequisites": "",
+    "exam": "Master Thesis & Oral Defense",
+    "lecturer": "Prof. Ivan Dokmanić",
+    "syllabus": [],
+    "schedule": []
+  }
+]

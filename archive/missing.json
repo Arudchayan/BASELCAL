@@ -1,0 +1,52 @@
+[
+  {
+    "id": "AD-10489-1",
+    "code": "10489",
+    "title": "Main lecture Analysis I"
+  },
+  {
+    "id": "AD-10489-2",
+    "code": "10489",
+    "title": "Main lecture Analysis II"
+  },
+  {
+    "id": "ML-PROJ6",
+    "code": "Learning contract",
+    "title": "Machine Learning Project"
+  },
+  {
+    "id": "ML-PROJ12",
+    "code": "Learning contract",
+    "title": "Machine Learning Project"
+  },
+  {
+    "id": "S-PROJ6",
+    "code": "Learning contract",
+    "title": "Systems Foundations Project"
+  },
+  {
+    "id": "S-PROJ12",
+    "code": "Learning contract",
+    "title": "Systems Foundations Project"
+  },
+  {
+    "id": "E-PROJ6",
+    "code": "Learning contract",
+    "title": "Data Science Project"
+  },
+  {
+    "id": "E-PROJ12",
+    "code": "Learning contract",
+    "title": "Data Science Project"
+  },
+  {
+    "id": "T-PREP",
+    "code": "Learning contract",
+    "title": "Preparation for Master’s thesis"
+  },
+  {
+    "id": "T-THESIS",
+    "code": "Learning contract",
+    "title": "Master’s thesis"
+  }
+]

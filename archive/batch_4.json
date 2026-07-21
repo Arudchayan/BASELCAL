@@ -1,0 +1,67 @@
+[
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-64324",
+    "Prompt": "Evaluate History and Technology of Computers and Internet (64324). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=64324. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-64375",
+    "Prompt": "Evaluate Databases in the Digital Humanities (64375). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=64375. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-64376",
+    "Prompt": "Evaluate Databases in the Digital Humanities — Exercise (64376). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=64376. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-66152",
+    "Prompt": "Evaluate Advanced Python for Humanities (66152). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=66152. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-69469",
+    "Prompt": "Evaluate Introduction to LTI-Systems and Control (69469). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=69469. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-13369",
+    "Prompt": "Evaluate Predictive Analytics (13369). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=13369. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-44811",
+    "Prompt": "Evaluate Grundlagen der Finanz- und Versicherungsmathematik (44811). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=44811. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-52377",
+    "Prompt": "Evaluate Introduction to Typology (52377). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=52377. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-74535",
+    "Prompt": "Evaluate From Data to Physical Models in Biology (74535). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=74535. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-PROJ6",
+    "Prompt": "Evaluate Data Science Project (Learning contract). URL: N/A. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-PROJ12",
+    "Prompt": "Evaluate Data Science Project (Learning contract). URL: N/A. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval T-PREP",
+    "Prompt": "Evaluate Preparation for Master’s thesis (Learning contract). URL: N/A. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval T-THESIS",
+    "Prompt": "Evaluate Master’s thesis (Learning contract). URL: N/A. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  }
+]
