@@ -139,19 +139,41 @@ export function findConflicts(courses: Course[]): ConflictPair[] {
 export function isMandatoryAttendance(course: Course): boolean {
   const exam = (course.exam || '').toLowerCase();
   const title = (course.title || '').toLowerCase();
-  // Learning contracts / thesis are not physical attendance
-  if ((course.when || '').toLowerCase().includes('learning contract')) return false;
+  const when = (course.when || '').toLowerCase();
+  // Learning contracts / thesis are not fixed physical attendance
+  if (when.includes('learning contract')) return false;
   if (title.includes('thesis')) return false;
+  // Explicit optional language (e.g. Sci Comp lecture exercises "warmly recommended")
+  if (
+    exam.includes('not mandatory') ||
+    exam.includes('warmly recommended') ||
+    exam.includes('not compulsory')
+  ) {
+    // Still mandatory if the course itself is graded via continuous assessment / practical
+    // and is not the pure "lecture exam" path — practicals stay mandatory.
+    if (title.includes('practical') || when.includes('practical')) return true;
+  }
   if (title.includes('practical') || title.includes('seminar')) return true;
-  // "project" alone is too broad (Data Science Project learning contracts)
   if (title.includes('practical course')) return true;
+  // Any continuous-assessment / participation course with a schedule is attendance-sensitive
   if (
     exam.includes('continuous') ||
     exam.includes('active') ||
     exam.includes('participation') ||
-    exam.includes('homework')
+    exam.includes('homework') ||
+    exam.includes('project') ||
+    exam.includes('presentation')
   ) {
     return true;
   }
+  // Scheduled lectures with a final exam still occupy the slot — treat as mandatory for clash UI
+  if ((course.schedule || []).length > 0 && (exam.includes('exam') || exam.includes('examen'))) {
+    return true;
+  }
   return false;
+}
+
+/** True when both courses look attendance-sensitive (used to highlight hard clashes). */
+export function isHardClash(a: Course, b: Course): boolean {
+  return isMandatoryAttendance(a) && isMandatoryAttendance(b);
 }

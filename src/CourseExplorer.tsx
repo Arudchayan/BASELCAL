@@ -2,77 +2,117 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ShieldAlert, X, ChevronRight, Info, Target, GraduationCap } from 'lucide-react';
 import { COURSES } from './courses';
-import { evaluatePlan, statusColor, type RuleKind } from './degreeRules';
+import {
+  DEGREE_RULES,
+  evaluatePlan,
+  statusColor,
+  type BucketStatus,
+  type DegreeStats,
+  type RuleKind,
+} from './degreeRules';
+import { isDisputedModule } from './coveragePolicy';
 import type { Course } from './types';
 
 type BucketDef = {
-  id: string;
+  /** Exact catalog module string — must match Course.module */
+  module: string;
+  statsKey: keyof DegreeStats;
   title: string;
-  reqCp: number;
-  kind: RuleKind;
   required: boolean;
   desc: string;
+  color: string;
 };
 
 const BUCKETS: BucketDef[] = [
   {
-    id: 'Admission',
+    module: DEGREE_RULES.admission.module,
+    statsKey: 'admission',
     title: 'Conditional Admission',
-    reqCp: 28,
-    kind: 'exact',
     required: true,
     desc: 'Exactly 28 CP bachelor Auflagen (model: Analysis 12 + Algorithms 8 + SciComp 8).',
+    color: '#d97706',
   },
   {
-    id: 'Thesis',
+    module: DEGREE_RULES.thesis.module,
+    statsKey: 'thesis',
     title: 'Master Thesis Block',
-    reqCp: 36,
-    kind: 'exact',
     required: true,
     desc: 'Exactly 36 CP: Preparation (6) + Master Thesis (30).',
+    color: '#f43f5e',
   },
   {
-    id: 'Machine Learning',
-    title: 'Machine Learning',
-    reqCp: 18,
-    kind: 'min',
+    module: DEGREE_RULES.ml.module,
+    statsKey: 'ml',
+    title: 'Machine Learning Foundations',
     required: false,
     desc: 'Minimum 18 CP in core ML/AI.',
+    color: '#10b981',
   },
   {
-    id: 'Systems',
+    module: DEGREE_RULES.systems.module,
+    statsKey: 'systems',
     title: 'Systems Foundations',
-    reqCp: 18,
-    kind: 'min',
     required: false,
     desc: 'Minimum 18 CP in scalable systems & computing.',
+    color: '#8b5cf6',
   },
   {
-    id: 'Math',
+    module: DEGREE_RULES.math.module,
+    statsKey: 'math',
     title: 'Mathematical Foundations',
-    reqCp: 18,
-    kind: 'min',
     required: false,
     desc: 'Minimum 18 CP in advanced mathematics.',
+    color: '#2563eb',
   },
   {
-    id: 'Electives',
-    title: 'Electives & Applications',
-    reqCp: 20,
-    kind: 'exact',
+    module: DEGREE_RULES.electives.module,
+    statsKey: 'electives',
+    title: 'Electives in Data Science',
     required: false,
     desc: 'Exactly 20 CP in application domains or Data Science projects.',
+    color: '#ec4899',
   },
 ];
 
-function bucketStatus(value: number, target: number, kind: RuleKind) {
-  if (value === 0) return 'empty' as const;
-  if (kind === 'exact') {
-    if (value < target) return 'short' as const;
-    if (value > target) return 'overshoot' as const;
-    return 'met' as const;
+function ruleFor(key: keyof DegreeStats): { target: number; kind: RuleKind } {
+  switch (key) {
+    case 'admission':
+      return DEGREE_RULES.admission;
+    case 'math':
+      return DEGREE_RULES.math;
+    case 'ml':
+      return DEGREE_RULES.ml;
+    case 'systems':
+      return DEGREE_RULES.systems;
+    case 'foundationsSum':
+      return DEGREE_RULES.foundationsSum;
+    case 'electives':
+      return DEGREE_RULES.electives;
+    case 'thesis':
+      return DEGREE_RULES.thesis;
+    case 'mscTotal':
+      return DEGREE_RULES.mscTotal;
+    case 'grandTotal':
+      return DEGREE_RULES.grandTotal;
+    default: {
+      const _exhaustive: never = key;
+      return _exhaustive;
+    }
   }
-  return value < target ? ('short' as const) : ('met' as const);
+}
+
+function bucketStatus(value: number, target: number, kind: RuleKind): BucketStatus {
+  if (value === 0) return 'empty';
+  if (kind === 'exact') {
+    if (value < target) return 'short';
+    if (value > target) return 'overshoot';
+    return 'met';
+  }
+  return value < target ? 'short' : 'met';
+}
+
+function moduleColor(moduleName: string): string {
+  return BUCKETS.find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
 }
 
 export const CourseExplorer = ({
@@ -97,22 +137,12 @@ export const CourseExplorer = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, selectedCourse]);
 
-  const getModuleColor = (moduleName: string) => {
-    if (moduleName.includes('Admission')) return '#d97706';
-    if (moduleName.includes('Math')) return '#2563eb';
-    if (moduleName.includes('Machine Learning')) return '#10b981';
-    if (moduleName.includes('Systems')) return '#8b5cf6';
-    if (moduleName.includes('Electives')) return '#ec4899';
-    if (moduleName.includes('Thesis')) return '#f43f5e';
-    return 'var(--text-secondary)';
-  };
-
   const coursesByBucket = useMemo(() => {
     const grouped: Record<string, Course[]> = {};
-    BUCKETS.forEach((b) => (grouped[b.id] = []));
+    BUCKETS.forEach((b) => (grouped[b.module] = []));
     COURSES.forEach((c) => {
-      const bucket = BUCKETS.find((b) => c.module.includes(b.id));
-      if (bucket) grouped[bucket.id].push(c as Course);
+      const bucket = BUCKETS.find((b) => c.module === b.module);
+      if (bucket) grouped[bucket.module].push(c as Course);
     });
     return grouped;
   }, []);
@@ -127,19 +157,13 @@ export const CourseExplorer = ({
 
   const evaluation = useMemo(() => evaluatePlan(shortlistedCourses), [shortlistedCourses]);
 
-  const shortlistedCp = useMemo(() => {
-    const cp: Record<string, number> = {};
-    BUCKETS.forEach((b) => (cp[b.id] = 0));
-    shortlistedCourses.forEach((c) => {
-      const bucket = BUCKETS.find((b) => c.module.includes(b.id));
-      if (bucket) cp[bucket.id] += c.cp;
-    });
-    return cp;
-  }, [shortlistedCourses]);
-
   const totalCp = evaluation.stats.grandTotal;
-  const totalStatus = bucketStatus(totalCp, 148, 'exact');
-  const foundationsStatus = bucketStatus(evaluation.stats.foundationsSum, 64, 'min');
+  const totalStatus = bucketStatus(totalCp, DEGREE_RULES.grandTotal.target, DEGREE_RULES.grandTotal.kind);
+  const foundationsStatus = bucketStatus(
+    evaluation.stats.foundationsSum,
+    DEGREE_RULES.foundationsSum.target,
+    DEGREE_RULES.foundationsSum.kind,
+  );
 
   return (
     <motion.div
@@ -192,11 +216,11 @@ export const CourseExplorer = ({
           </h1>
           <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', fontSize: '15px' }}>
             <strong>Wishlist only</strong> — starring here does not place courses on the board. Need exactly{' '}
-            <strong>148 CP</strong>. Currently wishlisted:{' '}
+            <strong>{DEGREE_RULES.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
             <strong style={{ color: statusColor(totalStatus, 'var(--accent-primary)') }}>{totalCp} CP</strong>
             {' · '}Foundations sum:{' '}
             <strong style={{ color: statusColor(foundationsStatus, '#6366f1') }}>
-              {evaluation.stats.foundationsSum}/64
+              {evaluation.stats.foundationsSum}/{DEGREE_RULES.foundationsSum.target}
             </strong>
             {totalStatus === 'overshoot' && (
               <span style={{ color: '#ef4444', marginLeft: 8 }}>(overshoot)</span>
@@ -226,14 +250,15 @@ export const CourseExplorer = ({
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-primary)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '48px' }}>
           {BUCKETS.map((bucket) => {
-            const currentCp = shortlistedCp[bucket.id];
-            const status = bucketStatus(currentCp, bucket.reqCp, bucket.kind);
-            const progressPercent = Math.min(100, (currentCp / bucket.reqCp) * 100);
-            const color = getModuleColor(bucket.id);
+            const rule = ruleFor(bucket.statsKey);
+            const currentCp = evaluation.stats[bucket.statsKey];
+            const status = bucketStatus(currentCp, rule.target, rule.kind);
+            const progressPercent = Math.min(100, (currentCp / rule.target) * 100);
+            const color = bucket.color;
             const barColor = statusColor(status, color);
 
             return (
-              <div key={bucket.id} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div key={bucket.module} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -266,7 +291,7 @@ export const CourseExplorer = ({
                         </span>
                       )}
                       <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {bucket.kind === 'exact' ? 'exact' : 'minimum'}
+                        {rule.kind === 'exact' ? 'exact' : 'minimum'}
                       </span>
                     </div>
                     <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>{bucket.desc}</p>
@@ -274,7 +299,7 @@ export const CourseExplorer = ({
 
                   <div style={{ width: '200px', textAlign: 'right' }}>
                     <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: barColor }}>
-                      {currentCp} / {bucket.reqCp} CP
+                      {currentCp} / {rule.target} CP
                       {status === 'overshoot' ? ' (over)' : status === 'met' ? ' ✓' : ''}
                     </div>
                     <div style={{ height: '8px', background: 'var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -288,8 +313,9 @@ export const CourseExplorer = ({
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                  {coursesByBucket[bucket.id].map((course) => {
+                  {coursesByBucket[bucket.module].map((course) => {
                     const isSelected = shortlist.includes(course.id);
+                    const disputed = isDisputedModule(course.id);
                     return (
                       <motion.div
                         key={course.id}
@@ -318,6 +344,23 @@ export const CourseExplorer = ({
                             }}
                           >
                             {course.title}
+                            {disputed && (
+                              <span
+                                title="Module membership disputed vs VV — verify program PDF"
+                                style={{
+                                  marginLeft: 8,
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  color: '#d97706',
+                                  background: 'rgba(217, 119, 6, 0.12)',
+                                  padding: '2px 6px',
+                                  borderRadius: 6,
+                                  verticalAlign: 'middle',
+                                }}
+                              >
+                                Disputed module
+                              </span>
+                            )}
                           </h4>
                           <motion.button
                             whileHover={{ scale: 1.1 }}
@@ -466,7 +509,7 @@ export const CourseExplorer = ({
                         fontWeight: 'bold',
                         letterSpacing: '0.5px',
                         textTransform: 'uppercase',
-                        color: getModuleColor(selectedCourse.module),
+                        color: moduleColor(selectedCourse.module),
                       }}
                     >
                       {selectedCourse.module}

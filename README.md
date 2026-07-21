@@ -22,4 +22,11 @@ npm run build      # typecheck + production build
 - [agent.md](agent.md) — domain rules, preset, handoff notes
 - [DATA.md](DATA.md) — which root/archive JSON files to trust
 
-Plan persistence uses course IDs only (`basel-ds-plan-v2`) and rehydrates from the live catalog. Export/Import JSON is available in the UI header.
+## Persistence
+
+- Plan IDs only (`basel-ds-plan-v3`); empty storage seeds the ML/PhD preset
+- Degree targets: `degree_rules.json` (shared by UI + `npm run validate`)
+- Freshness / disputed modules: `coverage_policy.json` → `src/coveragePolicy.ts`
+- Export JSON includes an unofficial-planner disclaimer
+
+Dev server: `http://localhost:5179` (dedicated port for Playwright).

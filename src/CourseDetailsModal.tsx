@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, BookOpen, Calendar, Maximize2, X, Zap } from 'lucide-react';
+import { getModuleDiscrepancy } from './coveragePolicy';
 import type { Course } from './types';
 
 export function CourseDetailsModal({ course, onClose }: { course: Course; onClose: () => void }) {
@@ -13,6 +14,8 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
   }, [onClose]);
 
   if (!course) return null;
+
+  const discrepancy = getModuleDiscrepancy(course.id);
 
   return (
     <AnimatePresence>
@@ -103,7 +106,28 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                   {course.cp} CP
                 </span>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{course.module}</span>
+                {discrepancy && (
+                  <span
+                    title={discrepancy.note}
+                    style={{
+                      fontSize: '11px',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      background: 'rgba(217, 119, 6, 0.15)',
+                      color: '#d97706',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Disputed module
+                  </span>
+                )}
               </div>
+              {discrepancy && (
+                <p style={{ margin: '10px 0 0', fontSize: 12, color: '#d97706', lineHeight: 1.45, maxWidth: 480 }}>
+                  Catalog: {discrepancy.catalogModule}. VV Modules tab: {discrepancy.vvModulesTab}. Resolve against the
+                  program PDF before counting.
+                </p>
+              )}
             </div>
             <button
               onClick={onClose}

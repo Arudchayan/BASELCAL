@@ -37,12 +37,19 @@ export const INITIAL_PLAN: PlanState = {
   s4: [],
 };
 
-/** ML/PhD starter: exactly 28 admission + 120 MSc = 148 CP */
+/** ML/PhD starter: exactly 28 admission + 120 MSc = 148 CP
+ * Hands-on / PhD path with schedulability constraints:
+ * - Never co-schedule Sci Comp practical (AD-62060) with FDS (S-45402) — both Fri 10–12 mandatory
+ * - Defer Math of DS to S3 (avoids Analysis I Thu clash); defer Algorithms to S4 (avoids ML Wed clash)
+ * - Only remaining VV clash: AD-11037 vs AD-20980 (Tue) — both required admission, same slot
+ */
 export const ML_PHD_PRESET_IDS: Record<SemesterId, string[]> = {
-  s1: ['AD-10489-1', 'AD-20980', 'AD-62060', 'M-66096', 'S-45402', 'E-11680', 'E-11681', 'M-19300'],
-  // S-15729 (6 CP) keeps Systems at 20 CP alongside ML-78174 (4 CP) replacing ML-60835 (6 CP)
-  // E-58920 Causal Inference moved here (spring) from former S3 Fall placement
-  s2: ['AD-10489-2', 'AD-11039', 'AD-10906', 'AD-62061', 'ML-17165', 'ML-13548', 'ML-45366', 'S-15729', 'E-58920'],
-  s3: ['AD-11037', 'M-77777', 'ML-78174', 'S-67924', 'E-55662', 'T-PREP'],
-  s4: ['T-THESIS', 'E-PROJ6'],
+  // 32 CP — admission + light math filler + Planning + Multimedia Retrieval (Fri pm, after Sci Comp)
+  s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'E-45400', 'S-15731'],
+  // 32 CP — Analysis II + ML core/seminar/RL + Causal; no Algorithms (moved to S4)
+  s2: ['AD-10489-2', 'AD-11039', 'ML-17165', 'ML-45366', 'ML-78174', 'E-58920', 'ML-60876'],
+  // 40 CP — Math foundations + FDS (safe: Sci Comp done) + learning-contract projects + thesis prep
+  s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-PROJ6', 'T-PREP'],
+  // 44 CP — Thesis + DS project + Algorithms admission (avoids S2 clash with Machine Learning)
+  s4: ['T-THESIS', 'E-PROJ6', 'AD-10906', 'AD-62061'],
 };

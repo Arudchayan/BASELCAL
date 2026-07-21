@@ -1,0 +1,11 @@
+{
+  "admission": { "target": 28, "kind": "exact", "module": "Admission requirement" },
+  "math": { "target": 18, "kind": "min", "module": "Mathematical Foundations" },
+  "ml": { "target": 18, "kind": "min", "module": "Machine Learning Foundations" },
+  "systems": { "target": 18, "kind": "min", "module": "Systems Foundations" },
+  "foundationsSum": { "target": 64, "kind": "min" },
+  "electives": { "target": 20, "kind": "exact", "module": "Electives in Data Science" },
+  "thesis": { "target": 36, "kind": "exact", "module": "Thesis" },
+  "mscTotal": { "target": 120, "kind": "exact" },
+  "grandTotal": { "target": 148, "kind": "exact" }
+}

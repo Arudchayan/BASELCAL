@@ -38,9 +38,13 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={() => {
+                  const ok = window.confirm(
+                    'Clear ALL BaselCal data (plan, notes, shortlist, theme) and reload? This cannot be undone.',
+                  );
+                  if (!ok) return;
                   try {
-                    localStorage.removeItem('basel-ds-plan-v2');
-                    localStorage.removeItem('basel-ds-plan');
+                    const keys = Object.keys(localStorage).filter((k) => k.startsWith('basel-ds-'));
+                    for (const k of keys) localStorage.removeItem(k);
                   } catch {
                     /* ignore */
                   }
@@ -56,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   cursor: 'pointer',
                 }}
               >
-                Clear plan & reload
+                Clear all BaselCal data & reload
               </button>
               <button
                 type="button"

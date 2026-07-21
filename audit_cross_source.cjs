@@ -49,9 +49,10 @@ const OFFICIAL = {
 Object.entries(OFFICIAL).forEach(([mod, r]) => console.log(`  ${mod}: ${r.label}`));
 
 // Preset against OFFICIAL
-const PRESET = ["AD-10489-1","AD-20980","AD-62060","M-66096","S-45402","E-11680","E-11681","M-19300",
-  "AD-10489-2","AD-11039","AD-10906","AD-62061","ML-17165","ML-13548","ML-45366","S-15729",
-  "AD-11037","M-77777","E-58920","ML-60835","S-67924","E-55662","T-PREP","T-THESIS","E-PROJ6"];
+const PRESET = ["AD-10489-1","AD-11037","AD-20980","AD-62060","M-19300","E-45400","S-15731",
+  "AD-10489-2","AD-11039","ML-17165","ML-45366","ML-78174","E-58920","ML-60876",
+  "M-66096","M-77777","S-45402","S-PROJ6","ML-PROJ6","T-PREP",
+  "T-THESIS","E-PROJ6","AD-10906","AD-62061"];
 const preset = PRESET.map(id => byId[id]).filter(Boolean);
 const presetMod = {};
 preset.forEach(c => { presetMod[c.module] = (presetMod[c.module]||0) + c.cp; });

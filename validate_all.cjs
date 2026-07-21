@@ -20,25 +20,39 @@ const appTsx = fs.readFileSync('src/App.tsx', 'utf8');
 const typesTs = fs.readFileSync('src/types.ts', 'utf8');
 const degreeRules = fs.readFileSync('src/degreeRules.ts', 'utf8');
 const agentMd = fs.readFileSync('agent.md', 'utf8');
+const degreeRulesJson = JSON.parse(fs.readFileSync('degree_rules.json', 'utf8'));
+const coveragePolicy = JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8'));
 
-// Must match ML_PHD_PRESET_IDS in src/types.ts
-const PRESET = {
-  s1: ["AD-10489-1", "AD-20980", "AD-62060", "M-66096", "S-45402", "E-11680", "E-11681", "M-19300"],
-  s2: ["AD-10489-2", "AD-11039", "AD-10906", "AD-62061", "ML-17165", "ML-13548", "ML-45366", "S-15729", "E-58920"],
-  s3: ["AD-11037", "M-77777", "ML-78174", "S-67924", "E-55662", "T-PREP"],
-  s4: ["T-THESIS", "E-PROJ6"],
-};
+/** Parse ML_PHD_PRESET_IDS from types.ts — single source of truth for preset IDs */
+function parsePresetFromTypes(src) {
+  const match = src.match(/export const ML_PHD_PRESET_IDS[^=]*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) throw new Error('Could not parse ML_PHD_PRESET_IDS from types.ts');
+  // Strip line comments then evaluate as object literal
+  const cleaned = match[1].replace(/\/\/[^\n]*/g, '');
+  // eslint-disable-next-line no-new-func
+  return Function(`"use strict"; return (${cleaned});`)();
+}
+
+const PRESET = parsePresetFromTypes(typesTs);
 
 const OFFICIAL = {
-  admission: 28,
-  math: 18,
-  ml: 18,
-  sys: 18,
-  foundationsSum: 64,
-  electives: 20,
-  thesis: 36,
-  mscTotal: 120,
-  grandTotal: 148,
+  admission: degreeRulesJson.admission.target,
+  math: degreeRulesJson.math.target,
+  ml: degreeRulesJson.ml.target,
+  sys: degreeRulesJson.systems.target,
+  foundationsSum: degreeRulesJson.foundationsSum.target,
+  electives: degreeRulesJson.electives.target,
+  thesis: degreeRulesJson.thesis.target,
+  mscTotal: degreeRulesJson.mscTotal.target,
+  grandTotal: degreeRulesJson.grandTotal.target,
+  modules: {
+    admission: degreeRulesJson.admission.module,
+    math: degreeRulesJson.math.module,
+    ml: degreeRulesJson.ml.module,
+    systems: degreeRulesJson.systems.module,
+    electives: degreeRulesJson.electives.module,
+    thesis: degreeRulesJson.thesis.module,
+  },
 };
 
 console.log('=== BASELCAL VALIDATION ===\n');
@@ -90,12 +104,12 @@ if (presetIdGaps === 0) pass('types.ts preset IDs present');
 
 const sumMod = (mod) => preset.filter(c => c && c.module === mod).reduce((s,c)=>s+c.cp,0);
 const stats = {
-  admission: sumMod('Admission requirement'),
-  math: sumMod('Mathematical Foundations'),
-  ml: sumMod('Machine Learning Foundations'),
-  sys: sumMod('Systems Foundations'),
-  electives: sumMod('Electives in Data Science'),
-  thesis: sumMod('Thesis'),
+  admission: sumMod(OFFICIAL.modules.admission),
+  math: sumMod(OFFICIAL.modules.math),
+  ml: sumMod(OFFICIAL.modules.ml),
+  sys: sumMod(OFFICIAL.modules.systems),
+  electives: sumMod(OFFICIAL.modules.electives),
+  thesis: sumMod(OFFICIAL.modules.thesis),
 };
 stats.mscTotal = preset.filter(c => c && c.type !== 'Admission').reduce((s,c)=>s+c.cp,0);
 stats.grandTotal = preset.reduce((s,c)=>s+(c?.cp||0),0);
@@ -134,10 +148,17 @@ else pass(`E-58920 Causal Inference placed in ${causalSem} (Spring)`);
 console.log('\nCHECK 4: Truth layer present');
 if (!degreeRules.includes('DEGREE_RULES') || !degreeRules.includes('evaluatePlan')) fail('degreeRules.ts missing DEGREE_RULES/evaluatePlan');
 else pass('degreeRules.ts exports DEGREE_RULES + evaluatePlan');
+if (!degreeRules.includes('degree_rules.json')) fail('degreeRules.ts must import degree_rules.json');
+else pass('degreeRules.ts loads degree_rules.json');
 if (!appTsx.includes('ProgressPanel') && !appTsx.includes('evaluatePlan')) fail('App does not use evaluation layer');
 else pass('App wired to ProgressPanel / evaluation');
 if (appTsx.includes('AI Curriculum Advisor') || appTsx.includes('AI Summary')) fail('Fake AI branding still present in App.tsx');
 else pass('No fake AI branding in App.tsx');
+if (!appTsx.includes('PLAN_DISCLAIMER') && !appTsx.includes('not an official University')) {
+  fail('App missing unofficial-planner disclaimer');
+} else {
+  pass('App shows unofficial planner disclaimer');
+}
 
 console.log('\nCHECK 5: Data quality');
 const placeholderSched = courses.filter(c =>
@@ -150,30 +171,111 @@ const typoCourses = courses.filter(c => c.title.includes('Typology'));
 if (typoCourses.length) fail(`Title typo "Typology" still present`);
 else pass('No Typology/Topology title typo');
 
-console.log('\nCHECK 6: Preset Sem1 timetable conflicts (informational)');
+console.log('\nCHECK 6: Preset timetable + semester load (schedulability)');
 function parseTime(t) {
   if (!t || !t.includes('-')) return null;
-  const [a,b] = t.split('-').map(s=>s.trim());
-  const ap=a.split(':').map(Number), bp=b.split(':').map(Number);
-  return { start: ap[0]+ap[1]/60, end: bp[0]+bp[1]/60 };
+  const [a, b] = t.split('-').map((s) => s.trim());
+  const ap = a.split(':').map(Number);
+  const bp = b.split(':').map(Number);
+  return { start: ap[0] + ap[1] / 60, end: bp[0] + bp[1] / 60 };
 }
-const s1 = PRESET.s1.map(id => courses.find(c=>c.id===id));
-const sessions = [];
-s1.forEach(c => (c.schedule||[]).forEach(s => {
-  const r = parseTime(s.time);
-  if (r) sessions.push({ id: c.id, day: s.day, ...r, time: s.time });
-}));
-const conflicts = [];
-for (let i=0;i<sessions.length;i++) for (let j=i+1;j<sessions.length;j++) {
-  const a=sessions[i], b=sessions[j];
-  if (a.day===b.day && a.start<b.end && a.end>b.start) conflicts.push(`${a.day} ${a.time}: ${a.id} vs ${b.id}`);
+
+/** Only admission co-requisites that share a VV slot with no alternate group in catalog */
+const ALLOWED_PRESET_CLASHES = new Set(['AD-11037|AD-20980', 'AD-20980|AD-11037']);
+
+function clashKey(a, b) {
+  return [a, b].sort().join('|');
 }
-if (conflicts.length) {
-  warn(`${conflicts.length} Sem1 timetable conflicts (surfaced in UI conflict report):`);
-  conflicts.forEach(c => console.log(`    ${c}`));
+
+function semesterConflicts(ids) {
+  const sessions = [];
+  ids.forEach((id) => {
+    const c = courses.find((x) => x.id === id);
+    if (!c) return;
+    (c.schedule || []).forEach((s) => {
+      const r = parseTime(s.time);
+      if (r) sessions.push({ id: c.id, title: c.title, day: s.day, ...r, time: s.time });
+    });
+  });
+  const found = [];
+  for (let i = 0; i < sessions.length; i++) {
+    for (let j = i + 1; j < sessions.length; j++) {
+      const a = sessions[i];
+      const b = sessions[j];
+      if (a.id === b.id) continue;
+      if (a.day === b.day && a.start < b.end && a.end > b.start) {
+        found.push({
+          key: clashKey(a.id, b.id),
+          label: `${a.day} ${a.time}: ${a.id} vs ${b.id} (${a.title} / ${b.title})`,
+        });
+      }
+    }
+  }
+  // unique by course pair
+  const seen = new Set();
+  return found.filter((c) => {
+    if (seen.has(c.key)) return false;
+    seen.add(c.key);
+    return true;
+  });
+}
+
+function weekdaysUsed(ids) {
+  const days = new Set();
+  ids.forEach((id) => {
+    const c = courses.find((x) => x.id === id);
+    (c?.schedule || []).forEach((s) => {
+      if (s.day) days.add(s.day);
+    });
+  });
+  return days.size;
+}
+
+const SEM_CP_LIMITS = { s1: 36, s2: 36, s3: 42, s4: 46 };
+let schedFails = 0;
+for (const [sem, ids] of Object.entries(PRESET)) {
+  const cp = ids.reduce((s, id) => s + (courses.find((c) => c.id === id)?.cp || 0), 0);
+  const limit = SEM_CP_LIMITS[sem];
+  if (cp > limit) {
+    fail(`${sem.toUpperCase()} load ${cp} CP exceeds soft-schedulable max ${limit}`);
+    schedFails++;
+  } else {
+    pass(`${sem.toUpperCase()} load ${cp} CP (max ${limit})`);
+  }
+
+  const conflicts = semesterConflicts(ids);
+  const blocked = conflicts.filter((c) => !ALLOWED_PRESET_CLASHES.has(c.key));
+  const allowed = conflicts.filter((c) => ALLOWED_PRESET_CLASHES.has(c.key));
+  if (blocked.length) {
+    fail(`${sem.toUpperCase()} has ${blocked.length} non-allowlisted timetable clash(es):`);
+    blocked.forEach((c) => console.log(`    ${c.label}`));
+    schedFails++;
+  } else if (allowed.length) {
+    warn(
+      `${sem.toUpperCase()} has ${allowed.length} allowlisted admission clash(es) (no alternate VV group):`,
+    );
+    allowed.forEach((c) => console.log(`    ${c.label}`));
+  } else {
+    pass(`${sem.toUpperCase()} has no timetable clashes`);
+  }
+
+  const days = weekdaysUsed(ids);
+  if (days >= 5 && sem !== 's4') {
+    warn(`${sem.toUpperCase()} uses all ${days} weekdays — expect a heavy physical week`);
+  }
+}
+
+// Hard invariant: Sci Comp practical must never share a semester with FDS
+const semOf = (id) => Object.entries(PRESET).find(([, ids]) => ids.includes(id))?.[0];
+if (semOf('AD-62060') && semOf('AD-62060') === semOf('S-45402')) {
+  fail('AD-62060 (Sci Comp practical) and S-45402 (FDS) share a semester — Fri 10–12 double-book');
+  schedFails++;
 } else {
-  pass('No Sem1 timetable conflicts');
+  pass('Sci Comp practical and Foundations of Distributed Systems are in different semesters');
 }
+
+if (schedFails === 0) pass('Preset schedulability gates cleared');
+
 
 console.log('\nCHECK 7: Cross-file consistency');
 if (fs.existsSync('actual_courses.json')) {
@@ -223,9 +325,12 @@ if (agentMd.includes('exactly 120') || agentMd.includes('Exactly 120') || agentM
 }
 
 function parseStaleWatchIdsFromFreshness(src) {
-  const block = src.match(/staleWatchIds:\s*\[([\s\S]*?)\]\s*as\s*string\[\]/);
-  if (!block) return [];
-  return [...block[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  // Legacy inline array (pre-coveragePolicy import)
+  const block = src.match(/staleWatchIds:\s*\[([\s\S]*?)\]\s*(?:as\s*string\[\])?/);
+  if (block && !src.includes('COVERAGE_POLICY')) {
+    return [...block[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  }
+  return null; // delegated to coverage_policy.json
 }
 
 function setDiff(a, b) {
@@ -235,18 +340,19 @@ function setDiff(a, b) {
 
 console.log('\nCHECK 10: VV coverage audit (vv_msc_ds_official.json)');
 if (fs.existsSync('coverage_policy.json')) {
-  const policy = JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8'));
+  const policy = coveragePolicy;
   const freshnessSrc = fs.readFileSync('src/dataFreshness.ts', 'utf8');
+  const coveragePolicySrc = fs.readFileSync('src/coveragePolicy.ts', 'utf8');
+  if (!freshnessSrc.includes('COVERAGE_POLICY') || !coveragePolicySrc.includes('coverage_policy.json')) {
+    fail('dataFreshness/coveragePolicy must import coverage_policy.json for stale watches');
+  } else {
+    pass(`${(policy.staleWatchIds || []).length} stale-watch IDs aligned (coverage_policy ↔ dataFreshness)`);
+  }
   const uiStale = parseStaleWatchIdsFromFreshness(freshnessSrc);
-  const policyStale = policy.staleWatchIds || [];
-  const staleDiff = [
-    ...setDiff(uiStale, policyStale),
-    ...setDiff(policyStale, uiStale),
-  ];
-  if (staleDiff.length) {
-    warn(`staleWatchIds mismatch UI vs coverage_policy: ${staleDiff.join(', ')}`);
-  } else if (policyStale.length) {
-    pass(`${policyStale.length} stale-watch IDs aligned (coverage_policy ↔ dataFreshness)`);
+  if (uiStale) {
+    const policyStale = policy.staleWatchIds || [];
+    const staleDiff = [...setDiff(uiStale, policyStale), ...setDiff(policyStale, uiStale)];
+    if (staleDiff.length) warn(`staleWatchIds mismatch UI vs coverage_policy: ${staleDiff.join(', ')}`);
   }
   if (policy.moduleDiscrepancies?.length) {
     policy.moduleDiscrepancies.forEach((d) => {
