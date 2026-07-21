@@ -1,0 +1,653 @@
+[
+  {
+    "code": "10489",
+    "exam": "Oral exam (30 min, together with Analysis I)",
+    "lecturer": "Gianluca Crippa",
+    "syllabus": [
+      "Topological concepts and limits",
+      "Differential calculus in several variables",
+      "Approximation of functions and integral calculus",
+      "Ordinary differential equations and applications"
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "08:15 - 10:00",
+        "room": "Alte Universität, Hörsaal -101"
+      },
+      {
+        "day": "Friday",
+        "time": "08:15 - 10:00",
+        "room": "Alte Universität, Hörsaal -101"
+      }
+    ]
+  },
+  {
+    "code": "11037",
+    "exam": "Continuous assessment (active participation, exercise series and exam)",
+    "lecturer": "Maria Ahrend",
+    "syllabus": [
+      "Exercises accompanying Analysis I lecture",
+      "Solve problems to deepen understanding",
+      "Work on weekly exercise sheets",
+      "Preparation for the oral exam"
+    ],
+    "schedule": []
+  },
+  {
+    "code": "11039",
+    "exam": "Continuous assessment (exercise work)",
+    "lecturer": "Florian Lanz",
+    "syllabus": [
+      "Practical exercises related to Analysis II",
+      "Work on problem sets and discuss solutions",
+      "Application of lecture concepts to examples",
+      "Preparation for the oral exam"
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "12:15 - 14:00",
+        "room": "Bernoullistrasse 30/32, kleiner Hörsaal 120"
+      }
+    ]
+  },
+  {
+    "code": "20980",
+    "exam": "Written examination",
+    "lecturer": "Volker Roth",
+    "syllabus": [
+      "Overview of scientific computing and optimization",
+      "Numerical methods, regression and linear programming",
+      "Modeling, simulation and signal processing",
+      "Implementation of methods in Python"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "10:15 - 12:00",
+        "room": "Biozentrum, Hörsaal U1.101"
+      },
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Biozentrum, Hörsaal U1.101"
+      }
+    ]
+  },
+  {
+    "code": "62060",
+    "exam": "Continuous assessment (pass/fail based on assignments)",
+    "lecturer": "Volker Roth",
+    "syllabus": [
+      "Exercise course accompanying Scientific Computing",
+      "Implementation of numerical algorithms in Python",
+      "Solving assignments and presenting solutions",
+      "Practical applications of lecture topics"
+    ],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Kollegienhaus, Hörsaal 001"
+      }
+    ]
+  },
+  {
+    "code": "10906",
+    "exam": "Written examination",
+    "lecturer": "Gabriele Röger",
+    "syllabus": [
+      "Runtime analysis and divide-and-conquer techniques",
+      "Abstract data types (arrays, stacks, queues)",
+      "Trees, heaps and search trees; hash tables",
+      "Sorting and basic graph algorithms"
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Hörsaal U1.131"
+      },
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Hörsaal U1.141"
+      }
+    ]
+  },
+  {
+    "code": "62061",
+    "exam": "Continuous assessment (two mid-term exams)",
+    "lecturer": "Patrick Schnider",
+    "syllabus": [
+      "Exercises complementing Algorithms and Data Structures",
+      "Solve and present programming assignments",
+      "Apply algorithm analysis to practical problems",
+      "Prepare for the mid-term written tests"
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "14:15 - 16:00",
+        "room": "Pharmazentrum, Seminarraum U1075"
+      }
+    ]
+  },
+  {
+    "code": "12246",
+    "exam": "Continuous assessment with a 30-minute oral exam",
+    "lecturer": "Marcus J. Grote",
+    "syllabus": [
+      "Finite element methods for elliptic and parabolic PDEs",
+      "Implementation of finite element algorithms",
+      "Convergence theory and error estimates",
+      "Applications to physical and engineering problems"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 116"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 116"
+      }
+    ]
+  },
+  {
+    "code": "13358",
+    "exam": "Continuous assessment (weekly homework) plus 30-min oral exam",
+    "lecturer": "Marcus J. Grote",
+    "syllabus": [
+      "Numerical simulation of acoustic, electromagnetic and elastic waves",
+      "Finite difference and finite element methods for wave and Helmholtz equations",
+      "Treatment of unbounded domains: Dirichlet-to-Neumann maps and PMLs",
+      "Implementation and analysis of algorithms"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 114"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 114"
+      }
+    ]
+  },
+  {
+    "code": "16948",
+    "exam": "Continuous assessment (project with report and presentation)",
+    "lecturer": "Oussama Al Jarroudi",
+    "syllabus": [
+      "Realisation of a programming project related to numerical wave propagation",
+      "Implementation of algorithms and numerical experiments",
+      "Summary of theoretical background in a report",
+      "Presentation of results to the class"
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Kollegienhaus, Seminarraum 211"
+      }
+    ]
+  },
+  {
+    "code": "19300",
+    "exam": "Continuous assessment (graded, scale 1–6)",
+    "lecturer": "Jörg Lehmann",
+    "syllabus": [
+      "Basics of probability theory and random processes",
+      "Markov processes: Master equation and Fokker–Planck equations",
+      "Stochastic differential equations and diffusive limits",
+      "Applications in physics and mathematical finance"
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "09:00 - 10:15",
+        "room": "n/a"
+      },
+      {
+        "day": "Wednesday",
+        "time": "10:15 - 12:00",
+        "room": "n/a"
+      }
+    ]
+  },
+  {
+    "code": "22738",
+    "exam": "Oral examination (with one repetition)",
+    "lecturer": "Marc Schmidlin",
+    "syllabus": [
+      "Iterative methods for large sparse linear systems (CG, GMRES, etc.)",
+      "Nonlinear optimization methods: Newton, quasi-Newton, Gauss-Newton, BFGS",
+      "Inverse problems and regularization techniques (SVD)",
+      "Numerical eigenvalue computation (vector iteration, QR, Lanczos)"
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      },
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "code": "22740",
+    "exam": "Continuous assessment (programming sheets and written exam)",
+    "lecturer": "Valentin Comment",
+    "syllabus": [
+      "Exercise course accompanying Iterative Numerical Methods lecture",
+      "Work on programming assignments using the ADAM workspace",
+      "Discuss solutions and theory in class",
+      "Preparation for written examination"
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "code": "27334",
+    "exam": "Oral exam (30 min) plus written exam for exercises",
+    "lecturer": "Luis Martinez Zoroa",
+    "syllabus": [
+      "Banach and Hilbert spaces and basic functional analysis",
+      "Bounded and compact operators; weak convergence and duality",
+      "Fundamental principles: Hahn-Banach theorem, Sobolev spaces",
+      "Applications to partial differential equations"
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "08:15 - 10:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Friday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "code": "27335",
+    "exam": "Continuous assessment (pass/fail, see lecture)",
+    "lecturer": "Matteo Nesi",
+    "syllabus": [
+      "Exercises supporting Functional Analysis and PDE lecture",
+      "Solving problem sets on Banach/Hilbert spaces and Sobolev spaces",
+      "Discussion of weak convergence and operator theory",
+      "Preparation for the lecture’s written and oral exams"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "code": "66096",
+    "exam": "Continuous assessment (details not specified)",
+    "lecturer": "Jiří Černý",
+    "syllabus": [
+      "High-dimensional probability and concentration of measure",
+      "Optimization and convex analysis for data science",
+      "Random matrices and spectral methods",
+      "Elements of statistical learning theory"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Kollegienhaus, Hörsaal 117"
+      },
+      {
+        "day": "Tuesday",
+        "time": "16:15 - 18:00",
+        "room": "Geographie, Hörsaal 5-01"
+      },
+      {
+        "day": "Thursday",
+        "time": "08:15 - 10:00",
+        "room": "Kollegienhaus, Hörsaal 001"
+      }
+    ]
+  },
+  {
+    "code": "74781",
+    "exam": "Continuous assessment (no repeat exam)",
+    "lecturer": "Helmut Harbrecht",
+    "syllabus": [
+      "Representation and approximation of high-dimensional functions",
+      "Understanding the curse of dimensionality (Bellman)",
+      "Numerical techniques suitable for high-dimensional problems",
+      "Applications in uncertainty quantification and data science"
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "code": "78105",
+    "exam": "Continuous assessment with final written exam",
+    "lecturer": "Kwan Woo",
+    "syllabus": [
+      "Review of ordinary differential equations and flows",
+      "Local nonlinear dynamics and stability analysis",
+      "Global dynamical behaviour and bifurcations",
+      "Analysis of planar systems and qualitative methods"
+    ],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "08:15 - 10:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Wednesday",
+        "time": "12:15 - 14:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      }
+    ]
+  },
+  {
+    "code": "58951",
+    "exam": "Oral exam (30 min) plus continuous assessment",
+    "lecturer": "Jiří Černý",
+    "syllabus": [
+      "Brownian motion and continuous-time martingales",
+      "Markov processes and Markov property",
+      "Stochastic calculus and Itô integrals",
+      "Stochastic differential equations and applications"
+    ],
+    "schedule": []
+  },
+  {
+    "code": "77600",
+    "exam": "Continuous assessment (homework and participation)",
+    "lecturer": "Jiří Černý",
+    "syllabus": [
+      "Percolation theory and critical phenomena",
+      "Random walks on random graphs and heat kernel bounds",
+      "Gaussian free field and related models",
+      "Advanced topics in probability"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "10:15 - 12:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      },
+      {
+        "day": "Tuesday",
+        "time": "08:15 - 10:00",
+        "room": "Kollegienhaus, Hörsaal 119"
+      }
+    ]
+  },
+  {
+    "code": "79161",
+    "exam": "Written test on exercises plus 20-minute oral exam",
+    "lecturer": "Jiří Černý",
+    "syllabus": [
+      "Classical concentration inequalities (Hoeffding, Bernstein, McDiarmid)",
+      "Geometric and probabilistic perspectives on concentration",
+      "Concentration phenomena in random matrix theory and statistics",
+      "Applications in machine learning and theoretical computer science"
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Alte Universität, Seminarraum -201"
+      }
+    ]
+  },
+  {
+    "code": "77777",
+    "exam": "Oral exam (presentation required)",
+    "lecturer": "Patrick Schnider",
+    "syllabus": [
+      "Discrete probability and inequalities (Markov, Chebyshev, Chernoff)",
+      "Las Vegas and Monte Carlo algorithms",
+      "Random search trees, random graphs and the Lovász Local Lemma",
+      "Markov chains and applications of randomness in algorithms"
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      }
+    ]
+  },
+  {
+    "code": "13548",
+    "exam": "Continuous assessment (weekly homework and final written exam)",
+    "lecturer": "Malte Helmert",
+    "syllabus": [
+      "Introduction to AI and rational agents",
+      "State-space search and combinatorial optimization",
+      "Constraint satisfaction problems and formal logic",
+      "Automated planning, board games and practical algorithms"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Biozentrum, Hörsaal U1.141"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Hörsaal U1.101"
+      }
+    ]
+  },
+  {
+    "code": "78174",
+    "exam": "Written examination",
+    "lecturer": "Ilija Bogunovic",
+    "syllabus": [
+      "Modern reinforcement learning frameworks and algorithms",
+      "Policy gradient and value-based methods",
+      "Deep reinforcement learning and actor-critic architectures",
+      "Applications to agents and large-language-model alignment"
+    ],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      },
+      {
+        "day": "Friday",
+        "time": "16:15 - 17:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "code": "17165",
+    "exam": "Written examination (with online quizzes)",
+    "lecturer": "Aurelien Lucchi",
+    "syllabus": [
+      "Probabilistic models and generative models for discrete data",
+      "Classification and regression (frequentist and Bayesian approaches)",
+      "Neural networks: feed-forward, recurrent and encoder-decoder models",
+      "Statistical learning theory, support vector machines, Gaussian processes and latent variable models"
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Physik, Neuer Hörsaal 1"
+      },
+      {
+        "day": "Wednesday",
+        "time": "14:15 - 16:00",
+        "room": "Alte Universität, Hörsaal -101"
+      },
+      {
+        "day": "Wednesday",
+        "time": "16:15 - 18:00",
+        "room": "Biozentrum, Hörsaal U1.141"
+      }
+    ]
+  },
+  {
+    "code": "45366",
+    "exam": "Continuous assessment (presentation and poster)",
+    "lecturer": "Ilija Bogunovic",
+    "syllabus": [
+      "Reasoning under uncertainty and probabilistic models",
+      "Quantifying and representing uncertainty",
+      "Decision making with incomplete information",
+      "Reinforcement learning and natural language applications"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
+      }
+    ]
+  },
+  {
+    "code": "45401",
+    "exam": "Oral examination (70% of exercise sheets required)",
+    "lecturer": "Niko Beerenwinkel",
+    "syllabus": [
+      "Classical bioinformatics algorithms (Hidden Markov models, Markov chains, phylogenetic trees)",
+      "Sequence alignment, motif finding and phylogenetic inference",
+      "Introduction to modern deep-learning approaches for biological data",
+      "Design principles for algorithms in bioinformatics"
+    ],
+    "schedule": [
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
+        "room": "Biozentrum, Seminarraum U1.197"
+      },
+      {
+        "day": "Tuesday",
+        "time": "13:15 - 14:00",
+        "room": "Biozentrum, Seminarraum U1.191"
+      }
+    ]
+  },
+  {
+    "code": "60835",
+    "exam": "30% homework, 40% project, 30% written exam",
+    "lecturer": "Aurelien Lucchi",
+    "syllabus": [
+      "High-dimensional probability and concentration phenomena",
+      "Manifold learning and nonlinear dimensionality reduction",
+      "Machine learning on graphs and group-equivariant networks",
+      "Graph neural networks and scientific machine learning applications"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "15:15 - 17:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "code": "60876",
+    "exam": "Continuous assessment based on offline activities (100%)",
+    "lecturer": "Jitao David Zhang",
+    "syllabus": [
+      "Challenges and questions in modern drug discovery addressed by computational biology",
+      "Basic concepts and tools in computational biology and bioinformatics",
+      "Recent research progress in computational biology relevant to drug discovery",
+      "Encouraging interdisciplinary thinking and active learning"
+    ],
+    "schedule": [
+      {
+        "day": "Friday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  },
+  {
+    "code": "66937",
+    "exam": "Continuous assessment (15% exercises/Q&A, 25% mid-term exam, 25% project, 35% final exam)",
+    "lecturer": "Aurelien Lucchi",
+    "syllabus": [
+      "Introduction to linear networks and activation functions",
+      "Approximation theory and complexity in deep learning",
+      "Network architectures and optimization landscapes",
+      "Generalization bounds, neural tangent kernel and adversarial examples"
+    ],
+    "schedule": [
+      {
+        "day": "Wednesday",
+        "time": "12:15 - 14:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      },
+      {
+        "day": "Thursday",
+        "time": "16:15 - 18:00",
+        "room": "Kollegienhaus, Hörsaal 115"
+      }
+    ]
+  },
+  {
+    "code": "67343",
+    "exam": "Continuous assessment (project and presentation)",
+    "lecturer": "Marcus J. Grote",
+    "syllabus": [
+      "Computational aspects of inverse problems",
+      "Regularization and numerical algorithms for inverse problems",
+      "Machine-learning methods for solving inverse problems",
+      "Presentation and discussion of current research topics"
+    ],
+    "schedule": [
+      {
+        "day": "Monday",
+        "time": "16:15 - 18:00",
+        "room": "Spiegelgasse 5, Seminarraum 05.002"
+      }
+    ]
+  }
+]

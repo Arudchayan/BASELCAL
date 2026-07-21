@@ -1,0 +1,77 @@
+[
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-11681",
+    "Prompt": "Evaluate Computational Physics — Practical (11681). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=11681. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-18545",
+    "Prompt": "Evaluate Advanced Mathematics for Economics (18545). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=18545. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-20901",
+    "Prompt": "Evaluate Quantum Computation and Error Correction (20901). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=20901. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-25637",
+    "Prompt": "Evaluate Molecular Simulations with Chemical and Biological Applications (25637). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=25637. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-28420",
+    "Prompt": "Evaluate Principles of Medical Imaging (28420). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=28420. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-28935",
+    "Prompt": "Evaluate Computer Modeling of Adverse Effects (28935). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=28935. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-45400",
+    "Prompt": "Evaluate Planning and Optimization (45400). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=45400. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-49935",
+    "Prompt": "Evaluate Applied Statistics Using R (49935). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=49935. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-53822",
+    "Prompt": "Evaluate Deep Learning for Medical Image Analysis (53822). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=53822. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-55048",
+    "Prompt": "Evaluate The AI Economy: Business Strategies and Policy Issues (55048). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=55048. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-55662",
+    "Prompt": "Evaluate Applied Mathematics and Informatics in Drug Discovery (55662). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=55662. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-58492",
+    "Prompt": "Evaluate Insurance Data Analytics (58492). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=58492. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-58920",
+    "Prompt": "Evaluate Causal Inference for Policy Evaluation (58920). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=58920. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-62229",
+    "Prompt": "Evaluate Modern Aspects of Bayesian Statistics (62229). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=62229. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  },
+  {
+    "TypeName": "course_evaluator",
+    "Role": "Eval E-64323",
+    "Prompt": "Evaluate Applied Programming Projects (64323). URL: https://vorlesungsverzeichnis.unibas.ch/en/details?id=64323. Return a concise markdown summary with overview, syllabus, reviews/feedback, practical tips."
+  }
+]

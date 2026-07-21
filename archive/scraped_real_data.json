@@ -1,0 +1,173 @@
+[
+  {
+    "title": "Mathematics of Data Science",
+    "description": "Mathematical foundations for modern data science, emphasizing probability theory and its applications in high-dimensional settings.",
+    "syllabus": [
+      "Fundamentals of Probability: conditioning, independence, basic axioms",
+      "Limiting Phenomena: behavior of sequences of random variables",
+      "Concentration Inequalities: bounding tail probabilities for high-dimensional data analysis",
+      "Random Structures and their applications"
+    ],
+    "prerequisites": "Advanced studies in Data Science"
+  },
+  {
+    "title": "Scientific Computing",
+    "description": "An overview of scientific computing applying computational approaches to natural sciences, with an emphasis on optimization, modeling, and signal processing.",
+    "syllabus": [
+      "Fundamental methods in mathematics, physics, chemistry, computer science, and biology",
+      "Optimization techniques",
+      "Modeling and signal processing applications"
+    ],
+    "prerequisites": "Foundational knowledge in STEM disciplines"
+  },
+  {
+    "title": "Algorithms and Data Structures",
+    "description": "Fundamental principles of algorithm design and essential data structures to evaluate efficiency, design, analyze, and implement algorithms.",
+    "syllabus": [
+      "Algorithm Analysis: Runtime analysis, Big-O, Omega and Theta notation",
+      "Design Paradigms: Brute force, greedy algorithms, divide-and-conquer, dynamic programming",
+      "Data Structures: Stacks, queues, linked lists, trees, heaps, hash tables, disjoint sets",
+      "Algorithms: Searching, sorting, numeric computations, string matching, graph algorithms",
+      "Complexity Theory: Polynomial reductions, P vs. NP"
+    ],
+    "prerequisites": "Introductory programming knowledge (Java/Python)"
+  },
+  {
+    "title": "Foundations of Artificial Intelligence",
+    "description": "Introduction to the basic concepts, theoretical foundations, and practical applications of classical Artificial Intelligence problems.",
+    "syllabus": [
+      "Introduction and History of Artificial Intelligence",
+      "Rational Agents and environments",
+      "Problem Solving: State-space search, combinatorial optimization",
+      "Constraint Satisfaction Problems (CSPs)",
+      "Logic for knowledge representation and reasoning",
+      "Automated planning and search algorithms for board games"
+    ],
+    "prerequisites": "Foundational computer science knowledge"
+  },
+  {
+    "title": "Machine Learning",
+    "description": "Theoretical and practical foundations of machine learning, covering supervised, unsupervised, and advanced models.",
+    "syllabus": [
+      "Probabilities, generative models, and statistical learning theory",
+      "Supervised Learning: Frequentist and Bayesian approaches, regression, classification, sparse models, SVMs, kernel methods",
+      "Neural Networks: Feed-forward, recurrent topologies, encoder-decoder models",
+      "Unsupervised Models: Mixture models, clustering, PCA, CCA, Variational autoencoders, deep information bottlenecks"
+    ],
+    "prerequisites": "Basic knowledge of pattern recognition, numerical analysis, and statistics"
+  },
+  {
+    "title": "Foundations of Deep Learning",
+    "description": "Rigorous mathematical and theoretical framework of deep neural networks, covering network behavior, optimization, and generalization.",
+    "syllabus": [
+      "Linear networks, activation functions, basic architectures",
+      "Approximation Theory and Universal Approximation",
+      "Optimization techniques and landscape of neural networks",
+      "Generalization bounds and conditions",
+      "Advanced Concepts: Neural Tangent Kernels, complexity theory, regularization, adversarial robustness"
+    ],
+    "prerequisites": "Proficiency in Linear Algebra, Calculus, Probability Theory, and basic Topology. Familiarity with core ML concepts."
+  },
+  {
+    "title": "Modern Reinforcement Learning: From Agents to LLMs",
+    "description": "Transition from traditional agent-based reinforcement learning to modern applications involving Large Language Models.",
+    "syllabus": [
+      "Fundamentals of Reinforcement Learning: core theory, algorithms, decision-making",
+      "Agentic AI: Architectures for autonomous agents and multi-agent coordination",
+      "RL and LLMs: Alignment techniques (RLHF), agentic workflows, fine-tuning",
+      "Practical Implementation of agents using deep RL and LLMs"
+    ],
+    "prerequisites": "Foundational machine learning knowledge"
+  },
+  {
+    "title": "Generative Modeling with Diffusion Models and Stochastic Interpolants",
+    "description": "Foundational mathematical toolkit for generative modeling, bridging probability theory, stochastic processes, and machine learning.",
+    "syllabus": [
+      "Mathematical Foundations: Stochastic differential equations (SDEs), Fokker-Planck equation",
+      "Core Methodologies: Score-based learning, denoising objectives",
+      "Stochastic interpolants as a unifying framework",
+      "MCMC sampling and algorithms",
+      "Applications in image synthesis, scientific simulations, inverse problems"
+    ],
+    "prerequisites": "Comfort with calculus, linear algebra, and basic probability"
+  },
+  {
+    "title": "Machine Learning on Graphs, Groups and Manifolds",
+    "description": "Geometric Deep Learning covering representation learning on non-Euclidean surfaces, symmetry, and topological data analysis.",
+    "syllabus": [
+      "Graphs: Representation learning, GNNs, spectral graph theory, link prediction, node classification",
+      "Groups: Symmetry and group theory, equivariance in neural networks",
+      "Manifolds: Manifold learning and dimensionality reduction",
+      "Advanced Models: Graph Convolutional Networks (GCNs), Graph Attention Networks (GATs)"
+    ],
+    "prerequisites": "Linear algebra, multivariable calculus, probability/statistics, Python programming"
+  },
+  {
+    "title": "Computer Networks",
+    "description": "Advanced-level networking course exploring modern architectural shifts, data-centric networking, and Software Defined Networking.",
+    "syllabus": [
+      "Beyond traditional addressing to data-centric / name-based networking",
+      "Software Defined Networking (SDN) for data centers",
+      "Push-only networking and data deltas",
+      "Decentralized system design and networked systems"
+    ],
+    "prerequisites": "Foundational networking knowledge"
+  },
+  {
+    "title": "Distributed Information Systems",
+    "description": "Architectures, mechanisms, and protocols for coordinating and accessing distributed databases and information systems for data science.",
+    "syllabus": [
+      "Fundamental principles and challenges of distributed information systems",
+      "Architectural paradigms in distributed environments",
+      "Mechanisms and protocols for coordinating distributed databases",
+      "Infrastructures supporting distributed applications deployment"
+    ],
+    "prerequisites": "Foundations of Distributed Systems"
+  },
+  {
+    "title": "High Performance Computing",
+    "description": "Design, implementation, and optimization of high-performance applications on diverse parallel system architectures.",
+    "syllabus": [
+      "Parallel Systems Architectures: multi-core to large-scale clusters",
+      "Programming Models: OpenMP, MPI, OpenACC, CUDA",
+      "Performance Engineering: Reproducibility, scalability, resource utilization, fault tolerance",
+      "HPC in the age of AI and big data analytics"
+    ],
+    "prerequisites": "Foundations in distributed systems"
+  },
+  {
+    "title": "Foundations of Distributed Systems",
+    "description": "Basic principles of parallel and distributed systems, focusing on parallelizing large-scale problems across computing entities.",
+    "syllabus": [
+      "Fundamental principles of distributed and parallel systems",
+      "Parallelization and distribution of algorithms",
+      "Coordination across multi-core and clustered environments",
+      "Preparation for advanced network and HPC coursework"
+    ],
+    "prerequisites": "Basic computer science foundations"
+  },
+  {
+    "title": "Continuous Optimization",
+    "description": "In-depth theoretical treatment of classical and modern optimization methods, convergence rates, and non-convex applications.",
+    "syllabus": [
+      "Foundations of convex analysis",
+      "Gradient Descent and convergence rates",
+      "Subgradient methods and stochastic optimization",
+      "Optimality, lower bounds, and constrained optimization",
+      "Non-convex optimization"
+    ],
+    "prerequisites": "Analysis, linear algebra, and ability to write mathematical proofs"
+  },
+  {
+    "title": "Privacy-Preserving Methods for Data Science and Distributed Systems",
+    "description": "Exploration of privacy-enhancing technologies to share and analyze data without violating privacy rights.",
+    "syllabus": [
+      "Private Data Sharing: Anonymization, de-anonymization, k-anonymity, differential privacy",
+      "Synthetic data generation",
+      "Private Data Analysis: Homomorphic encryption, secret sharing, SMPC",
+      "Privacy-preserving machine learning (DPSGD, PATE)",
+      "Federated learning"
+    ],
+    "prerequisites": "Basic data science and distributed systems knowledge"
+  }
+]
