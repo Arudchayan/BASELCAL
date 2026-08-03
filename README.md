@@ -20,7 +20,7 @@ npm run build      # typecheck + production build
 ## Docs
 
 - [agent.md](agent.md) — domain rules, preset, handoff notes
-- [DATA.md](DATA.md) — which root/archive JSON files to trust
+- [DATA.md](DATA.md) — catalog and VV data sources to trust
 
 ## Persistence
 
