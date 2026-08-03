@@ -23,19 +23,11 @@ export type SemesterId = keyof PlanState;
 export const SEMESTER_IDS: SemesterId[] = ['s1', 's2', 's3', 's4'];
 
 export const SEMESTERS = [
-  { id: 'catalog' as const, title: 'Course Catalog', isDropzone: true },
-  { id: 's1' as const, title: 'Sem 1 · Fall 2026', isDropzone: true },
-  { id: 's2' as const, title: 'Sem 2 · Spring 2027', isDropzone: true },
-  { id: 's3' as const, title: 'Sem 3 · Fall 2027', isDropzone: true },
-  { id: 's4' as const, title: 'Sem 4 (Inc. Thesis)', isDropzone: true },
+  { id: 's1' as const, title: 'Sem 1 · Fall 2026' },
+  { id: 's2' as const, title: 'Sem 2 · Spring 2027' },
+  { id: 's3' as const, title: 'Sem 3 · Fall 2027' },
+  { id: 's4' as const, title: 'Sem 4 (Inc. Thesis)' },
 ];
-
-export const INITIAL_PLAN: PlanState = {
-  s1: [],
-  s2: [],
-  s3: [],
-  s4: [],
-};
 
 /** ML/PhD starter: exactly 28 admission + 120 MSc = 148 CP
  * Hands-on / PhD path with schedulability constraints:
