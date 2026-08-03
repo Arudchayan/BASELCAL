@@ -42,7 +42,7 @@ export function Timetable({
           Weekly Timetable Preview
         </h2>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {SEMESTERS.filter((s) => s.id !== 'catalog').map((s) => (
+          {SEMESTERS.map((s) => (
             <button
               key={s.id}
               onClick={() => setActiveSem(s.id as SemesterId)}
