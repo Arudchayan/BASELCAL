@@ -9,7 +9,6 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "validate": "node validate_all.cjs",
-    "sync:catalog": "node scripts/sync-actual-courses.cjs",
     "audit:vv": "node vv_msc_ds_official_scrape.cjs",
     "test": "playwright test",
     "test:ui": "playwright test --ui"

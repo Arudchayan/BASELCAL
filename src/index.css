@@ -92,8 +92,9 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px var(--glass-shadow);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px var(--glass-shadow);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Opaque cards — avoid per-card backdrop-filter during DnD / note typing */
@@ -102,10 +103,25 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
 }
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px var(--glass-shadow);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
+.explorer-detail-grid > *,
+.explorer-detail-item,
+.explorer-detail-value,
+.explorer-schedule-row > * {
+  min-width: 0;
+}
+
+.explorer-detail-value,
+.explorer-schedule-row > * {
+  overflow-wrap: anywhere;
+}
+
+.explorer-schedule-row {
+  min-width: 0;
+}
+
+.explorer-card-grid > * {
+  min-width: 0;
 }
 
 /* Custom Scrollbar */
@@ -160,6 +176,9 @@ h1, h2, h3, h4, h5, h6 {
   }
   .explorer-detail-grid {
     grid-template-columns: 1fr !important;
+  }
+  .explorer-card-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
   .tips-panel {
     right: 8px !important;

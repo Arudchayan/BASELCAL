@@ -1,14 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ShieldAlert, X, ChevronRight, Info, Target, GraduationCap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Star, ShieldAlert, ChevronRight, Target } from 'lucide-react';
+import { CourseDetailsModal } from './CourseDetailsModal';
 import { COURSES } from './courses';
 import {
   DEGREE_RULES,
   evaluatePlan,
   statusColor,
-  type BucketStatus,
-  type DegreeStats,
-  type RuleKind,
+  type BucketEvaluation,
 } from './degreeRules';
 import { isDisputedModule } from './coveragePolicy';
 import type { Course } from './types';
@@ -16,7 +15,7 @@ import type { Course } from './types';
 type BucketDef = {
   /** Exact catalog module string — must match Course.module */
   module: string;
-  statsKey: keyof DegreeStats;
+  key: BucketEvaluation['key'];
   title: string;
   required: boolean;
   desc: string;
@@ -26,7 +25,7 @@ type BucketDef = {
 const BUCKETS: BucketDef[] = [
   {
     module: DEGREE_RULES.admission.module,
-    statsKey: 'admission',
+    key: 'admission',
     title: 'Conditional Admission',
     required: true,
     desc: 'Exactly 28 CP bachelor Auflagen (model: Analysis 12 + Algorithms 8 + SciComp 8).',
@@ -34,7 +33,7 @@ const BUCKETS: BucketDef[] = [
   },
   {
     module: DEGREE_RULES.thesis.module,
-    statsKey: 'thesis',
+    key: 'thesis',
     title: 'Master Thesis Block',
     required: true,
     desc: 'Exactly 36 CP: Preparation (6) + Master Thesis (30).',
@@ -42,7 +41,7 @@ const BUCKETS: BucketDef[] = [
   },
   {
     module: DEGREE_RULES.ml.module,
-    statsKey: 'ml',
+    key: 'ml',
     title: 'Machine Learning Foundations',
     required: false,
     desc: 'Minimum 18 CP in core ML/AI.',
@@ -50,7 +49,7 @@ const BUCKETS: BucketDef[] = [
   },
   {
     module: DEGREE_RULES.systems.module,
-    statsKey: 'systems',
+    key: 'systems',
     title: 'Systems Foundations',
     required: false,
     desc: 'Minimum 18 CP in scalable systems & computing.',
@@ -58,7 +57,7 @@ const BUCKETS: BucketDef[] = [
   },
   {
     module: DEGREE_RULES.math.module,
-    statsKey: 'math',
+    key: 'math',
     title: 'Mathematical Foundations',
     required: false,
     desc: 'Minimum 18 CP in advanced mathematics.',
@@ -66,54 +65,13 @@ const BUCKETS: BucketDef[] = [
   },
   {
     module: DEGREE_RULES.electives.module,
-    statsKey: 'electives',
+    key: 'electives',
     title: 'Electives in Data Science',
     required: false,
     desc: 'Exactly 20 CP in application domains or Data Science projects.',
     color: '#ec4899',
   },
 ];
-
-function ruleFor(key: keyof DegreeStats): { target: number; kind: RuleKind } {
-  switch (key) {
-    case 'admission':
-      return DEGREE_RULES.admission;
-    case 'math':
-      return DEGREE_RULES.math;
-    case 'ml':
-      return DEGREE_RULES.ml;
-    case 'systems':
-      return DEGREE_RULES.systems;
-    case 'foundationsSum':
-      return DEGREE_RULES.foundationsSum;
-    case 'electives':
-      return DEGREE_RULES.electives;
-    case 'thesis':
-      return DEGREE_RULES.thesis;
-    case 'mscTotal':
-      return DEGREE_RULES.mscTotal;
-    case 'grandTotal':
-      return DEGREE_RULES.grandTotal;
-    default: {
-      const _exhaustive: never = key;
-      return _exhaustive;
-    }
-  }
-}
-
-function bucketStatus(value: number, target: number, kind: RuleKind): BucketStatus {
-  if (value === 0) return 'empty';
-  if (kind === 'exact') {
-    if (value < target) return 'short';
-    if (value > target) return 'overshoot';
-    return 'met';
-  }
-  return value < target ? 'short' : 'met';
-}
-
-function moduleColor(moduleName: string): string {
-  return BUCKETS.find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
-}
 
 export const CourseExplorer = ({
   shortlist,
@@ -157,20 +115,14 @@ export const CourseExplorer = ({
 
   const evaluation = useMemo(() => evaluatePlan(shortlistedCourses), [shortlistedCourses]);
 
-  const totalCp = evaluation.stats.grandTotal;
-  const totalStatus = bucketStatus(totalCp, DEGREE_RULES.grandTotal.target, DEGREE_RULES.grandTotal.kind);
-  const foundationsStatus = bucketStatus(
-    evaluation.stats.foundationsSum,
-    DEGREE_RULES.foundationsSum.target,
-    DEGREE_RULES.foundationsSum.kind,
-  );
+  const totalBucket = evaluation.buckets.find((bucket) => bucket.key === 'grandTotal');
+  const foundationsBucket = evaluation.buckets.find((bucket) => bucket.key === 'foundationsSum');
+  const totalCp = totalBucket?.value ?? 0;
+  const totalStatus = totalBucket?.status ?? 'empty';
+  const foundationsStatus = foundationsBucket?.status ?? 'empty';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
+    <div
       className="glass-panel"
       role="dialog"
       aria-modal="true"
@@ -181,7 +133,7 @@ export const CourseExplorer = ({
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 50,
+        zIndex: 300,
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--bg-primary)',
@@ -250,10 +202,11 @@ export const CourseExplorer = ({
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-primary)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '48px' }}>
           {BUCKETS.map((bucket) => {
-            const rule = ruleFor(bucket.statsKey);
-            const currentCp = evaluation.stats[bucket.statsKey];
-            const status = bucketStatus(currentCp, rule.target, rule.kind);
-            const progressPercent = Math.min(100, (currentCp / rule.target) * 100);
+            const evaluationBucket = evaluation.buckets.find((candidate) => candidate.key === bucket.key);
+            if (!evaluationBucket) return null;
+
+            const { value: currentCp, target, kind, status } = evaluationBucket;
+            const progressPercent = Math.min(100, (currentCp / target) * 100);
             const color = bucket.color;
             const barColor = statusColor(status, color);
 
@@ -290,8 +243,8 @@ export const CourseExplorer = ({
                           <ShieldAlert size={12} /> MUST TAKE
                         </span>
                       )}
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {rule.kind === 'exact' ? 'exact' : 'minimum'}
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                        {kind === 'exact' ? 'exact' : 'minimum'}
                       </span>
                     </div>
                     <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>{bucket.desc}</p>
@@ -299,7 +252,7 @@ export const CourseExplorer = ({
 
                   <div style={{ width: '200px', textAlign: 'right' }}>
                     <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: barColor }}>
-                      {currentCp} / {rule.target} CP
+                      {currentCp} / {target} CP
                       {status === 'overshoot' ? ' (over)' : status === 'met' ? ' ✓' : ''}
                     </div>
                     <div style={{ height: '8px', background: 'var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -312,7 +265,14 @@ export const CourseExplorer = ({
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                <div
+                  className="explorer-card-grid"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+                    gap: '16px',
+                  }}
+                >
                   {coursesByBucket[bucket.module].map((course) => {
                     const isSelected = shortlist.includes(course.id);
                     const disputed = isDisputedModule(course.id);
@@ -328,12 +288,13 @@ export const CourseExplorer = ({
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '12px',
+                          minWidth: 0,
                           transition: 'all 0.2s',
                           position: 'relative',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', minWidth: 0 }}>
                           <h4
                             style={{
                               margin: 0,
@@ -341,6 +302,8 @@ export const CourseExplorer = ({
                               color: 'var(--text-primary)',
                               lineHeight: 1.3,
                               paddingRight: '30px',
+                              minWidth: 0,
+                              overflowWrap: 'anywhere',
                             }}
                           >
                             {course.title}
@@ -388,14 +351,14 @@ export const CourseExplorer = ({
                           </motion.button>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                        <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)', flexWrap: 'wrap', minWidth: 0 }}>
+                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap' }}>
                             {course.code}
                           </span>
-                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap' }}>
                             {course.cp} CP
                           </span>
-                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)', minWidth: 0, overflowWrap: 'anywhere' }}>
                             {course.when}
                           </span>
                         </div>
@@ -410,7 +373,7 @@ export const CourseExplorer = ({
                             alignItems: 'center',
                           }}
                         >
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', minWidth: 0, overflowWrap: 'anywhere' }}>
                             {course.exam ? String(course.exam).split('(')[0].substring(0, 20) + '...' : 'Check details'}
                           </span>
                           <motion.button
@@ -442,225 +405,17 @@ export const CourseExplorer = ({
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedCourse && (
-          <motion.div
-            key="modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.6)',
-              zIndex: 100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '32px',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-            }}
-            onClick={() => setSelectedCourse(null)}
-          >
-            <motion.div
-              key="modal-content"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass-panel"
-              role="dialog"
-              aria-label={selectedCourse.title}
-              style={{
-                position: 'relative',
-                zIndex: 101,
-                width: '100%',
-                maxWidth: '800px',
-                maxHeight: '90vh',
-                background: 'var(--bg-primary)',
-                borderRadius: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                border: '1px solid var(--border-strong)',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
-              }}
-            >
-              <div
-                style={{
-                  padding: '24px 32px',
-                  borderBottom: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-secondary)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        color: moduleColor(selectedCourse.module),
-                      }}
-                    >
-                      {selectedCourse.module}
-                    </span>
-                  </div>
-                  <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--text-primary)' }}>{selectedCourse.title}</h2>
-                </div>
-                <motion.button
-                  whileHover={{ rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setSelectedCourse(null)}
-                  aria-label="Close"
-                  style={{
-                    background: 'var(--bg-tertiary)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '36px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  <X size={20} />
-                </motion.button>
-              </div>
-
-              <div style={{ flex: 1, overflowY: 'auto', padding: '32px', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }} className="explorer-detail-grid">
-                <div>
-                  {selectedCourse.description && (
-                    <div style={{ marginBottom: '24px' }}>
-                      <h3
-                        style={{
-                          fontSize: '16px',
-                          color: 'var(--text-primary)',
-                          marginBottom: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                        }}
-                      >
-                        <Info size={16} color="var(--accent-primary)" /> Description
-                      </h3>
-                      <p style={{ lineHeight: 1.6, color: 'var(--text-secondary)', fontSize: '15px', margin: 0 }}>
-                        {selectedCourse.description}
-                      </p>
-                    </div>
-                  )}
-                  {selectedCourse.syllabus && Array.isArray(selectedCourse.syllabus) && selectedCourse.syllabus.length > 0 && (
-                    <div style={{ marginBottom: '24px' }}>
-                      <h3
-                        style={{
-                          fontSize: '16px',
-                          color: 'var(--text-primary)',
-                          marginBottom: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                        }}
-                      >
-                        <GraduationCap size={16} color="var(--accent-primary)" /> Learning Objectives
-                      </h3>
-                      <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, margin: 0 }}>
-                        {selectedCourse.syllabus.map((s, i) => (
-                          <li key={i} style={{ marginBottom: '6px' }}>
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                    <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      Credits & Semester
-                    </strong>
-                    <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '500' }}>
-                      {selectedCourse.cp} CP · {selectedCourse.when}
-                    </div>
-                  </div>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                    <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      Assessment
-                    </strong>
-                    <div style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4 }}>
-                      {selectedCourse.exam || 'N/A'}
-                    </div>
-                  </div>
-                  {selectedCourse.prerequisites && (
-                    <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                      <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        Prerequisites
-                      </strong>
-                      <div style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4 }}>
-                        {selectedCourse.prerequisites}
-                      </div>
-                    </div>
-                  )}
-                  {selectedCourse.url && (
-                    <a href={selectedCourse.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', fontWeight: 'bold', fontSize: 14 }}>
-                      Official course page →
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: '24px 32px',
-                  borderTop: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-secondary)',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                }}
-              >
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    toggleShortlist(selectedCourse.id);
-                    setSelectedCourse(null);
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    background: shortlist.includes(selectedCourse.id) ? 'rgba(245, 158, 11, 0.15)' : 'var(--accent-primary)',
-                    color: shortlist.includes(selectedCourse.id) ? '#d97706' : '#fff',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    boxShadow: shortlist.includes(selectedCourse.id) ? 'none' : '0 4px 12px var(--accent-glow)',
-                  }}
-                >
-                  <Star
-                    size={20}
-                    fill={shortlist.includes(selectedCourse.id) ? '#f59e0b' : 'none'}
-                    color={shortlist.includes(selectedCourse.id) ? '#f59e0b' : 'currentColor'}
-                  />
-                  {shortlist.includes(selectedCourse.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {selectedCourse && (
+        <CourseDetailsModal
+          course={selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+          isWishlisted={shortlist.includes(selectedCourse.id)}
+          onToggleWishlist={() => {
+            toggleShortlist(selectedCourse.id);
+            setSelectedCourse(null);
+          }}
+        />
+      )}
+    </div>
   );
 };

@@ -1,10 +1,22 @@
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, BookOpen, Calendar, Maximize2, X, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AlertCircle, BookOpen, Calendar, Maximize2, Star, X, Zap } from 'lucide-react';
 import { getModuleDiscrepancy } from './coveragePolicy';
 import type { Course } from './types';
 
-export function CourseDetailsModal({ course, onClose }: { course: Course; onClose: () => void }) {
+type CourseDetailsModalProps = {
+  course: Course;
+  onClose: () => void;
+  isWishlisted?: boolean;
+  onToggleWishlist?: () => void;
+};
+
+export function CourseDetailsModal({
+  course,
+  onClose,
+  isWishlisted = false,
+  onToggleWishlist,
+}: CourseDetailsModalProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -18,12 +30,10 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
   const discrepancy = getModuleDiscrepancy(course.id);
 
   return (
-    <AnimatePresence>
       <motion.div
         key="course-details-modal-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
         role="dialog"
         aria-modal="true"
         aria-label={course.title}
@@ -52,7 +62,6 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="glass-panel"
           style={{
@@ -80,17 +89,18 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               background: 'rgba(128,128,128,0.03)',
             }}
           >
-            <div>
-              <h2 style={{ margin: '0 0 8px 0', fontSize: '20px', color: 'var(--text-primary)' }}>
+            <div style={{ minWidth: 0, flex: 1, paddingRight: '12px' }}>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '20px', color: 'var(--text-primary)', overflowWrap: 'anywhere' }}>
                 {course.title}
               </h2>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span
                   style={{
                     fontSize: '12px',
                     padding: '2px 8px',
                     borderRadius: '12px',
                     background: 'var(--border-subtle)',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {course.code}
@@ -101,11 +111,14 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                     padding: '2px 8px',
                     borderRadius: '12px',
                     background: 'var(--border-subtle)',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {course.cp} CP
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{course.module}</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: 0, overflowWrap: 'anywhere' }}>
+                  {course.module}
+                </span>
                 {discrepancy && (
                   <span
                     title={discrepancy.note}
@@ -179,6 +192,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             )}
 
             <div
+              className="explorer-detail-grid"
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
@@ -190,7 +204,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               }}
             >
               {course.lecturer && (
-                <div>
+                <div className="explorer-detail-item">
                   <strong
                     style={{
                       color: 'var(--text-primary)',
@@ -203,11 +217,13 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                   >
                     Lecturer
                   </strong>
-                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{course.lecturer}</div>
+                  <div className="explorer-detail-value" style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {course.lecturer}
+                  </div>
                 </div>
               )}
               {course.exam && (
-                <div>
+                <div className="explorer-detail-item">
                   <strong
                     style={{
                       color: 'var(--text-primary)',
@@ -220,11 +236,13 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                   >
                     Exam Type
                   </strong>
-                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{course.exam}</div>
+                  <div className="explorer-detail-value" style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {course.exam}
+                  </div>
                 </div>
               )}
               {course.when && (
-                <div>
+                <div className="explorer-detail-item">
                   <strong
                     style={{
                       color: 'var(--text-primary)',
@@ -237,7 +255,9 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                   >
                     Offering
                   </strong>
-                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{course.when}</div>
+                  <div className="explorer-detail-value" style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {course.when}
+                  </div>
                 </div>
               )}
             </div>
@@ -267,20 +287,23 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                 >
                   {course.schedule.map((sess, i) => (
                     <li
+                      className="explorer-schedule-row"
                       key={i}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
+                        flexWrap: 'wrap',
+                        minWidth: 0,
                         background: 'var(--bg-secondary)',
                         padding: '12px',
                         borderRadius: '8px',
                         border: '1px solid var(--border-subtle)',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', width: '90px' }}>{sess.day}</div>
-                      <div style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>{sess.time}</div>
-                      <div style={{ color: 'var(--text-muted)' }}>{sess.room}</div>
+                      <div style={{ fontWeight: 'bold', flex: '0 1 90px', minWidth: 0 }}>{sess.day}</div>
+                      <div style={{ color: 'var(--accent-primary)', fontWeight: '600', minWidth: 0 }}>{sess.time}</div>
+                      <div style={{ color: 'var(--text-muted)', minWidth: 0, flex: '1 1 auto' }}>{sess.room}</div>
                     </li>
                   ))}
                 </ul>
@@ -361,8 +384,42 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               </a>
             )}
           </div>
+
+          {onToggleWishlist && (
+            <div
+              style={{
+                padding: '24px 32px',
+                borderTop: '1px solid var(--border-subtle)',
+                background: 'var(--bg-secondary)',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onToggleWishlist}
+                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: isWishlisted ? 'rgba(245, 158, 11, 0.15)' : 'var(--accent-primary)',
+                  color: isWishlisted ? '#d97706' : '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: isWishlisted ? 'none' : '0 4px 12px var(--accent-glow)',
+                }}
+              >
+                <Star size={20} fill={isWishlisted ? '#f59e0b' : 'none'} color={isWishlisted ? '#f59e0b' : 'currentColor'} />
+                {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+              </motion.button>
+            </div>
+          )}
         </motion.div>
       </motion.div>
-    </AnimatePresence>
   );
 }
