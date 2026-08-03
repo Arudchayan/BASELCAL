@@ -60,13 +60,11 @@ Module totals: Admission 28, Math 18, ML 26, Systems 20, Foundations 64, Electiv
 ## Data pipeline
 ```
 vv_scrape_cache.json  →  scrape_and_apply_vv.cjs  →  src/courses.ts
-                                                      ↓
-                                              actual_courses.json
-                                                      ↓
-                                              npm run validate
+                                                       ↓
+                                               npm run validate
 ```
 
-See [DATA.md](DATA.md) for which root JSON files to trust vs ignore.
+See [DATA.md](DATA.md) for which catalog and VV data sources to trust.
 
 VV **completeness** (all MSc DS module courses on VV): [COVERAGE_VERIFICATION_PLAN.md](COVERAGE_VERIFICATION_PLAN.md). Phase 0 policy: `coverage_policy.json`.
 
