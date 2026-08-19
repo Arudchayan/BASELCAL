@@ -123,7 +123,7 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
         ))}
       </div>
 
-      <details open style={{ marginTop: '16px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+      <details style={{ marginTop: '16px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
         <summary
           style={{
             cursor: 'pointer',
@@ -168,7 +168,7 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
                 <ul style={{ margin: '6px 0 0', paddingLeft: '16px', color: 'var(--text-muted)', fontSize: '11px', lineHeight: 1.5 }}>
                   {bucketCourses.map((course) => (
                     <li key={course.id}>
-                      {course.title} · {course.cp} CP
+                      {course.code} · {course.cp} CP
                     </li>
                   ))}
                 </ul>

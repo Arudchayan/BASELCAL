@@ -71,7 +71,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             zIndex: 10,
             width: '100%',
             maxWidth: '650px',
-            maxHeight: '85vh',
+            maxHeight: 'min(85vh, calc(100vh - 64px))',
             display: 'flex',
             flexDirection: 'column',
             background: 'var(--bg-primary)',
@@ -241,7 +241,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                 gap: '16px',
                 background: 'rgba(128,128,128,0.03)',
                 padding: '16px',
@@ -339,7 +339,13 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               >
                 <AlertCircle size={16} color="var(--accent-primary)" /> Placement warnings
               </strong>
-              <div style={{ fontSize: '14px', color: course.when ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
+              <div
+                style={{
+                  fontSize: '14px',
+                  color: course.when ? 'var(--text-secondary)' : 'var(--text-muted)',
+                  fontStyle: course.when ? 'normal' : 'italic',
+                }}
+              >
                 {offeringLabel}
               </div>
               {noFixedSchedule && (
