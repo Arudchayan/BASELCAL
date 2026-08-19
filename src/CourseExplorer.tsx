@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ShieldAlert, X, ChevronRight, Info, Target, GraduationCap } from 'lucide-react';
+import { AlertCircle, Calendar, Star, ShieldAlert, X, ChevronRight, Info, Target, GraduationCap } from 'lucide-react';
 import { COURSES } from './courses';
 import {
   DEGREE_RULES,
@@ -10,7 +10,10 @@ import {
   type DegreeStats,
   type RuleKind,
 } from './degreeRules';
-import { isDisputedModule } from './coveragePolicy';
+import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
+import { isStaleWatch } from './dataFreshness';
+import { getPlacementWarnings } from './offering';
+import { getPriorityBg, getPriorityColor } from './uiHelpers';
 import type { Course } from './types';
 
 type BucketDef = {
@@ -156,6 +159,19 @@ export const CourseExplorer = ({
   );
 
   const evaluation = useMemo(() => evaluatePlan(shortlistedCourses), [shortlistedCourses]);
+
+  const discrepancy = selectedCourse ? getModuleDiscrepancy(selectedCourse.id) : undefined;
+  const stale = selectedCourse ? isStaleWatch(selectedCourse.id) : false;
+  const placementWarnings = selectedCourse
+    ? (['s1', 's2'] as const)
+        .flatMap((semesterId) => getPlacementWarnings(selectedCourse, semesterId))
+        .filter(
+          (warning, index, warnings) =>
+            warnings.findIndex(
+              (candidate) => candidate.level === warning.level && candidate.message === warning.message,
+            ) === index,
+        )
+    : [];
 
   const totalCp = evaluation.stats.grandTotal;
   const totalStatus = bucketStatus(totalCp, DEGREE_RULES.grandTotal.target, DEGREE_RULES.grandTotal.kind);
@@ -316,6 +332,9 @@ export const CourseExplorer = ({
                   {coursesByBucket[bucket.module].map((course) => {
                     const isSelected = shortlist.includes(course.id);
                     const disputed = isDisputedModule(course.id);
+                    const stale = isStaleWatch(course.id);
+                    const firstSession = course.schedule?.[0];
+                    const exam = course.exam?.trim() || '';
                     return (
                       <motion.div
                         key={course.id}
@@ -395,9 +414,48 @@ export const CourseExplorer = ({
                           <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
                             {course.cp} CP
                           </span>
+                          <span
+                            style={{
+                              background: getPriorityBg(course.priority),
+                              color: getPriorityColor(course.priority),
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid var(--border-subtle)',
+                            }}
+                          >
+                            {course.priority}
+                          </span>
                           <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
                             {course.when}
                           </span>
+                          {firstSession && (
+                            <span
+                              style={{
+                                background: 'var(--bg-primary)',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border-subtle)',
+                              }}
+                              title="First weekly timetable slot"
+                            >
+                              {firstSession.day} · {firstSession.time}
+                            </span>
+                          )}
+                          {stale && (
+                            <span
+                              style={{
+                                background: 'rgba(217, 119, 6, 0.12)',
+                                color: '#d97706',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid rgba(217, 119, 6, 0.25)',
+                                fontWeight: 700,
+                              }}
+                              title="VV schedule may be from an older offering — re-check Vorlesungsverzeichnis"
+                            >
+                              Verify VV
+                            </span>
+                          )}
                         </div>
 
                         <div
@@ -411,7 +469,7 @@ export const CourseExplorer = ({
                           }}
                         >
                           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                            {course.exam ? String(course.exam).split('(')[0].substring(0, 20) + '...' : 'Check details'}
+                            {exam ? `${exam.slice(0, 80)}${exam.length > 80 ? '...' : ''}` : 'Check details'}
                           </span>
                           <motion.button
                             whileHover={{ x: 5 }}
@@ -516,6 +574,49 @@ export const CourseExplorer = ({
                     </span>
                   </div>
                   <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--text-primary)' }}>{selectedCourse.title}</h2>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '12px' }}>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        background: 'var(--border-subtle)',
+                      }}
+                    >
+                      {selectedCourse.code}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        background: 'var(--border-subtle)',
+                      }}
+                    >
+                      {selectedCourse.cp} CP
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        background: getPriorityBg(selectedCourse.priority),
+                        color: getPriorityColor(selectedCourse.priority),
+                      }}
+                    >
+                      {selectedCourse.priority}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        background: 'var(--border-subtle)',
+                      }}
+                    >
+                      {selectedCourse.lang}
+                    </span>
+                  </div>
                 </div>
                 <motion.button
                   whileHover={{ rotate: 90 }}
@@ -540,6 +641,75 @@ export const CourseExplorer = ({
               </div>
 
               <div style={{ flex: 1, overflowY: 'auto', padding: '32px', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }} className="explorer-detail-grid">
+                {(stale || discrepancy || placementWarnings.length > 0) && (
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {stale && (
+                      <div
+                        style={{
+                          background: 'rgba(217, 119, 6, 0.12)',
+                          border: '1px solid rgba(217, 119, 6, 0.3)',
+                          color: '#d97706',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <ShieldAlert size={16} /> Verify VV offering before enrolling
+                        </strong>
+                        <div style={{ marginTop: '4px' }}>
+                          This course has older or irregular VV offering metadata. Confirm that it runs in your target
+                          semester before enrolling.
+                        </div>
+                      </div>
+                    )}
+                    {discrepancy && (
+                      <div
+                        style={{
+                          background: 'rgba(217, 119, 6, 0.12)',
+                          border: '1px solid rgba(217, 119, 6, 0.3)',
+                          color: '#d97706',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          lineHeight: 1.5,
+                        }}
+                        title={discrepancy.note}
+                      >
+                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <ShieldAlert size={16} /> Disputed module membership
+                        </strong>
+                        <div style={{ marginTop: '4px' }}>
+                          Catalog: {discrepancy.catalogModule}. VV Modules tab: {discrepancy.vvModulesTab}. Resolve
+                          against the program PDF before counting.
+                        </div>
+                      </div>
+                    )}
+                    {placementWarnings.length > 0 && (
+                      <div
+                        style={{
+                          background: 'rgba(217, 119, 6, 0.08)',
+                          border: '1px solid rgba(217, 119, 6, 0.25)',
+                          color: '#d97706',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <AlertCircle size={16} /> Placement warnings
+                        </strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '20px' }}>
+                          {placementWarnings.map((warning, index) => (
+                            <li key={`${warning.level}-${index}`}>{warning.message}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div>
                   {selectedCourse.description && (
                     <div style={{ marginBottom: '24px' }}>
@@ -558,6 +728,51 @@ export const CourseExplorer = ({
                       <p style={{ lineHeight: 1.6, color: 'var(--text-secondary)', fontSize: '15px', margin: 0 }}>
                         {selectedCourse.description}
                       </p>
+                    </div>
+                  )}
+                  {selectedCourse.schedule && selectedCourse.schedule.length > 0 && (
+                    <div style={{ marginBottom: '24px' }}>
+                      <h3
+                        style={{
+                          fontSize: '16px',
+                          color: 'var(--text-primary)',
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        <Calendar size={16} color="var(--accent-primary)" /> Weekly Schedule
+                      </h3>
+                      <ul
+                        style={{
+                          margin: 0,
+                          paddingLeft: 0,
+                          listStyle: 'none',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                        }}
+                      >
+                        {selectedCourse.schedule.map((sess, i) => (
+                          <li
+                            key={i}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              background: 'var(--bg-secondary)',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-subtle)',
+                            }}
+                          >
+                            <div style={{ fontWeight: 'bold', width: '90px' }}>{sess.day}</div>
+                            <div style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{sess.time}</div>
+                            <div style={{ color: 'var(--text-muted)' }}>{sess.room}</div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                   {selectedCourse.syllabus && Array.isArray(selectedCourse.syllabus) && selectedCourse.syllabus.length > 0 && (
@@ -585,6 +800,14 @@ export const CourseExplorer = ({
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                    <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      Lecturer
+                    </strong>
+                    <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '500' }}>
+                      {selectedCourse.lecturer || 'Not specified'}
+                    </div>
+                  </div>
                   <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
                     <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
                       Credits & Semester

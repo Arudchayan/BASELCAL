@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, BookOpen, CheckCircle2, Info } from 'lucide-react';
 import { MetricBox } from './MetricBox';
@@ -7,7 +8,7 @@ import { getPlacementWarnings } from './offering';
 import { allPlannedCourses } from './planStorage';
 import { DATA_FRESHNESS, isStaleWatch } from './dataFreshness';
 import { COVERAGE_POLICY, getModuleDiscrepancy } from './coveragePolicy';
-import type { PlanState, SemesterId } from './types';
+import type { Course, PlanState, SemesterId } from './types';
 import { SEMESTER_IDS } from './types';
 
 const BUCKET_COLORS: Record<string, string> = {
@@ -22,8 +23,11 @@ const BUCKET_COLORS: Record<string, string> = {
   grandTotal: '#f59e0b',
 };
 
-export function ProgressPanel({ plan }: { plan: PlanState }) {
-  const courses = allPlannedCourses(plan);
+const BREAKDOWN_KEYS = ['admission', 'math', 'ml', 'systems', 'electives', 'thesis'] as const;
+
+export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanState; courses?: Course[] }) {
+  const [showAllConflicts, setShowAllConflicts] = useState(false);
+  const courses = providedCourses ?? allPlannedCourses(plan);
   const { stats, buckets, isComplete, issues } = evaluatePlan(courses);
   const admissionTarget = DEGREE_RULES.admission.target;
   const mscTarget = DEGREE_RULES.mscTotal.target;
@@ -44,17 +48,25 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
   }
 
   const allConflicts = SEMESTER_IDS.flatMap((sem) =>
-    findConflicts(plan[sem]).map((c) => {
-      const hard = isHardClash(c.courseA, c.courseB);
+    findConflicts(plan[sem]).map((pair) => {
       return {
         sem,
-        hard,
-        text: `${sem.toUpperCase()} ${c.day}: ${c.courseA.title} ↔ ${c.courseB.title}`,
+        ...pair,
+        hard: isHardClash(pair.courseA, pair.courseB),
       };
     }),
   );
   const hardConflicts = allConflicts.filter((c) => c.hard);
   const softConflicts = allConflicts.filter((c) => !c.hard);
+  const visibleHardConflicts = showAllConflicts ? hardConflicts : hardConflicts.slice(0, 12);
+  const visibleSoftConflicts = showAllConflicts ? softConflicts : softConflicts.slice(0, 8);
+  const hasHiddenConflicts = hardConflicts.length > 12 || softConflicts.length > 8;
+
+  const bucketBreakdown = BREAKDOWN_KEYS.map((key) => ({
+    key,
+    bucket: buckets.find((b) => b.key === key),
+    courses: courses.filter((course) => course.module === DEGREE_RULES[key].module),
+  }));
 
   const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 36, s2: 36, s3: 42, s4: 46 };
   const loadIssues = SEMESTER_IDS.flatMap((sem) => {
@@ -110,6 +122,61 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
           />
         ))}
       </div>
+
+      <details open style={{ marginTop: '16px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+        <summary
+          style={{
+            cursor: 'pointer',
+            color: 'var(--text-primary)',
+            fontSize: '13px',
+            fontWeight: 700,
+          }}
+        >
+          Bucket breakdown
+        </summary>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '8px',
+            marginTop: '12px',
+          }}
+        >
+          {bucketBreakdown.map(({ key, bucket, courses: bucketCourses }) => (
+            <details key={key} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '8px 10px' }}>
+              <summary
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  color: 'var(--text-secondary)',
+                  fontSize: '12px',
+                }}
+              >
+                <span>{bucket?.label ?? key}</span>
+                <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  {bucketCourses.reduce((sum, course) => sum + course.cp, 0)} CP · {bucketCourses.length} course
+                  {bucketCourses.length === 1 ? '' : 's'}
+                </span>
+              </summary>
+              <div style={{ marginTop: '8px', color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.5 }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Contributes:</strong>{' '}
+                {bucketCourses.length > 0 ? bucketCourses.map((course) => course.code).join(', ') : 'None planned'}
+              </div>
+              {bucketCourses.length > 0 && (
+                <ul style={{ margin: '6px 0 0', paddingLeft: '16px', color: 'var(--text-muted)', fontSize: '11px', lineHeight: 1.5 }}>
+                  {bucketCourses.map((course) => (
+                    <li key={course.id}>
+                      {course.title} · {course.cp} CP
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </details>
+          ))}
+        </div>
+      </details>
 
       <div style={{ marginTop: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         {stats.admission === admissionTarget ? (
@@ -258,10 +325,22 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
         <div style={{ marginTop: 12, fontSize: 13, color: '#ef4444' }}>
           <strong>Mandatory timetable conflicts</strong>
           <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
-            {hardConflicts.slice(0, 12).map((issue, i) => (
-              <li key={i}>{issue.text}</li>
+            {visibleHardConflicts.map((pair) => (
+              <li key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}>
+                <button
+                  type="button"
+                  className="conflict-row"
+                  title={`Show conflict details for ${pair.courseA.id} and ${pair.courseB.id}`}
+                  onClick={() =>
+                    window.alert(
+                      `Conflict: ${pair.courseA.id} vs ${pair.courseB.id}\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
+                    )
+                  }
+                >
+                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} vs ${pair.courseB.title}`}
+                </button>
+              </li>
             ))}
-            {hardConflicts.length > 12 && <li>…and {hardConflicts.length - 12} more</li>}
           </ul>
         </div>
       )}
@@ -270,12 +349,45 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
         <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
           <strong>Other timetable overlaps</strong>
           <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
-            {softConflicts.slice(0, 8).map((issue, i) => (
-              <li key={i}>{issue.text}</li>
+            {visibleSoftConflicts.map((pair) => (
+              <li key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}>
+                <button
+                  type="button"
+                  className="conflict-row"
+                  title={`Show conflict details for ${pair.courseA.id} and ${pair.courseB.id}`}
+                  onClick={() =>
+                    window.alert(
+                      `Conflict: ${pair.courseA.id} vs ${pair.courseB.id}\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
+                    )
+                  }
+                >
+                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} vs ${pair.courseB.title}`}
+                </button>
+              </li>
             ))}
-            {softConflicts.length > 8 && <li>…and {softConflicts.length - 8} more</li>}
           </ul>
         </div>
+      )}
+
+      {hasHiddenConflicts && (
+        <button
+          type="button"
+          aria-expanded={showAllConflicts}
+          onClick={() => setShowAllConflicts((visible) => !visible)}
+          style={{
+            alignSelf: 'flex-start',
+            marginTop: '8px',
+            padding: '6px 10px',
+            borderRadius: '8px',
+            border: '1px solid var(--border-subtle)',
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+        >
+          {showAllConflicts ? 'Show fewer conflicts' : 'Show all conflicts'}
+        </button>
       )}
 
       {disputedInPlan.length > 0 && (
@@ -285,10 +397,13 @@ export function ProgressPanel({ plan }: { plan: PlanState }) {
             Catalog module tags follow the program PDF when known; VV Modules tab may list a different bucket.
             Confirm with Studiensekretariat before counting toward a foundation vs elective.
           </p>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+            <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
             {disputedInPlan.map(({ course, discrepancy }) => (
               <li key={course.id}>
-                {course.title} ({course.id}): catalog “{discrepancy.catalogModule}” vs VV “{discrepancy.vvModulesTab}”
+                <span title={discrepancy.note}>
+                  {course.title} ({course.id})
+                </span>
+                : catalog “{discrepancy.catalogModule}” vs VV “{discrepancy.vvModulesTab}”
               </li>
             ))}
           </ul>

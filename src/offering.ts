@@ -29,8 +29,8 @@ export function parseOffering(when: string | undefined): OfferingMeta {
     return { season: 'irregular', biennial, annual: false, raw };
   }
 
-  const hasFall = /\bfall\b/.test(lower);
-  const hasSpring = /\bspring\b/.test(lower);
+  const hasFall = /\b(herbstsemester|fall|hs|herbst|autumn)\b/i.test(lower);
+  const hasSpring = /\b(frühjahrssemester|fruhjahrssemester|fruehjahrssemester|spring|fs|fr[uü]hjahr|fruehjahr)\b/i.test(lower);
 
   if (annual && hasFall && !hasSpring) {
     // Jahreskurs: starts fall, continues spring — halves must still respect semester

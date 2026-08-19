@@ -2,13 +2,18 @@ import type { COURSES } from './courses';
 
 export type ScheduleSession = { day: string; time: string; room: string };
 
-export type Course = (typeof COURSES)[0] & {
+export type ScheduleStatus = 'scheduled' | 'contract' | 'thesis' | 'unknown';
+
+export type Course = Omit<(typeof COURSES)[0], 'scheduleStatus'> & {
   description?: string;
   prerequisites?: string;
   exam?: string;
   lecturer?: string;
   syllabus?: string[];
   schedule?: ScheduleSession[];
+  scheduleStatus?: ScheduleStatus;
+  provenance?: { lastVerified?: string; source?: string; stale?: boolean };
+  verifiedAt?: string;
 };
 
 export type PlanState = {

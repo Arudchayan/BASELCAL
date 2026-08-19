@@ -1,6 +1,9 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 
+const POLICY = JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8'));
+const PRESERVE_CP_IDS = new Set(POLICY.preserveCpIds || ['AD-10489-1', 'AD-10489-2']);
+
 const VV_BASE = 'https://vorlesungsverzeichnis.unibas.ch/en/course-directory';
 const PERIODE = { fall2026: '2026004', spring2026: '2025005' };
 const DAY_MAP = {
@@ -21,8 +24,11 @@ function periodeForWhen(when = '') {
 function titleMatches(course, rowTitle) {
   const t = rowTitle.toLowerCase();
   const id = course.id.toLowerCase();
-  if (id.includes('10489-1')) return t.includes('analysis i') && !t.includes('analysis ii');
-  if (id.includes('10489-2')) return t.includes('analysis ii');
+  // Jahreskurs special case (data-driven by coverage_policy.json): AD-10489 Analysis I/II
+  // share the base code, so disambiguate rows by title only for preserved CP ids.
+  const preserved = PRESERVE_CP_IDS.has(course.id);
+  if (preserved && id.endsWith('-1')) return t.includes('analysis i') && !t.includes('analysis ii');
+  if (preserved && id.endsWith('-2')) return t.includes('analysis ii');
   return true;
 }
 
@@ -159,14 +165,13 @@ async function scrapeOne(page, course) {
   };
 }
 
-const PRESERVE_CP_IDS = new Set(['AD-10489-1', 'AD-10489-2']);
-
 function applyScrape(courses, scrapedById) {
   let updated = 0;
   for (const course of courses) {
     const data = scrapedById[course.id];
     if (!data || data.status !== 'ok') continue;
     course.url = data.url;
+    // titleNormalization === 'full_vv_title' (coverage_policy.json): keep full VV title, no colon-strip.
     if (data.title) course.title = data.title.trim();
     if (Number.isFinite(data.cp) && !PRESERVE_CP_IDS.has(course.id)) course.cp = data.cp;
     if (data.description) course.description = data.description;
@@ -201,13 +206,20 @@ function applyScrape(courses, scrapedById) {
 
   for (let i = 0; i < slice.length; i++) {
     const course = slice[i];
-    if (cache[course.id]?.status === 'ok' && !process.argv.includes('--refresh')) {
+    const entry = cache[course.id];
+    const forceRefresh = process.argv.includes('--refresh') || process.argv.includes('--force-refresh');
+    if (entry?.status === 'ok' && !forceRefresh) {
+      // Freshness guard: cached VV data older than 30 days is stale even if status is ok.
+      if (entry.fetchedAt && Date.now() - Date.parse(entry.fetchedAt) > 30 * 24 * 60 * 60 * 1000) {
+        console.warn(`stale cache: ${course.id} fetched ${entry.fetchedAt} (>30d) — re-run with --refresh`);
+      }
       ok++;
       continue;
     }
     process.stdout.write(`[${i + 1}/${slice.length}] ${course.id} (${course.code})... `);
     try {
       const result = await scrapeOne(page, course);
+      result.fetchedAt = new Date().toISOString();
       cache[course.id] = result;
       fs.writeFileSync(cachePath, JSON.stringify(cache, null, 2));
       if (result.status === 'ok') {

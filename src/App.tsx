@@ -35,7 +35,7 @@ import {
   PLAN_DISCLAIMER,
 } from './planStorage';
 import { DATA_FRESHNESS } from './dataFreshness';
-import { isDisputedModule } from './coveragePolicy';
+import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { ML_PHD_PRESET_IDS, SEMESTERS, SEMESTER_IDS, type Course, type PlanState, type SemesterId } from './types';
 import './index.css';
 
@@ -45,6 +45,12 @@ const CourseExplorer = lazy(() =>
 const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Timetable })));
 
 const boot = loadPlanFromStorageDetailed();
+
+// ponytail: single helper, inline IIFE in JSX is unreadable
+const daysSince = (iso: string): number | null => {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  return Number.isNaN(days) ? null : days;
+};
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
@@ -134,7 +140,7 @@ function App() {
   const plannedCourseIds = useMemo(() => new Set(allPlannedCourses(plan).map((c) => c.id)), [plan]);
 
   const catalogCourses = useMemo(() => {
-    return COURSES.filter((c) => {
+    return (COURSES as Course[]).filter((c) => {
       const matchSearch = (c.title + ' ' + c.code + ' ' + (c.note || ''))
         .toLowerCase()
         .includes(searchLower);
@@ -144,7 +150,7 @@ function App() {
       const matchSemester = matchesSemesterFilter(c, semesterFilter);
       const notPlanned = !plannedCourseIds.has(c.id);
       return matchSearch && matchModule && matchPriority && matchShortlist && matchSemester && notPlanned;
-    }) as Course[];
+    });
   }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, showShortlistOnly, shortlist]);
 
   const preferredSemesterFor = (course: Course): SemesterId => {
@@ -342,8 +348,20 @@ function App() {
         </div>
       )}
       <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 12px' }}>
-        Catalog reviewed {DATA_FRESHNESS.lastReviewed}
-        {!DATA_FRESHNESS.moduleManifestComplete ? ' · VV module membership still incomplete' : ''}.
+        Catalog reviewed {DATA_FRESHNESS.lastReviewed} (
+        {daysSince(DATA_FRESHNESS.lastReviewed) ?? '?'} days ago) ·{' '}
+        {DATA_FRESHNESS.staleWatchIds.length} stale/irregular offerings flagged
+        {!DATA_FRESHNESS.moduleManifestComplete
+          ? ` · VV module manifest incomplete — ${COVERAGE_POLICY.lastVerified.catalogCoursesWithVvDetail} VV detail pages verified ${COVERAGE_POLICY.lastVerified.date}`
+          : ''}
+        <span
+          title="VV module tree leaves empty — completeness vs VV manifest not yet proven (see COVERAGE_VERIFICATION_PLAN.md Phase 1)"
+          style={{ cursor: 'help' }}
+        >
+          {' '}
+          Why?
+        </span>
+        .
       </p>
       <motion.header
         initial={{ y: -20, opacity: 0 }}
@@ -657,7 +675,7 @@ function App() {
                 </motion.div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                  <ProgressPanel plan={plan} />
+                  <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} />
 
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}

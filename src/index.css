@@ -102,10 +102,26 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
 }
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px var(--glass-shadow);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
+.conflict-row {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.conflict-row:hover,
+.conflict-row:focus-visible {
+  background: var(--glass-hover-bg);
+  border-color: var(--border-subtle);
 }
 
 /* Custom Scrollbar */

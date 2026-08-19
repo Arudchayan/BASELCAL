@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { AlertCircle, Maximize2, Plus, X, Zap } from 'lucide-react';
+import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { parseOffering, primaryMismatchMessage } from './offering';
 import { isStaleWatch } from './dataFreshness';
 import { getModuleColor, getPriorityBg, getPriorityColor } from './uiHelpers';
@@ -37,6 +38,14 @@ function CourseCardInner({
   const mismatchWarning =
     isPlanned && currentSemId ? primaryMismatchMessage(course, currentSemId) : null;
   const offering = parseOffering(course.when);
+  const disputed = isDisputedModule(course.id);
+  const discrepancy = disputed ? getModuleDiscrepancy(course.id) : undefined;
+  const firstSession = course.schedule?.[0];
+  const scheduleCount = course.schedule?.length ?? 0;
+  const scheduleLabel =
+    firstSession && course.scheduleStatus !== 'contract' && course.scheduleStatus !== 'thesis'
+      ? `📅 ${firstSession.day.slice(0, 3)} ${firstSession.time.replace(/\s*[-–—]\s*/g, '-')}${scheduleCount > 1 ? ` +${scheduleCount - 1} more` : ''}`
+      : null;
 
   useEffect(() => {
     setDraftNote(noteText || '');
@@ -237,6 +246,25 @@ function CourseCardInner({
             >
               {course.cp} CP
             </span>
+            {scheduleLabel && (
+              <span
+                title="First scheduled session"
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: 'var(--bg-tertiary)',
+                  border: '1px solid var(--border-subtle)',
+                  maxWidth: '140px',
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {scheduleLabel}
+              </span>
+            )}
             <span
               style={{
                 fontSize: '11px',
@@ -324,15 +352,41 @@ function CourseCardInner({
                   background: 'rgba(239, 68, 68, 0.12)',
                   color: '#f87171',
                 }}
-                title="VV schedule may be from an older offering — re-check Vorlesungsverzeichnis"
+                title={`Stale/irregular offering — VV semester not HS/FS 2026, verify ${course.when} (audit 2026-07-21)`}
               >
                 Verify VV
               </span>
             )}
           </div>
 
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-            {course.module} · {course.lang}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '6px',
+              marginBottom: '4px',
+            }}
+          >
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {course.module} · {course.lang}
+            </span>
+            {disputed && discrepancy && (
+              <span
+                title={discrepancy.note}
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  color: '#f87171',
+                  fontWeight: 700,
+                }}
+              >
+                Disputed module
+              </span>
+            )}
           </div>
 
           {mismatchWarning && (

@@ -1064,6 +1064,7 @@ export const COURSES = [
   },
   {
     "id": "ML-PROJ6",
+    "scheduleStatus": "contract",
     "code": "Learning contract",
     "title": "Machine Learning Project",
     "cp": 6,
@@ -1305,6 +1306,7 @@ export const COURSES = [
   },
   {
     "id": "S-PROJ6",
+    "scheduleStatus": "contract",
     "code": "Learning contract",
     "title": "Systems Foundations Project",
     "cp": 6,
@@ -2050,6 +2052,7 @@ export const COURSES = [
   },
   {
     "id": "E-PROJ6",
+    "scheduleStatus": "contract",
     "code": "Learning contract",
     "title": "Data Science Project",
     "cp": 6,
@@ -2072,6 +2075,7 @@ export const COURSES = [
   },
   {
     "id": "T-PREP",
+    "scheduleStatus": "contract",
     "code": "Learning contract",
     "title": "Preparation for Master’s thesis",
     "cp": 6,
@@ -2094,6 +2098,7 @@ export const COURSES = [
   },
   {
     "id": "T-THESIS",
+    "scheduleStatus": "thesis",
     "code": "Learning contract",
     "title": "Master’s thesis",
     "cp": 30,

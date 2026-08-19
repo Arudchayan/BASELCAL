@@ -15,7 +15,7 @@ const fail = (msg) => { issues.push(msg); console.log(`  ✗ ${msg}`); };
 const warn = (msg) => { warnings.push(msg); console.log(`  ⚠ ${msg}`); };
 
 const coursesCode = fs.readFileSync('src/courses.ts', 'utf8');
-const courses = JSON.parse(coursesCode.replace('export const COURSES = ', '').replace(/;\s*$/, ''));
+const courses = JSON.parse(coursesCode.replace('export const COURSES = ', '').replace(/ as const/g, '').replace(/;\s*$/, ''));
 const appTsx = fs.readFileSync('src/App.tsx', 'utf8');
 const typesTs = fs.readFileSync('src/types.ts', 'utf8');
 const degreeRules = fs.readFileSync('src/degreeRules.ts', 'utf8');
@@ -400,6 +400,44 @@ if (fs.existsSync('vv_msc_ds_official.json')) {
 } else {
   warn('vv_msc_ds_official.json not found — run node vv_msc_ds_official_scrape.cjs');
 }
+
+console.log('\nCHECK 11: Field quality (template/generic detection)');
+const SYNTHETIC_IDS = new Set(['T-PREP', 'T-THESIS', 'E-PROJ6', 'ML-PROJ6', 'S-PROJ6']);
+const text = (c, ...fields) => fields.map((f) => c[f]).filter(Boolean).join(' ');
+
+const examXX = courses.filter((c) => /XX\.XX/.test(c.exam || ''));
+if (examXX.length) warn(`Placeholder exam "XX.XX": ${examXX.length} course(s) — ${examXX.map((c) => c.id).join(', ')}`);
+else pass('No placeholder "XX.XX" exams');
+
+const genPrereq = courses.filter((c) => /general bachelor/i.test(c.prerequisites || ''));
+if (genPrereq.length) warn(`Generic prerequisites ("general bachelor..."): ${genPrereq.map((c) => c.id).join(', ')}`);
+else pass('No generic "general bachelor" prerequisites');
+
+const seeVorlesung = courses.filter((c) => /s\.\s*vorlesung|siehe vorlesung/i.test(text(c, 'description', 'prerequisites')));
+if (seeVorlesung.length) warn(`Descriptions deferring to lecture ("s. Vorlesung"): ${seeVorlesung.map((c) => c.id).join(', ')}`);
+else pass('No "s. Vorlesung" description stubs');
+
+const seeLecture = courses.filter((c) => /see lecture|see course/i.test(text(c, 'description', 'exam')));
+if (seeLecture.length) warn(`Descriptions deferring to course ("See Lecture"): ${seeLecture.map((c) => c.id).join(', ')}`);
+else pass('No "See Lecture" description stubs');
+
+const tplSyllabus = courses.filter((c) =>
+  Array.isArray(c.syllabus) &&
+  c.syllabus.length === 3 &&
+  /^understand\b/i.test(c.syllabus[0]) &&
+  /^apply\b/i.test(c.syllabus[1]) &&
+  /^analyze\b/i.test(c.syllabus[2])
+);
+if (tplSyllabus.length) warn(`${tplSyllabus.length} course(s) use the generic 3-item syllabus template (Understand/Apply/Analyze)`);
+else pass('No generic 3-item syllabus templates');
+
+const emptyDesc = courses.filter((c) => !SYNTHETIC_IDS.has(c.id) && !(c.description || '').trim());
+if (emptyDesc.length) warn(`Empty descriptions on non-synthetic course(s): ${emptyDesc.map((c) => c.id).join(', ')}`);
+else pass('All non-synthetic courses have descriptions');
+
+const emptySyllabus = courses.filter((c) => !SYNTHETIC_IDS.has(c.id) && !(Array.isArray(c.syllabus) && c.syllabus.length));
+if (emptySyllabus.length) warn(`Empty syllabi on non-synthetic course(s): ${emptySyllabus.map((c) => c.id).join(', ')}`);
+else pass('All non-synthetic courses have syllabus entries');
 
 console.log('\n=== SUMMARY ===');
 console.log(`Errors: ${issues.length}`);

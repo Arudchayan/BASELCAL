@@ -7,20 +7,21 @@ export type TimedSession = ScheduleSession & {
 };
 
 export function parseTimeRange(timeStr: string): { start: number; end: number } | null {
-  if (!timeStr || !timeStr.includes('-')) return null;
-  const parts = timeStr.split('-');
-  const startParts = parts[0].trim().split(':');
-  const endParts = parts[1].trim().split(':');
+  if (!timeStr) return null;
+  const parts = timeStr.split(/[\-\u2013\u2014]/).map((p) => p.trim());
+  if (parts.length !== 2) return null;
+  const startParts = parts[0].split(':');
+  const endParts = parts[1].split(':');
   if (startParts.length !== 2 || endParts.length !== 2) return null;
   const startH = Number(startParts[0]);
   const startM = Number(startParts[1]);
   const endH = Number(endParts[0]);
   const endM = Number(endParts[1]);
   if ([startH, startM, endH, endM].some((n) => Number.isNaN(n))) return null;
-  return {
-    start: startH + startM / 60,
-    end: endH + endM / 60,
-  };
+  const start = startH + startM / 60;
+  const end = endH + endM / 60;
+  if (end <= start) return null;
+  return { start, end };
 }
 
 function overlaps(a: { start: number; end: number }, b: { start: number; end: number }): boolean {
@@ -89,6 +90,7 @@ export function assignColumns(sessions: TimedSession[]): Array<{ colIndex: numbe
 export function collectDaySessions(courses: Course[], day: string): TimedSession[] {
   const out: TimedSession[] = [];
   for (const course of courses) {
+    // Synthetic contracts/thesis have empty schedule → naturally excluded, no clash
     for (const sess of course.schedule || []) {
       if (sess.day !== day) continue;
       const range = parseTimeRange(sess.time);

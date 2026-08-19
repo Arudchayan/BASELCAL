@@ -24,6 +24,7 @@ export function Timetable({
 
   const plannedCourses = plan[activeSem] || [];
   const conflicts = findConflicts(plannedCourses);
+  const unscheduledCourses = plannedCourses.filter((course) => !course.schedule || course.schedule.length === 0);
 
   const formatTime = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
   const getUKTime = (hour: number) => `${(hour - 1).toString().padStart(2, '0')}:00`;
@@ -289,7 +290,9 @@ export function Timetable({
         })}
       </div>
 
-      {plannedCourses.filter((c) => !c.schedule || c.schedule.length === 0).length > 0 && (
+      {(() => {
+        if (unscheduledCourses.length === 0) return null;
+        return (
         <div
           style={{
             marginTop: '24px',
@@ -310,12 +313,11 @@ export function Timetable({
             }}
           >
             <BookOpen size={16} color="var(--accent-primary)" />
-            Unscheduled / Learning Contracts
+            Unscheduled courses ({unscheduledCourses.length}) — no fixed timetable; learning contracts &amp; thesis are
+            remote-friendly
           </h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-            {plannedCourses
-              .filter((c) => !c.schedule || c.schedule.length === 0)
-              .map((c) => (
+            {unscheduledCourses.map((c) => (
                 <div
                   key={c.id}
                   style={{
@@ -337,7 +339,8 @@ export function Timetable({
               ))}
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
