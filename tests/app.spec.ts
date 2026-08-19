@@ -16,6 +16,39 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(thesisBlock).toBeVisible();
   });
 
+  test('keeps the nested explorer dialog lifecycle predictable', async ({ page }) => {
+    await page.getByRole('button', { name: /Course Discovery/i }).click();
+
+    const explorerDialog = page.getByRole('dialog', { name: 'Degree requirements roadmap' });
+    await expect(explorerDialog).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+
+    await explorerDialog.getByRole('button', { name: /Read Details/i }).first().click();
+    await expect(page.getByRole('dialog')).toHaveCount(2);
+    await expect(page.getByRole('dialog').last()).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await expect(explorerDialog).toBeVisible();
+
+    await explorerDialog.getByRole('button', { name: 'Return to Planner' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'MSc Data Science Curriculum Architect' })).toBeVisible();
+  });
+
+  test('Course Explorer uses the shared details modal for wishlist actions', async ({ page }) => {
+    await page.getByRole('button', { name: /Course Discovery/i }).click();
+
+    const detailsButton = page.getByRole('button', { name: /Read Details/i }).first();
+    await expect(detailsButton).toBeVisible();
+    await detailsButton.click();
+
+    const courseDialog = page.getByRole('dialog').last();
+    await expect(courseDialog).toBeVisible();
+    await courseDialog.getByRole('button', { name: /Add to Wishlist/i }).click();
+    await expect(page.getByRole('button', { name: /Remove from wishlist/i }).first()).toBeVisible();
+  });
+
   test('should open Course Details modal', async ({ page }) => {
     // Find the first "View Course Details" button in the course catalog and click it
     const viewDetailsBtn = page.getByTitle('View Course Details').first();

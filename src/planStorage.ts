@@ -119,10 +119,6 @@ function migrateLegacyPlan(raw: unknown): RehydrateResult | null {
   return rehydratePlanDetailed(idMap);
 }
 
-export function loadPlanFromStorage(): PlanState {
-  return loadPlanFromStorageDetailed().plan;
-}
-
 export function loadPlanFromStorageDetailed(): RehydrateResult {
   try {
     const current = localStorage.getItem(STORAGE_KEYS.plan);

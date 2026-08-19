@@ -108,7 +108,9 @@ function App() {
   useEffect(() => {
     const t = window.setTimeout(() => setSearchLower(search.toLowerCase()), 150);
     return () => window.clearTimeout(t);
-  }, [search]);  const pushUndo = (prev: PlanState) => {
+  }, [search]);
+
+  const pushUndo = (prev: PlanState) => {
     setUndoStack((stack) => [...stack.slice(-19), prev]);
   };
 
@@ -632,7 +634,7 @@ function App() {
                         style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                       >
                         <option value="">All semesters</option>
-                        {SEMESTERS.filter((s) => s.id !== 'catalog').map((s) => (
+                        {SEMESTERS.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.title}
                           </option>
@@ -684,7 +686,7 @@ function App() {
                     className="semester-grid"
                     style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, flex: 1 }}
                   >
-                    {SEMESTERS.filter((s) => s.id !== 'catalog').map((sem) => (
+                    {SEMESTERS.map((sem) => (
                       <div key={sem.id} className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
                         <div
                           style={{

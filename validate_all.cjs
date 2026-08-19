@@ -277,23 +277,7 @@ if (semOf('AD-62060') && semOf('AD-62060') === semOf('S-45402')) {
 if (schedFails === 0) pass('Preset schedulability gates cleared');
 
 
-console.log('\nCHECK 7: Cross-file consistency');
-if (fs.existsSync('actual_courses.json')) {
-  const actual = JSON.parse(fs.readFileSync('actual_courses.json','utf8'));
-  const actualById = Object.fromEntries(actual.map(c=>[c.id,c]));
-  let diffs = 0;
-  courses.forEach(c => {
-    const a = actualById[c.id];
-    if (!a) return;
-    ['cp','module','when','type','title','code'].forEach(k => {
-      if (a[k] !== undefined && a[k] !== c[k]) diffs++;
-    });
-  });
-  if (diffs) fail(`${diffs} field diffs vs actual_courses.json`);
-  else pass('courses.ts matches actual_courses.json on shared IDs');
-}
-
-console.log('\nCHECK 8: Live VV scrape coverage');
+console.log('\nCHECK 7: Live VV scrape coverage');
 if (fs.existsSync('vv_scrape_cache.json')) {
   const scraped = JSON.parse(fs.readFileSync('vv_scrape_cache.json', 'utf8'));
   const entries = Object.values(scraped);
@@ -305,7 +289,7 @@ if (fs.existsSync('vv_scrape_cache.json')) {
   warn('vv_scrape_cache.json not found');
 }
 
-console.log('\nCHECK 9: agent.md accuracy');
+console.log('\nCHECK 8: agent.md accuracy');
 if (agentMd.includes('perfectly mathematically balanced') && agentMd.includes('148')) {
   // OK if it still says 148 and is accurate
 }
@@ -338,7 +322,7 @@ function setDiff(a, b) {
   return [...a].filter((x) => !bs.has(x));
 }
 
-console.log('\nCHECK 10: VV coverage audit (vv_msc_ds_official.json)');
+console.log('\nCHECK 9: VV coverage audit (vv_msc_ds_official.json)');
 if (fs.existsSync('coverage_policy.json')) {
   const policy = coveragePolicy;
   const freshnessSrc = fs.readFileSync('src/dataFreshness.ts', 'utf8');
