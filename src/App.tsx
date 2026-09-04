@@ -9,10 +9,13 @@ import {
   Moon,
   LayoutGrid,
   Calendar,
+  CalendarPlus,
   Star,
   Download,
   Upload,
   Undo2,
+  Link2,
+  Printer,
 } from 'lucide-react';
 import { COURSES } from './courses';
 import { CourseCard } from './CourseCard';
@@ -34,9 +37,20 @@ import {
   allPlannedCourses,
   PLAN_DISCLAIMER,
 } from './planStorage';
-import { DATA_FRESHNESS } from './dataFreshness';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
-import { ML_PHD_PRESET_IDS, SEMESTERS, SEMESTER_IDS, type Course, type PlanState, type SemesterId } from './types';
+import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
+import { downloadIcs } from './ics';
+import {
+  ML_PHD_PRESET_IDS,
+  SEMESTERS,
+  SEMESTER_IDS,
+  eligibleModulesFor,
+  withCourseAllocation,
+  type Course,
+  type CourseModule,
+  type PlanState,
+  type SemesterId,
+} from './types';
 import './index.css';
 
 const CourseExplorer = lazy(() =>
@@ -46,26 +60,40 @@ const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Tim
 
 const boot = loadPlanFromStorageDetailed();
 
-// ponytail: single helper, inline IIFE in JSX is unreadable
+const sharedBoot = (() => {
+  const shared = readSharedPlanFromHash();
+  if (!shared) return null;
+  clearShareHash();
+  const ok = window.confirm(
+    'Load the shared plan from this link?\n\nIt replaces your current board plan (your saved plan is overwritten on the next change).',
+  );
+  return ok ? shared : null;
+})();
+
 const daysSince = (iso: string): number | null => {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   return Number.isNaN(days) ? null : days;
 };
 
+const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 37, s3: 42, s4: 46 };
+
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
-    loadJson<'dark' | 'light'>(STORAGE_KEYS.theme, 'dark'),
+    loadJson<'dark' | 'light'>(STORAGE_KEYS.theme, 'light'),
   );
   const [viewMode, setViewMode] = useState<'board' | 'timetable'>('board');
   const [activeSem, setActiveSem] = useState<SemesterId>('s1');
   const [showExplorer, setShowExplorer] = useState(false);
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
-  const [plan, setPlan] = useState<PlanState>(() => boot.plan);
+  const [plan, setPlan] = useState<PlanState>(() => sharedBoot ?? boot.plan);
   const [startupDrops] = useState<string[]>(() => boot.droppedIds);
   const [startupDupes] = useState<string[]>(() => boot.duplicateIds);
+  const [sharedLoaded] = useState<boolean>(() => !!sharedBoot);
   const [storageOk, setStorageOk] = useState(true);
   const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true });
   const [undoStack, setUndoStack] = useState<PlanState[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [personalNotes, setPersonalNotes] = useState<Record<string, string>>(() =>
@@ -85,7 +113,14 @@ function App() {
     setStorageOk(allOk);
   };
 
+  const showToast = (message: string) => {
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = window.setTimeout(() => setToast(null), 2400);
+  };
+
   useEffect(() => {
+    document.body.classList.toggle('dark', theme === 'dark');
     document.body.classList.toggle('light', theme === 'light');
     reportStorage('theme', saveJson(STORAGE_KEYS.theme, theme));
   }, [theme]);
@@ -132,7 +167,18 @@ function App() {
   };
 
   const toggleShortlist = (id: string) => {
-    setShortlist((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setShortlist((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      const selected = (COURSES as Course[]).find((course) => course.id === id);
+      if (!selected?.projectVariantGroup) return [...prev, id];
+      return [
+        ...prev.filter((existingId) => {
+          const existing = (COURSES as Course[]).find((course) => course.id === existingId);
+          return existing?.projectVariantGroup !== selected.projectVariantGroup;
+        }),
+        id,
+      ];
+    });
   };
 
   const updateNote = (id: string, text: string) => {
@@ -140,20 +186,25 @@ function App() {
   };
 
   const plannedCourseIds = useMemo(() => new Set(allPlannedCourses(plan).map((c) => c.id)), [plan]);
+  const plannedProjectGroups = useMemo(
+    () => new Set(allPlannedCourses(plan).flatMap((c) => c.projectVariantGroup ? [c.projectVariantGroup] : [])),
+    [plan],
+  );
 
   const catalogCourses = useMemo(() => {
     return (COURSES as Course[]).filter((c) => {
       const matchSearch = (c.title + ' ' + c.code + ' ' + (c.note || ''))
         .toLowerCase()
         .includes(searchLower);
-      const matchModule = moduleFilter ? c.module === moduleFilter : true;
+      const matchModule = moduleFilter ? eligibleModulesFor(c).includes(moduleFilter as CourseModule) : true;
       const matchPriority = priorityFilter ? c.priority === priorityFilter : true;
       const matchShortlist = showShortlistOnly ? shortlist.includes(c.id) : true;
       const matchSemester = matchesSemesterFilter(c, semesterFilter);
-      const notPlanned = !plannedCourseIds.has(c.id);
+      const notPlanned = !plannedCourseIds.has(c.id) &&
+        (!c.projectVariantGroup || !plannedProjectGroups.has(c.projectVariantGroup));
       return matchSearch && matchModule && matchPriority && matchShortlist && matchSemester && notPlanned;
     });
-  }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, showShortlistOnly, shortlist]);
+  }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, plannedProjectGroups, showShortlistOnly, shortlist]);
 
   const preferredSemesterFor = (course: Course): SemesterId => {
     const meta = parseOffering(course.when);
@@ -167,11 +218,19 @@ function App() {
   };
 
   const quickAddCourse = (course: Course) => {
-    if (plannedCourseIds.has(course.id)) return;
+    if (plannedCourseIds.has(course.id) ||
+      (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
     const sem = semesterFilter || preferredSemesterFor(course);
     updatePlan((prev) => ({
       ...prev,
       [sem]: [...prev[sem], course],
+    }));
+  };
+
+  const allocateCourse = (sem: SemesterId, index: number, module: CourseModule) => {
+    updatePlan((prev) => ({
+      ...prev,
+      [sem]: prev[sem].map((course, i) => i === index ? withCourseAllocation(course, module) : course),
     }));
   };
 
@@ -194,7 +253,8 @@ function App() {
     if (source.droppableId === 'catalog') {
       const courseId = draggableId;
       const course = COURSES.find((c) => c.id === courseId) as Course | undefined;
-      if (!course || plannedCourseIds.has(course.id)) return;
+      if (!course || plannedCourseIds.has(course.id) ||
+        (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
       const destSem = destination.droppableId as SemesterId;
       updatePlan((prev) => {
         const newDestItems = Array.from(prev[destSem]);
@@ -239,11 +299,12 @@ function App() {
   const loadPreset = () => {
     const ok = confirm(
       'Load ML/PhD Starter Plan? This replaces your current plan.\n\n' +
-        `This preset satisfies ${DEGREE_RULES.grandTotal.target} CP with balanced semester loads:\n` +
-        '• Sci Comp practical and Distributed Systems are in different falls (no Fri double-book)\n' +
-        '• Algorithms is in Sem 4 so it does not clash with Machine Learning\n' +
-        '• One known admission clash remains: Analysis I exercise vs Sci Comp lecture (Tue)\n' +
-        '• Sem 2 includes ML-78174 (irregular — verify VV); Sem 3 needs project supervisors\n\n' +
+        `This approved preset totals 149 CP (121 MSc), 1 CP above the exact ${DEGREE_RULES.grandTotal.target}/${DEGREE_RULES.mscTotal.target} targets:\n` +
+        '• Semester 1 is preserved exactly as the confirmed Fall 2026 selection\n' +
+        '• Semester 2 includes irregular Reinforcement Learning plus ML and Data Science projects\n' +
+        '• Spring 2027 and later offerings and timetable slots are provisional and need VV checks\n' +
+        '• Confirm RL and Inverse Problems availability and all future timetable slots before enrollment\n' +
+        '• Cached historical slots currently show ML/E-53822 and M-66096/ML-67343 overlaps; recheck live schedules\n\n' +
         'Continue?',
     );
     if (ok) {
@@ -260,6 +321,21 @@ function App() {
     a.download = `baselcal-plan-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleShare = async () => {
+    const url = buildShareUrl(plan);
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Share link copied — anyone opening it sees this exact plan');
+    } catch {
+      window.prompt('Copy this share link:', url);
+    }
+  };
+
+  const handleIcs = () => {
+    downloadIcs(plan, PLAN_DISCLAIMER);
+    showToast('Calendar file downloaded — weekly slots included');
   };
 
   const handleImportFile = async (file: File) => {
@@ -312,22 +388,30 @@ function App() {
     }
   };
 
+  const verifiedDays = daysSince(COVERAGE_POLICY.lastVerified.date);
+
   return (
-    <div className="app-shell" style={{ padding: '32px 40px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
-      {(startupDrops.length > 0 || startupDupes.length > 0 || !storageOk) && (
+    <div className="app-shell" style={{ padding: '20px 32px 48px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
+      {(startupDrops.length > 0 || startupDupes.length > 0 || !storageOk || sharedLoaded) && (
         <div
           role="status"
           style={{
-            marginBottom: 16,
-            padding: '12px 16px',
-            borderRadius: 12,
-            background: 'rgba(217, 119, 6, 0.12)',
-            border: '1px solid rgba(217, 119, 6, 0.35)',
-            color: '#d97706',
-            fontSize: 13,
-            lineHeight: 1.45,
+            marginBottom: 12,
+            padding: '10px 14px',
+            borderRadius: 10,
+            background: 'var(--warn-bg)',
+            border: '1px solid var(--warn)',
+            color: 'var(--warn)',
+            fontSize: 12.5,
+            lineHeight: 1.5,
           }}
         >
+          {sharedLoaded && (
+            <p style={{ margin: '0 0 6px' }}>
+              Loaded a shared plan from the link. It replaces your saved plan on the next change — use Export for a
+              backup first if needed.
+            </p>
+          )}
           {!storageOk && (
             <p style={{ margin: '0 0 6px' }}>
               Browser storage is unavailable (private mode or quota). Changes may not persist after reload.
@@ -349,216 +433,78 @@ function App() {
           )}
         </div>
       )}
-      <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 12px' }}>
-        Catalog reviewed {DATA_FRESHNESS.lastReviewed} (
-        {daysSince(DATA_FRESHNESS.lastReviewed) ?? '?'} days ago) ·{' '}
-        {DATA_FRESHNESS.staleWatchIds.length} stale/irregular offerings flagged
-        {!DATA_FRESHNESS.moduleManifestComplete
-          ? ` · VV module manifest incomplete — ${COVERAGE_POLICY.lastVerified.catalogCoursesWithVvDetail} VV detail pages verified ${COVERAGE_POLICY.lastVerified.date}`
-          : ''}
-        <span
-          title="VV module tree leaves empty — completeness vs VV manifest not yet proven (see COVERAGE_VERIFICATION_PLAN.md Phase 1)"
-          style={{ cursor: 'help' }}
-        >
-          {' '}
-          Why?
-        </span>
-        .
-      </p>
+
       <motion.header
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="glass-panel"
-        style={{ padding: '32px', marginBottom: '32px' }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="glass-panel topnav"
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <h1
-              style={{
-                fontSize: '36px',
-                background: 'linear-gradient(to right, var(--text-primary), var(--text-muted))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              MSc Data Science Curriculum Architect
-            </h1>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '8px', maxWidth: '800px', lineHeight: 1.5 }}>
-              Plan your University of Basel Data Science Master&apos;s. Validates exact admission ({DEGREE_RULES.admission.target}{' '}
-              CP), MSc ({DEGREE_RULES.mscTotal.target} CP), and grand total ({DEGREE_RULES.grandTotal.target} CP). Wishlist
-              in Discovery is separate from your committed board plan.
-            </p>
-            <p
-              role="note"
-              style={{
-                marginTop: 12,
-                maxWidth: 800,
-                fontSize: 12,
-                lineHeight: 1.45,
-                color: 'var(--text-muted)',
-                background: 'rgba(217, 119, 6, 0.08)',
-                border: '1px solid rgba(217, 119, 6, 0.25)',
-                borderRadius: 10,
-                padding: '10px 12px',
-              }}
-            >
-              {PLAN_DISCLAIMER}
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowExplorer(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                background: 'var(--accent-primary)',
-                color: '#fff',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px var(--accent-glow)',
-              }}
-            >
-              <BookOpen size={16} /> Course Discovery
-            </motion.button>
-            <div
-              style={{
-                display: 'flex',
-                background: 'var(--bg-secondary)',
-                padding: '4px',
-                borderRadius: '12px',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <button
-                onClick={() => setViewMode('board')}
-                aria-label="Board view"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: viewMode === 'board' ? 'var(--bg-tertiary)' : 'transparent',
-                  color: viewMode === 'board' ? 'var(--text-primary)' : 'var(--text-muted)',
-                  fontWeight: viewMode === 'board' ? 'bold' : 'normal',
-                }}
-              >
-                <LayoutGrid size={16} /> Board
-              </button>
-              <button
-                onClick={() => setViewMode('timetable')}
-                aria-label="Timetable view"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: viewMode === 'timetable' ? 'var(--bg-tertiary)' : 'transparent',
-                  color: viewMode === 'timetable' ? 'var(--text-primary)' : 'var(--text-muted)',
-                  fontWeight: viewMode === 'timetable' ? 'bold' : 'normal',
-                }}
-              >
-                <Calendar size={16} /> Timetable
-              </button>
-            </div>
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              aria-label="Toggle theme"
-              style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 8,
-                padding: 8,
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-              }}
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+        <div className="brand">
+          <div className="brand-mark">BC</div>
+          <div style={{ minWidth: 0 }}>
+            <h1>MSc Data Science Curriculum Architect</h1>
+            <div className="brand-sub">University of Basel · validated against 2026 program rules</div>
           </div>
         </div>
-
-        <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+        <div className="topnav-actions no-print">
           <button
-            onClick={loadPreset}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 16px',
-              borderRadius: 10,
-              border: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: '#fff',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-            }}
+            className="btn btn--primary"
+            onClick={() => setShowExplorer(true)}
           >
-            <Zap size={18} /> Load ML/PhD Preset
+            <BookOpen size={15} /> Course Discovery
+          </button>
+          <div className="segmented" role="group" aria-label="View mode">
+            <button
+              onClick={() => setViewMode('board')}
+              aria-label="Board view"
+              className={viewMode === 'board' ? 'is-active' : ''}
+            >
+              <LayoutGrid size={14} /> Board
+            </button>
+            <button
+              onClick={() => setViewMode('timetable')}
+              aria-label="Timetable view"
+              className={viewMode === 'timetable' ? 'is-active' : ''}
+            >
+              <Calendar size={14} /> Timetable
+            </button>
+          </div>
+          <div className="nav-divider" />
+          <button className="btn btn--ghost" onClick={loadPreset}>
+            <Zap size={15} /> Load ML/PhD Preset
           </button>
           <button
+            className="icon-btn"
             onClick={undo}
             disabled={undoStack.length === 0}
             aria-label="Undo last plan change"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 16px',
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              cursor: undoStack.length ? 'pointer' : 'not-allowed',
-              opacity: undoStack.length ? 1 : 0.5,
-            }}
+            title="Undo"
           >
-            <Undo2 size={16} /> Undo
+            <Undo2 size={15} />
+          </button>
+          <button className="icon-btn" onClick={handleExport} aria-label="Export plan JSON" title="Export JSON">
+            <Download size={15} />
+          </button>
+          <button className="icon-btn" onClick={() => fileInputRef.current?.click()} aria-label="Import plan JSON" title="Import JSON">
+            <Upload size={15} />
+          </button>
+          <button className="icon-btn" onClick={() => void handleShare()} aria-label="Copy share link" title="Share plan as link">
+            <Link2 size={15} />
+          </button>
+          <button className="icon-btn" onClick={handleIcs} aria-label="Export timetable to calendar (.ics)" title="Export .ics calendar">
+            <CalendarPlus size={15} />
+          </button>
+          <button className="icon-btn" onClick={() => window.print()} aria-label="Print plan" title="Print / save as PDF">
+            <Printer size={15} />
           </button>
           <button
-            onClick={handleExport}
-            aria-label="Export plan JSON"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 16px',
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
+            className="icon-btn"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle theme"
+            title="Toggle theme"
           >
-            <Download size={16} /> Export
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Import plan JSON"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 16px',
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            <Upload size={16} /> Import
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           </button>
           <input
             ref={fileInputRef}
@@ -574,30 +520,42 @@ function App() {
         </div>
       </motion.header>
 
+      <div className="subbar" style={{ marginTop: 8 }}>
+        <span role="note">{PLAN_DISCLAIMER}</span>
+        <span
+          title={COVERAGE_POLICY.lastVerified.moduleManifestComplete
+            ? `Fall 2026 VV module tree verified: ${COVERAGE_POLICY.lastVerified.fall2026UniqueCourses ?? 0} unique courses across ${COVERAGE_POLICY.lastVerified.fall2026ModuleEntries ?? 0} module entries`
+            : 'VV module manifest is incomplete; verify module membership before enrolling'}
+          style={{ cursor: 'help', whiteSpace: 'nowrap' }}
+        >
+          Catalog reviewed {COVERAGE_POLICY.lastVerified.date}
+          {verifiedDays !== null ? ` (${verifiedDays}d ago)` : ''} ·{' '}
+          {COVERAGE_POLICY.staleWatchIds.length} stale/irregular offerings flagged
+          {!COVERAGE_POLICY.lastVerified.moduleManifestComplete
+            ? ` · VV manifest incomplete — ${COVERAGE_POLICY.lastVerified.catalogCoursesWithVvDetail} pages verified`
+            : ''}
+        </span>
+      </div>
+
       <AnimatePresence mode="wait">
         {viewMode === 'board' ? (
-          <motion.div key="board" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+          <motion.div key="board" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
             <DragDropContext onDragEnd={onDragEnd}>
-              <div className="board-layout" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 32 }}>
-                <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="glass-panel" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 220px)', position: 'sticky', top: 24 }}>
+              <div className="board-layout" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, marginTop: 20 }}>
+                <motion.div initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass-panel no-print" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}>
                   <div style={{ padding: 16, borderBottom: '1px solid var(--border-subtle)' }}>
-                    <h2 style={{ fontSize: 18, marginBottom: 12 }}>Course Catalog</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                      <h2 style={{ fontSize: 16 }}>Course Catalog</h2>
+                      <span className="micro-label">{catalogCourses.length} available</span>
+                    </div>
                     <div style={{ position: 'relative', marginBottom: 10 }}>
-                      <Search size={18} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <Search size={16} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                       <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search courses…"
                         aria-label="Search courses"
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px 10px 40px',
-                          borderRadius: 10,
-                          border: '1px solid var(--border-subtle)',
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-primary)',
-                          outline: 'none',
-                        }}
+                        style={{ width: '100%', padding: '9px 12px 9px 34px' }}
                       />
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -605,7 +563,7 @@ function App() {
                         value={moduleFilter}
                         onChange={(e) => setModuleFilter(e.target.value)}
                         aria-label="Filter by module"
-                        style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        style={{ flex: 1, minWidth: 120, padding: '7px 8px' }}
                       >
                         <option value="">All modules</option>
                         <option value="Admission requirement">Admission Req</option>
@@ -619,7 +577,7 @@ function App() {
                         value={priorityFilter}
                         onChange={(e) => setPriorityFilter(e.target.value)}
                         aria-label="Filter by priority"
-                        style={{ flex: 1, minWidth: 100, padding: 8, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        style={{ flex: 1, minWidth: 100, padding: '7px 8px' }}
                       >
                         <option value="">All priorities</option>
                         <option value="Must">Must</option>
@@ -631,7 +589,7 @@ function App() {
                         value={semesterFilter}
                         onChange={(e) => setSemesterFilter(e.target.value as SemesterId | '')}
                         aria-label="Filter by semester offering"
-                        style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        style={{ flex: 1, minWidth: 120, padding: '7px 8px' }}
                       >
                         <option value="">All semesters</option>
                         {SEMESTERS.map((s) => (
@@ -641,9 +599,9 @@ function App() {
                         ))}
                       </select>
                     </div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12.5, color: 'var(--text-secondary)', cursor: 'pointer' }}>
                       <input type="checkbox" checked={showShortlistOnly} onChange={(e) => setShowShortlistOnly(e.target.checked)} />
-                      <Star size={14} /> Wishlist only
+                      <Star size={13} /> Wishlist only
                     </label>
                   </div>
                   <Droppable droppableId="catalog">
@@ -652,10 +610,10 @@ function App() {
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         style={{
-                          padding: 20,
+                          padding: 16,
                           overflowY: 'auto',
                           flex: 1,
-                          background: snapshot.isDraggingOver ? 'rgba(128,128,128,0.05)' : 'transparent',
+                          background: snapshot.isDraggingOver ? 'var(--glass-hover-bg)' : 'transparent',
                         }}
                       >
                         {catalogCourses.map((course, index) => (
@@ -676,72 +634,76 @@ function App() {
                   </Droppable>
                 </motion.div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                   <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} />
 
                   <motion.div
-                    initial={{ y: 20, opacity: 0 }}
+                    initial={{ y: 16, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0.15, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className="semester-grid"
                     style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, flex: 1 }}
                   >
-                    {SEMESTERS.map((sem) => (
-                      <div key={sem.id} className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div
-                          style={{
-                            padding: 16,
-                            borderBottom: '1px solid var(--border-subtle)',
-                            background: 'var(--border-subtle)',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <h3 style={{ fontSize: 15 }}>{sem.title}</h3>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 'bold' }}>
-                            {plan[sem.id as SemesterId].reduce((sum, c) => sum + c.cp, 0)} CP
-                          </span>
-                        </div>
-                        <Droppable droppableId={sem.id}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.droppableProps}
-                              style={{
-                                padding: 16,
-                                flex: 1,
-                                minHeight: 400,
-                                background: snapshot.isDraggingOver ? 'var(--border-subtle)' : 'transparent',
-                                transition: 'background 0.2s ease',
-                              }}
-                            >
-                              {plan[sem.id as SemesterId].map((course, index) => (
-                                <CourseCard
-                                  key={course.id + '_planned'}
-                                  course={course}
-                                  index={index}
-                                  isPlanned
-                                  currentSemId={sem.id as SemesterId}
-                                  onRemove={() => removeCourse(sem.id as SemesterId, index)}
-                                  noteText={personalNotes[course.id]}
-                                  onNoteChange={(text) => updateNote(course.id, text)}
-                                  onShowDetails={() => setActiveCourseDetails(course)}
-                                />
-                              ))}
-                              {provided.placeholder}
+                    {SEMESTERS.map((sem) => {
+                      const semId = sem.id as SemesterId;
+                      const cp = plan[semId].reduce((sum, c) => sum + c.cp, 0);
+                      const max = SEM_LOAD_MAX[semId];
+                      const ratio = cp / max;
+                      const loadColor = ratio > 1.05 ? 'var(--bad)' : ratio > 0.95 ? 'var(--warn)' : 'var(--module-math)';
+                      return (
+                        <div key={sem.id} className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ padding: '12px 16px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                              <h3 style={{ fontSize: 13.5 }}>{sem.title}</h3>
+                              <span className="num" style={{ fontSize: 12, fontWeight: 600, color: ratio > 1 ? 'var(--bad)' : 'var(--text-muted)' }}>
+                                {cp} CP
+                              </span>
                             </div>
-                          )}
-                        </Droppable>
-                      </div>
-                    ))}
+                            <div className="load-bar" title={`Recommended max ${max} CP`}>
+                              <div className="load-bar-fill" style={{ width: `${Math.min(100, ratio * 100)}%`, background: loadColor }} />
+                            </div>
+                          </div>
+                          <Droppable droppableId={sem.id}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}
+                                style={{
+                                  padding: 14,
+                                  flex: 1,
+                                  minHeight: 380,
+                                  background: snapshot.isDraggingOver ? 'var(--glass-hover-bg)' : 'transparent',
+                                  transition: 'background 0.2s ease',
+                                }}
+                              >
+                                {plan[semId].map((course, index) => (
+                                  <CourseCard
+                                    key={course.id + '_planned'}
+                                    course={course}
+                                    index={index}
+                                    isPlanned
+                                    currentSemId={semId}
+                                    onRemove={() => removeCourse(semId, index)}
+                                    noteText={personalNotes[course.id]}
+                                    onNoteChange={(text) => updateNote(course.id, text)}
+                                    onShowDetails={() => setActiveCourseDetails(course)}
+                                    onAllocationChange={(module) => allocateCourse(semId, index, module)}
+                                  />
+                                ))}
+                                {provided.placeholder}
+                              </div>
+                            )}
+                          </Droppable>
+                        </div>
+                      );
+                    })}
                   </motion.div>
                 </div>
               </div>
             </DragDropContext>
           </motion.div>
         ) : (
-          <motion.div key="timetable" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} style={{ minHeight: 600 }}>
+          <motion.div key="timetable" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} style={{ minHeight: 600, marginTop: 20 }}>
             <Suspense fallback={<div style={{ padding: 24, color: 'var(--text-muted)' }}>Loading timetable…</div>}>
               <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} />
             </Suspense>
@@ -764,6 +726,20 @@ function App() {
               onClose={() => setShowExplorer(false)}
             />
           </Suspense>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className="toast no-print"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {toast}
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

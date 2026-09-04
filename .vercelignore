@@ -1,0 +1,11 @@
+.codegraph/
+.omo/
+.playwright-cli/
+.playwright-mcp/
+node_modules/
+dist/
+playwright-report/
+test-results/
+shots/
+tmp/
+*.log

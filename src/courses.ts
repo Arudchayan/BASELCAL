@@ -3,13 +3,13 @@ export const COURSES = [
     "id": "AD-10489-1",
     "code": "10489",
     "title": "Analysis I",
-    "cp": 4,
+    "cp": 8,
     "module": "Admission requirement",
     "when": "Annual course, starts in fall semester",
     "lang": "German",
     "priority": "Medium",
     "type": "Admission",
-    "note": "Part 1 of the annual Analysis course.",
+    "note": "Annual Analysis course (8 CP total), credited here in the fall semester.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=302796",
     "description": "In der Analysis I werden (im Verbund mit der linearen Algebra) die Grundlagen der Mathematik besprochen. In der Vorlesung werden die fundamentalen Begriffe der Analysis eingeführt und Zusammenhänge werden hergestellt. Dies sind 1. Die reellen Zahlen 2. Folgen und Reihen, Konvergenz 3. Stetigkeit 4. Differentiation 5. Integration 6. Approximation von Funktionen",
     "prerequisites": "keine",
@@ -35,13 +35,13 @@ export const COURSES = [
     "id": "AD-10489-2",
     "code": "10489",
     "title": "Analysis II",
-    "cp": 4,
+    "cp": 0,
     "module": "Admission requirement",
     "when": "Annual course, starts in fall semester",
     "lang": "German",
     "priority": "Medium",
     "type": "Admission",
-    "note": "Part 2 of the annual Analysis course.",
+    "note": "Spring continuation of the annual Analysis course; its 8 CP are already counted with Analysis I.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=299326",
     "description": "Topologische Grundbegriffe. Mehrdimensionale Differentialrechnung. Approximation von Funktionen. Gewöhnliche Differentialgleichungen.",
     "prerequisites": "Vertrautheit mit dem Lehrstoff der Analysis I. Elementare Kenntnisse aus der Linearen Algebra.",
@@ -73,8 +73,8 @@ export const COURSES = [
     "lang": "German",
     "priority": "Medium",
     "type": "Admission",
-    "note": "Weekly practical + exercise sheets + Klausur.",
-    "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=302773",
+    "note": "Selected group 05; weekly practical + exercise sheets + Klausur.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=302775",
     "description": "s. Vorlesung Analysis I",
     "prerequisites": "keine",
     "exam": "continuous assessment — Die Kreditpunkte werden durch aktive Teilnahme an den Übungen, sinnvolle Bearbeitung 3/4 der Übungsserien sowie Bestehen der Klausur erworben.",
@@ -85,8 +85,8 @@ export const COURSES = [
     "schedule": [
       {
         "day": "Tuesday",
-        "time": "10:15 - 12:00",
-        "room": "Pharmazentrum, Seminarraum U1075"
+        "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum 00.003"
       }
     ]
   },
@@ -249,6 +249,7 @@ export const COURSES = [
     "title": "Numerical Methods for Partial Differential Equations",
     "cp": 8,
     "module": "Mathematical Foundations",
+    "eligibleModules": ["Mathematical Foundations", "Electives in Data Science"],
     "when": "Every fall sem.",
     "lang": "German",
     "priority": "Medium",
@@ -273,6 +274,11 @@ export const COURSES = [
       {
         "day": "Thursday",
         "time": "10:15 - 12:00",
+        "room": "Spiegelgasse 5, Seminarraum  05.001"
+      },
+      {
+        "day": "Thursday",
+        "time": "14:15 - 16:00",
         "room": "Spiegelgasse 5, Seminarraum  05.001"
       }
     ]
@@ -343,11 +349,12 @@ export const COURSES = [
   {
     "id": "M-19300",
     "code": "19300",
-    "title": "Theory and applications from physics to finance",
+    "title": "Random processes: Theory and applications from physics to finance",
     "cp": 4,
     "module": "Mathematical Foundations",
+    "eligibleModules": ["Mathematical Foundations", "Electives in Data Science"],
     "when": "Every fall sem.",
-    "lang": "German",
+    "lang": "English",
     "priority": "High",
     "type": "Foundation",
     "note": "Good for probabilistic ML, stochastic processes, Bayesian thinking. — syllabus generic (VV snippet not scraped; low confidence)",
@@ -355,7 +362,7 @@ export const COURSES = [
     "description": "Basics of probability theory; Random processes: General concepts; Markov processes: Master equation, Fokker-Planck equation, stochastic differential equations; Mathematical finance",
     "prerequisites": "None specifically required, but general bachelor-level background is assumed.",
     "exam": "continuous assessment — Written exam after the end of the lecture.",
-    "lecturer": "Aaron Daniel",
+    "lecturer": "Jörg Lehmann",
     "syllabus": [
       "Understand the fundamental concepts of the field.",
       "Apply theoretical knowledge to practical problems.",
@@ -514,7 +521,7 @@ export const COURSES = [
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301338",
     "description": "This course provides an introduction to modern probability theory and its applications in high-dimensional data analysis. We begin with the fundamentals of probability, conditioning, and independence, then study limiting phenomena and concentration inequalities. Building on these foundations, the course explores random vectors, high-dimensional geometry, and random matrix theory, with applications to understanding spectral properties, the Marchenko–Pastur law, and double descent phenomena. Advanced topics include matrix concentration bounds, functional calculus, and stochastic processes. The course combines theory with exercises and a mid-term exam to reinforce understanding of these topics.",
     "prerequisites": "keine",
-    "exam": "continuous assessment — Mid-term exam on TBD (verify VV — HS 2026 exam date not published). Information regarding the assessment: Continuous assessment 20%; Short exercises in class (15min)*6; Mid-term exam 35%; Final exam 45%. Final exam on TBD (verify VV — HS 2026 exam date not published).",
+    "exam": "continuous assessment — Mid-term and final exam dates are not yet published in the Fall 2026 VV; verify before enrolling. Continuous assessment 20%, short in-class exercises 15%, mid-term exam 35%, final exam 45%.",
     "lecturer": "Foivos Alimisis",
     "syllabus": [
       "Master fundamental mathematical theorems.",
@@ -696,6 +703,11 @@ export const COURSES = [
         "day": "Wednesday",
         "time": "14:15 - 16:00",
         "room": "Alte Universität, Seminarraum -201"
+      },
+      {
+        "day": "Monday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Seminarraum 212"
       }
     ]
   },
@@ -705,6 +717,7 @@ export const COURSES = [
     "title": "Randomized Algorithms",
     "cp": 6,
     "module": "Mathematical Foundations",
+    "eligibleModules": ["Mathematical Foundations", "Electives in Data Science"],
     "when": "Irregular",
     "lang": "English",
     "priority": "High",
@@ -874,15 +887,16 @@ export const COURSES = [
     "title": "Bioinformatics Algorithms",
     "cp": 4,
     "module": "Machine Learning Foundations",
+    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
     "when": "Every fall sem.",
     "lang": "English",
     "priority": "Medium",
     "type": "Foundation",
-    "note": "Good if you want biomedical/computational biology ML. MODULE DISPUTED: catalog=Machine Learning Foundations; VV Modules tab also lists Electives — confirm against program PDF before counting.",
+    "note": "Good if you want biomedical/computational biology ML. Official Fall 2026 program tree cross-lists this course in Machine Learning Foundations and Electives.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301990",
     "description": "In this lecture, an introduction into main bioinformatics algorithms is provided. We will discuss both \"classical\" topics such as Hidden Markov Models, Markov chains, phylogenetic trees and \"modern\" approaches based on sophisticated (deep) learning models.",
     "prerequisites": "Mathematische Methoden IMathematische Methoden IIEinführung in die Statistik",
-    "exam": "continuous assessment — Oral exam: in order to participate, you need to hand in at least 70% of all exercise sheets.Expected dates: January 13/14, 2027.",
+    "exam": "continuous assessment — Oral exam: in order to participate, you need to hand in at least 70% of all exercise sheets.Expected dates: January 13/14/14/15, 2027. Spiegelgasse 1, room 00.003.",
     "lecturer": "Volker Roth",
     "syllabus": [
       "Understand the fundamental concepts of the field.",
@@ -890,6 +904,11 @@ export const COURSES = [
       "Analyze and evaluate contemporary research literature."
     ],
     "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "13:15 - 14:00",
+        "room": "Spiegelgasse 1, Seminarraum U1.001"
+      },
       {
         "day": "Thursday",
         "time": "14:15 - 16:00",
@@ -938,6 +957,7 @@ export const COURSES = [
     "title": "Mathematical and Computational Biology in Drug Discovery",
     "cp": 2,
     "module": "Machine Learning Foundations",
+    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
     "when": "Every spring sem.",
     "lang": "English",
     "priority": "Medium",
@@ -967,15 +987,16 @@ export const COURSES = [
     "title": "Foundations of Deep Learning",
     "cp": 6,
     "module": "Machine Learning Foundations",
+    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
     "when": "Irregular",
-    "lang": "German",
+    "lang": "English",
     "priority": "Very high",
     "type": "Foundation",
     "note": "Core PhD-oriented deep learning theory/practice.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301995",
     "description": "The class focuses on the theoretical concepts behind Deep learning. We will discuss the following concepts:\n\nGeneral introduction to linear networks, activations, etc\nApproximation Theory\nComplexity Theory\nNetwork Architectures\nOptimization\nOptimization Landscape of Neural Networks\nNeural Tangent Kernel\nRegularization\nGeneralization bounds\nAdversarial examples",
     "prerequisites": "- Machine Learning (classification, regression, kernels, etc)- Linear algebra- Calculus, Basic concepts in topology- Probability theory (random variable, expectation, density, etc)- Some non-mandatory exercises will require coding in python (reasonable coding skills in another programming language should be sufficient to learn python)Note that a significant part of the class focuses on understanding theoretical aspects, we will thus be covering proofs that require a good knowledge of the mathematical concepts discussed above.",
-    "exam": "continuous assessment — Continuous assessmentNote the following split:15% continuous assesment (short exercises and Q&As given in class)25% mid-term exam (written). Date: during exercise session on Thursday, 30.10.202525% project (writeup and presentation)35% final exam (written)Expected date final exam: Thursday, February 4, 2027, 10-12 a.m.",
+    "exam": "continuous assessment — Continuous assessmentNote the following split:15% continuous assesment (short exercises and Q&As given in class)25% mid-term exam (written). Date: during exercise session on Thursday, 30.10.202525% project (writeup and presentation)35% final exam (written)Expected date final exam: Thursday, February 4, 2027, 10-12 a.m., Biozentrum U1.131.",
     "lecturer": "Aurelien Lucchi",
     "syllabus": [
       "Linear networks, activation functions, basic architectures",
@@ -1000,9 +1021,10 @@ export const COURSES = [
   {
     "id": "ML-67343",
     "code": "67343",
-    "title": "Computational Aspects and Machine Learning",
+    "title": "Inverse Problems: Computational Aspects and Machine Learning",
     "cp": 3,
     "module": "Machine Learning Foundations",
+    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
     "when": "Irregular",
     "lang": "German",
     "priority": "High",
@@ -1066,9 +1088,10 @@ export const COURSES = [
     "id": "ML-PROJ6",
     "scheduleStatus": "contract",
     "code": "Learning contract",
-    "title": "Machine Learning Project",
+    "title": "Machine Learning Project (6 CP)",
     "cp": 6,
     "module": "Machine Learning Foundations",
+    "projectVariantGroup": "ml-project",
     "when": "Learning contract",
     "lang": "Agree with supervisor",
     "priority": "Very high",
@@ -1084,6 +1107,25 @@ export const COURSES = [
       "Transformers & Attention Mechanisms",
       "Generative Models (GANs/VAEs)"
     ],
+    "schedule": []
+  },
+  {
+    "id": "ML-PROJ12",
+    "scheduleStatus": "contract",
+    "code": "Learning contract",
+    "title": "Machine Learning Project (12 CP)",
+    "cp": 12,
+    "module": "Machine Learning Foundations",
+    "projectVariantGroup": "ml-project",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "Very high",
+    "type": "Project",
+    "note": "Official 12 CP variant; choose either the 6 CP or 12 CP Machine Learning project, subject to a learning contract and supervision.",
+    "description": "A substantial supervised Machine Learning project defined by learning contract.",
+    "prerequisites": "Requires a learning contract and consent of the supervisor.",
+    "exam": "Project assessment agreed in the learning contract",
+    "lecturer": "Assigned supervisor",
     "schedule": []
   },
   {
@@ -1152,15 +1194,16 @@ export const COURSES = [
     "title": "Multimedia Retrieval",
     "cp": 6,
     "module": "Systems Foundations",
+    "eligibleModules": ["Systems Foundations", "Electives in Data Science"],
     "when": "Every fall sem.",
-    "lang": "German",
+    "lang": "English",
     "priority": "High",
     "type": "Foundation",
     "note": "Relevant to representation learning, retrieval, search.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301992",
     "description": "Introduction to multimedia retrieval with a focus on classical text retrieval, web retrieval, extraction and machine learning of features for images, audio, and video, index structures, search algorithms, and concrete implementations. The course is touching on past and current information retrieval techniques and search algorithms.",
     "prerequisites": "Basics of programmingMathematical foundations (for some parts)",
-    "exam": "continuous assessment — Expected date:Friday, January 8, 2027, 2-4 p.m.",
+    "exam": "continuous assessment — Written Exam. Expected date: Friday, January 8, 2027, 2-4 p.m., Biozentrum, room U1.131.",
     "lecturer": "Roger Weber",
     "syllabus": [
       "Understand the fundamental concepts of the field.",
@@ -1217,14 +1260,14 @@ export const COURSES = [
     "cp": 8,
     "module": "Systems Foundations",
     "when": "Every fall sem.",
-    "lang": "German",
+    "lang": "English",
     "priority": "Must",
     "type": "Foundation",
     "note": "Mandatory MSc Data Science course.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301991",
     "description": "The course will introduce basic algorithms and protocols needed for parallel and distributed systems. It will lay the foundations for the specialized courses on Computer Networks, High Performance Computing, Distributed Information Systems and Privacy-Preserving Methods for Data Science and Distributed Systems that will be offered in the spring semester.",
     "prerequisites": "You successfully completed the following Bachelor courses (or have at acquired the corresponding skills): Basics of Programming / Extended Basics of Programming, Programming Project, Computer Architecture & Operating Systems, Databases, and Internet Technologies.",
-    "exam": "continuous assessment — At the end of the semester, individual oral examinations (30 mins each) will take place. Admission to the oral examination requires at least 3/4 of the points from the exercises (with 50% from each of the exercises).Expected Dates: January 20/21/22, 2027",
+    "exam": "continuous assessment — At the end of the semester, individual oral examinations (30 mins each) will take place.Admission criteria for the oral exam: The course will feature four exercises (one each for communication, data, processing, and privacy). Each exercise will be assessed with a test. In total, at least 3/4 of the overall points for the tests must be earned (and at least 50% of each individual test).Expected dates of the oral exams: January 20/21/22/25/26, 2027, Spiegelgasse 1, room 00.003.",
     "lecturer": "Florina M. Ciorba",
     "syllabus": [
       "Understand basic principles of distributed and parallel systems, parallelization/distribution across compute entities and privacy threats/mitigations."
@@ -1239,6 +1282,11 @@ export const COURSES = [
         "day": "Friday",
         "time": "10:15 - 12:00",
         "room": "Spiegelgasse 5, Seminarraum  05.002"
+      },
+      {
+        "day": "Tuesday",
+        "time": "10:15 - 12:00",
+        "room": "Pharmazentrum, Seminarraum U1075"
       }
     ]
   },
@@ -1279,6 +1327,7 @@ export const COURSES = [
     "title": "Privacy-Preserving Methods for Data Science and Distributed Systems",
     "cp": 6,
     "module": "Systems Foundations",
+    "eligibleModules": ["Systems Foundations", "Electives in Data Science"],
     "when": "Irregular",
     "lang": "English",
     "priority": "High",
@@ -1308,9 +1357,10 @@ export const COURSES = [
     "id": "S-PROJ6",
     "scheduleStatus": "contract",
     "code": "Learning contract",
-    "title": "Systems Foundations Project",
+    "title": "Systems Foundations Project (6 CP)",
     "cp": 6,
     "module": "Systems Foundations",
+    "projectVariantGroup": "systems-project",
     "when": "Learning contract",
     "lang": "Agree with supervisor",
     "priority": "High",
@@ -1326,6 +1376,25 @@ export const COURSES = [
       "Cloud Computing Architectures",
       "Concurrency & Fault Tolerance"
     ],
+    "schedule": []
+  },
+  {
+    "id": "S-PROJ12",
+    "scheduleStatus": "contract",
+    "code": "Learning contract",
+    "title": "Systems Foundations Project (12 CP)",
+    "cp": 12,
+    "module": "Systems Foundations",
+    "projectVariantGroup": "systems-project",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "High",
+    "type": "Project",
+    "note": "Official 12 CP variant; choose either the 6 CP or 12 CP Systems project, subject to a learning contract and supervision.",
+    "description": "A substantial supervised Systems Foundations project defined by learning contract.",
+    "prerequisites": "Requires a learning contract and consent of the supervisor.",
+    "exam": "Project assessment agreed in the learning contract",
+    "lecturer": "Assigned supervisor",
     "schedule": []
   },
   {
@@ -1560,7 +1629,7 @@ export const COURSES = [
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301993",
     "description": "The course provides an introduction to the theory and algorithms for automated planning, with an emphasis on classical planning. Automated planning is concerned with determining a sequence of actions that transforms a given initial state into a desirable state in a very large state space. Topics covered include: planning formalisms and normal forms; progression and regression; computational complexity of planning; heuristics for classical planning based on delete relaxation, abstraction, landmarks, critical paths and network flows; formal relationships between heuristics.",
     "prerequisites": "Good knowledge in the foundations and core areas of computer science are assumed, in particular algorithms and data structures, complexity theory, mathematical logic and programming.Most importantly, good knowledge of the contents of the courses \"Theory of Computer Science\" (10948) and  \"Foundations of Artificial Intelligence\" (13548) is assumed, in particular the topic of NP-completeness from the theory course and the topics of state-space search and propositional logic from the AI course. Students who have not previously passed the prerequisite courses are strongly advised to learn the necessary material in self-study prior to the beginning of this course. If you are interested in participating in this course but do not yet have sufficient knowledge of these topics, we strongly encourage you to contact the lecturers prior to the semester to discuss a possible self-study plan.",
-    "exam": "continuous assessment — Marked homework exercises will be handed out in order to support and assess the learning progress. To qualify for the written examination, students must obtain at least 50% of the total marks from the exercises. Exercise marks do not contribute to the final grade for the course, which is exclusively based on the written examination.Expected date: Wednesday, January 27, 2027, 2-4 p.m.",
+    "exam": "continuous assessment — Marked homework exercises will be handed out in order to support and assess the learning progress. To qualify for the written examination, students must obtain at least 50% of the total marks from the exercises. Exercise marks do not contribute to the final grade for the course, which is exclusively based on the written examination.Expected date: Wednesday, January 27, 2027, 2-4 p.m., Biozentrum, M.E. Müller Saal U1.111.",
     "lecturer": "Malte Helmert",
     "syllabus": [
       "Understand the fundamental concepts of the field.",
@@ -1576,6 +1645,11 @@ export const COURSES = [
       {
         "day": "Wednesday",
         "time": "14:15 - 16:00",
+        "room": "Spiegelgasse 1, Seminarraum  00.003"
+      },
+      {
+        "day": "Wednesday",
+        "time": "16:15 - 18:00",
         "room": "Spiegelgasse 1, Seminarraum  00.003"
       }
     ]
@@ -1635,7 +1709,7 @@ export const COURSES = [
   {
     "id": "E-55048",
     "code": "55048",
-    "title": "Business Strategies and Policy Issues",
+    "title": "The AI Economy: Business Strategies and Policy Issues",
     "cp": 3,
     "module": "Electives in Data Science",
     "when": "Irregular",
@@ -1646,7 +1720,7 @@ export const COURSES = [
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301664",
     "description": "The rise of artificial intelligence (AI) is transforming business strategies, reshaping economies, and igniting new social and political debates. This course examines the powerful role of AI in revolutionizing industries, exploring how firms are using AI-driven strategies to restructure operations, create value, and outpace competitors. Through case studies and hands-on group projects, we will analyze real-world competitive strategies using AI. We’ll also investigate how AI impacts society at large, tackling complex issues such as job displacement, privacy, misinformation, and the future of global cooperation. Students will actively engage in debates about the trade-offs of emerging business models, and evaluate AI regulation in key regions like the US, Europe, and China. By the end of the course, students will have the chance to propose solutions to pressing policy challenges in a collaborative, interactive setting. This course is designed for students eager to understand not just the mechanics of AI-powered business, but also the broader implications for society and global governance. If you’re looking to engage deeply with the future of technology and its influence on the world, this course offers an essential toolkit.",
     "prerequisites": "Recommended Prerequisites:Introduction to Business (Grundlagen der Betriebswirtschaftslehre, 10125)Introduction to Economics (Grundlagen der Volkswirtschaftslehre, 10130)Globalization and European Integration (Globalisierung und europäische Integration, 34504)",
-    "exam": "record of achievement — Course attendance is compulsory. Attendance and good preparation are prerequisites for being a valuable participant in the class. You are expected to prepare for and attend every class and participate actively.Assessment details:Final grades will be determined on a combination of class participation, assignments and a final (closed-book) examination.Date of final examination: 14 August 2026, 12:15 - 13:45You will receive the room details for the examination by e-mail.",
+    "exam": "record of achievement — Course attendance is compulsory. Attendance and good preparation are prerequisites for being a valuable participant in the class. You are expected to prepare for and attend every class and participate actively.Assessment details:Final grades will be determined on a combination of class participation (10%), group presentations (35%), quiz (10%) and a final (closed-book) examination 35%).Date of final examination: 14 August 2026, 12:15 - 13:15You will receive the room details for the examination by e-mail.",
     "lecturer": "Stephen Weymouth",
     "syllabus": [
       "Understand and implement core algorithms.",
@@ -2054,9 +2128,10 @@ export const COURSES = [
     "id": "E-PROJ6",
     "scheduleStatus": "contract",
     "code": "Learning contract",
-    "title": "Data Science Project",
+    "title": "Data Science Project (6 CP)",
     "cp": 6,
     "module": "Electives in Data Science",
+    "projectVariantGroup": "data-science-project",
     "when": "Learning contract",
     "lang": "Agree with supervisor",
     "priority": "Very high",
@@ -2071,6 +2146,25 @@ export const COURSES = [
       "Formulate a novel research question or engineering goal.",
       "Present findings in a structured scientific report."
     ],
+    "schedule": []
+  },
+  {
+    "id": "E-PROJ12",
+    "scheduleStatus": "contract",
+    "code": "Learning contract",
+    "title": "Data Science Project (12 CP)",
+    "cp": 12,
+    "module": "Electives in Data Science",
+    "projectVariantGroup": "data-science-project",
+    "when": "Learning contract",
+    "lang": "Agree with supervisor",
+    "priority": "Very high",
+    "type": "Project",
+    "note": "Official 12 CP variant; choose either the 6 CP or 12 CP Data Science project, subject to a learning contract and supervision.",
+    "description": "A substantial supervised Data Science project defined by learning contract.",
+    "prerequisites": "Requires a learning contract and consent of the supervisor.",
+    "exam": "Project assessment agreed in the learning contract",
+    "lecturer": "Assigned supervisor",
     "schedule": []
   },
   {
@@ -2118,5 +2212,91 @@ export const COURSES = [
       "Present findings in a structured scientific report."
     ],
     "schedule": []
+  },
+  {
+    "id": "E-41828",
+    "code": "41828",
+    "title": "Natural Science Perspectives on Sustainability: The Food System",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Every fall sem.",
+    "lang": "English",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Official Fall 2026 elective; sustainability and food-system focus.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=303387",
+    "description": "The course is offered within the scope of the program \"Pathways to Sustainability\": https://msd.unibas.ch/en/study-programs/pathways-to-sustainability-tqne/\nThe program consists of 3 introductory lectures with practical courses (lecture A and B are offered in fall semesters, C is offered in spring semesters) dedicated to conveying the foundations of sustainable development. An additional integration seminar (D, offered in spring semesters) engages with interdisciplinary work. The assignment and completion of D requires the successful completion of two lectures from the above mentioned lectures A, B and C.\n\nThis course (lecture A) deals with the analysis of sustainability problems and problem solving from a natural sciences perspective. There is a special focus on food production and its interdependencies and impacts on natural ecosystems.\nIn this course, students will learn about what the planetary boundaries are, and how the global food production system is contributing to transgressing them with a special focus on land use change, overexploitation of resources and ecosystem impacts. The course addresses topics such as the expansion of the agricultural frontier, the need to protect the last remains of intact natural ecosystems and the linkages between climatic, biodiversity and food production crisis. We also discuss options for more positive and sustainable food productions systems, from agroecological alternatives as opposed to intensive agriculture to sustainable diets.\n\nThe course consist on weekly lectures and topic-specific practical work: the lectures deal with systematic overview knowledge and a set of specific aspects of (un-) sustainable food production and ecosystems conservation. The practical assignments focus on empirical case studies of how food production intersects with different aspects of environmental and resources conservation and involves active student participation.",
+    "prerequisites": "This course is open to students of the University of Basel and of EUCOR sustainability programs who are at least in their third bachelor semester, or who are studying at Master or PhD level.MSD 2017 & MSD 2026Students for whom this course is a mandatory class but who have already taken a similar course should contact Prof. Dr. Alejandra Morán Ordóñez to arrange an alternative option.For both MSD, the final course selection is to be fixed in a learning agreement (template available on the website MSD).",
+    "exam": "record of achievement — Compulsory attendance in presence of lecture and practical course, submission of learning portfolio according to the announced requirements.Final written examination on 12. January 2026; repeat exam on 26. January 2026 (details acccording to information of lecturer): 60 minutes. For details regarding dates and room see online course directory/section \"dates and rooms\".Practical courses:Details about the task will be announced in class during the kick-off session of the policy briefs on 09. October 2026.A follow-up will take place on 20. November 2026.For details regarding the room allocation see online course directory/section \"dates and rooms\".",
+    "lecturer": "Alejandra Morán Ordóñez",
+    "syllabus": [
+      "Analyze food-system sustainability problems from a natural-science perspective.",
+      "Evaluate ecosystem, biodiversity, land-use, and resource impacts of food production.",
+      "Apply course concepts in empirical case-study work."
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "14:15 - 16:00",
+        "room": "Kollegienhaus, Hörsaal 117"
+      }
+    ]
+  },
+  {
+    "id": "E-41829",
+    "code": "41829",
+    "title": "Social Science Perspectives on Sustainability: The Food System",
+    "cp": 3,
+    "module": "Electives in Data Science",
+    "when": "Every fall sem.",
+    "lang": "English",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Official Fall 2026 elective; social-science and food-system focus.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=303388",
+    "description": "The course is offered within the scope of the program \"Pathways to Sustainability\": https://msd.unibas.ch/en/study-programs/pathways-to-sustainability-tqne/\nThe program consists of 3 introductory lectures with practical courses (lecture A and B are offered in fall semesters, C is offered in spring semesters) dedicated to conveying the foundations of sustainable development. An additional integration seminar (D, offered in spring semesters) engages with interdisciplinary work. The assignment and completion of D requires the successful completion of two lectures from the above mentioned lectures A, B and C.\n\nThis lecture with exercises deals with the analysis of sustainability problems and problem solving from different social science perspectives. It seeks to clarify the prerequisites and conditions, as well as the possibilities and limits of dealing with sustainability problems and fostering societal transformations toward sustainability.\nThe food system is analyzed from a social, cultural and political perspective in relation to sustainable development: What can social sciences contribute to a differentiated understanding of food-related sustainability problems and their solutions? (e.g., producer poverty and living incomes; health impacts of food production and consumption; food governance and governing a sustainable food system etc.).\nThe course consists of weekly lectures alongside a practical exercise. The lecture provides systematic overview knowledge and introduces a set of specific social science concepts, approaches and theories. In the practical exercise, students will work in groups on a specific food product and value chain and apply the social science knowledge attained in class. These exercises will culminate in a final presentation where students will compare and contrast their findings across products and sectors.",
+    "prerequisites": "This course is open to students of the University of Basel and EUCOR sustainability program who are at least in their third bachelor semester, or who are studying at Master or PhD level.MSD 2017 & MSD 2026Students for whom this course is a mandatory class but who have already taken a similar course should contact Prof. Dr. Janina Grabs to arrange an alternative option.The final course selection is to be fixed in a learning agreement (template available on the website MSD; for both MSD curricula).",
+    "exam": "record of achievement — Compulsory attendance in presence of lecture and practical course, submission of learning portfolio according to the announced requirements.Final written examination/repeat exam (details acccording to information of lecturer): 90 minutes. For details regarding dates and room see online course directory/section \"dates and rooms\".Practical courses:Details about the task will be announced in class during the kick-off session of the policy briefs on 09. October 2026.A follow-up will take place on 20. November 2026.For details regarding the room allocation see online course directory/section \"dates and rooms\".",
+    "lecturer": "Janina Grabs",
+    "syllabus": [
+      "Analyze food-system sustainability problems from social-science perspectives.",
+      "Evaluate governance, health, producer-income, and societal transformation questions.",
+      "Apply course concepts to a food-product value-chain project."
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "16:15 - 18:00",
+        "room": "Kollegienhaus, Hörsaal 117"
+      }
+    ]
+  },
+  {
+    "id": "E-76636",
+    "code": "76636",
+    "title": "Quantum Computation and Error Correction",
+    "cp": 2,
+    "module": "Electives in Data Science",
+    "when": "Every fall sem.",
+    "lang": "English",
+    "priority": "Low",
+    "type": "Elective",
+    "note": "Practical companion to Quantum Computation and Error Correction.",
+    "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=302621",
+    "description": "Practical course associated with Quantum Computation and Error Correction. See the official course directory for details.",
+    "prerequisites": "See the official course directory and associated lecture requirements.",
+    "exam": "continuous assessment",
+    "lecturer": "Pierre Fromholz",
+    "syllabus": [
+      "Apply quantum-computing and error-correction concepts in practical exercises.",
+      "Gain hands-on experience with quantum-computing tools."
+    ],
+    "schedule": [
+      {
+        "day": "Tuesday",
+        "time": "16:00 - 18:00",
+        "room": "Physik, Alter Hörsaal 2, 1.22"
+      }
+    ]
   }
 ];

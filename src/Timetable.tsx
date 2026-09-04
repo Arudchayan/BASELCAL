@@ -5,9 +5,19 @@ import {
   findConflicts,
   isMandatoryAttendance,
 } from './conflicts';
-import { getModuleColor } from './uiHelpers';
 import type { PlanState, SemesterId } from './types';
-import { SEMESTERS } from './types';
+import { creditModule, SEMESTERS } from './types';
+import { CampusRoutePlanner } from './CampusRoutePlanner';
+
+const getModuleColor = (moduleName: string): string => {
+  if (moduleName.includes('Admission')) return 'var(--module-admission)';
+  if (moduleName.includes('Math')) return 'var(--module-math)';
+  if (moduleName.includes('Machine Learning')) return 'var(--module-ml)';
+  if (moduleName.includes('Systems')) return 'var(--module-systems)';
+  if (moduleName.includes('Electives')) return 'var(--module-electives)';
+  if (moduleName.includes('Thesis')) return 'var(--module-thesis)';
+  return 'var(--text-secondary)';
+};
 
 export function Timetable({
   plan,
@@ -26,6 +36,19 @@ export function Timetable({
   const conflicts = findConflicts(plannedCourses);
   const unscheduledCourses = plannedCourses.filter((course) => !course.schedule || course.schedule.length === 0);
 
+  const totalCp = plannedCourses.reduce((sum, c) => sum + c.cp, 0);
+  let rawHours = 0;
+  for (const d of days) {
+    const seen = new Set<string>();
+    for (const sess of collectDaySessions(plannedCourses, d)) {
+      const key = `${sess.course.id}|${sess.time}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      rawHours += sess.end - sess.start;
+    }
+  }
+  const contactHours = Math.round(rawHours * 2) / 2;
+
   const formatTime = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
   const getUKTime = (hour: number) => `${(hour - 1).toString().padStart(2, '0')}:00`;
   const getSLTime = (hour: number) => {
@@ -42,26 +65,21 @@ export function Timetable({
           <Calendar size={20} color="var(--accent-primary)" />
           Weekly Timetable Preview
         </h2>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {SEMESTERS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setActiveSem(s.id as SemesterId)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                background: activeSem === s.id ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                color: activeSem === s.id ? '#fff' : 'var(--text-primary)',
-                fontWeight: activeSem === s.id ? 'bold' : 'normal',
-                boxShadow: activeSem === s.id ? '0 4px 12px var(--accent-glow)' : 'none',
-                transition: 'all 0.2s',
-              }}
-            >
-              {s.title.split('·')[0].trim() || s.id.toUpperCase()}
-            </button>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span className="micro-label">≈ {contactHours}h contact / week · {totalCp} CP</span>
+          </div>
+          <div className="segmented">
+            {SEMESTERS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setActiveSem(s.id as SemesterId)}
+                className={activeSem === s.id ? 'is-active' : undefined}
+              >
+                {s.title.split('·')[0].trim() || s.id.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -69,17 +87,17 @@ export function Timetable({
         <div
           style={{
             marginBottom: 16,
-            padding: 16,
-            borderRadius: 12,
-            background: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
+            padding: '14px 16px',
+            borderRadius: 10,
+            background: 'var(--bad-bg)',
+            borderLeft: '3px solid var(--bad)',
           }}
         >
           <h3
             style={{
               margin: '0 0 10px 0',
-              fontSize: 14,
-              color: '#ef4444',
+              fontSize: 13,
+              color: 'var(--bad)',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
@@ -98,49 +116,49 @@ export function Timetable({
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '12px', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div
             style={{
-              width: 12,
-              height: 12,
-              background: 'rgba(99, 102, 241, 0.15)',
-              border: '1px solid var(--accent-primary)',
+              width: 14,
+              height: 14,
+              borderRadius: 3,
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-subtle)',
               borderLeft: '3px solid var(--accent-primary)',
             }}
           />
-          Mandatory Attendance
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Mandatory Attendance</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div
             style={{
-              width: 12,
-              height: 12,
-              background: 'rgba(255, 255, 255, 0.05)',
+              width: 14,
+              height: 14,
+              borderRadius: 3,
+              background: 'var(--bg-secondary)',
               border: '1px dashed var(--border-subtle)',
-              borderLeft: '3px solid var(--border-subtle)',
+              borderLeft: '3px solid var(--border-strong)',
             }}
           />
-          Flexible (Exam Only)
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Flexible (Exam Only)</span>
         </div>
       </div>
+
+      {activeSem !== 's1' && (
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'rgba(217, 119, 6, 0.1)', borderLeft: '3px solid var(--warn)', color: 'var(--text-secondary)', fontSize: 12.5, lineHeight: 1.5 }}>
+          <strong style={{ color: 'var(--warn)' }}>Provisional timetable.</strong> Spring 2027 and later offerings and
+          meeting times have not yet been audited against the live VV semester. Treat this as a planning sketch and
+          recheck it before enrollment.
+        </div>
+      )}
+
+      <CampusRoutePlanner courses={plannedCourses} />
 
       <div className="timetable-grid" style={{ display: 'grid', gridTemplateColumns: '60px repeat(5, 1fr)', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ background: 'var(--bg-secondary)', padding: '12px' }} />
         {days.map((d) => (
-          <div
-            key={d}
-            style={{
-              background: 'var(--bg-secondary)',
-              padding: '12px',
-              textAlign: 'center',
-              fontWeight: 'bold',
-              color: 'var(--text-primary)',
-              fontSize: '14px',
-              borderBottom: '1px solid var(--border-subtle)',
-              borderLeft: '1px solid var(--border-subtle)',
-            }}
-          >
+          <div key={d} className="tt-day-head">
             {d}
           </div>
         ))}
@@ -149,17 +167,9 @@ export function Timetable({
           {HOURS.slice(0, -1).map((h, i) => (
             <div
               key={h}
+              className="tt-hour"
               title={`UK: ${getUKTime(h)} | SL: ${getSLTime(h)}`}
-              style={{
-                position: 'absolute',
-                top: i * HOUR_HEIGHT - 8,
-                right: 8,
-                fontSize: '11px',
-                color: 'var(--text-muted)',
-                textAlign: 'right',
-                cursor: 'help',
-                zIndex: 2,
-              }}
+              style={{ top: i * HOUR_HEIGHT }}
             >
               {formatTime(h)}
             </div>
@@ -203,12 +213,6 @@ export function Timetable({
                 const width = widthPercent - (colCount > 1 ? 2 : 0);
                 const isConflict = colCount > 1;
                 const mandatory = isMandatoryAttendance(sess.course);
-                const baseBg = mandatory ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255, 255, 255, 0.03)';
-                const leftBorderColor = isConflict
-                  ? '#ef4444'
-                  : mandatory
-                    ? 'var(--accent-primary)'
-                    : 'var(--border-subtle)';
 
                 // Clamp visual position into grid but still show off-hours with a hint
                 const visualTop = Math.max(-4, Math.min(top, (HOURS.length - 2) * HOUR_HEIGHT));
@@ -218,25 +222,14 @@ export function Timetable({
                   <div
                     key={`${sess.course.id}-${i}`}
                     title={`${sess.course.title}\n${sess.time}\n${sess.room}\n${mandatory ? 'MANDATORY' : 'FLEXIBLE'}`}
+                    className={'tt-session' + (isConflict ? ' tt-session--conflict' : '')}
                     style={{
-                      position: 'absolute',
                       top: visualTop + 'px',
                       left: leftOffset + '%',
                       width: width + '%',
                       height: visualHeight + 'px',
-                      background: isConflict ? 'rgba(239, 68, 68, 0.15)' : baseBg,
-                      borderLeft: `4px solid ${leftBorderColor}`,
-                      borderTop: mandatory ? `1px solid ${leftBorderColor}` : '1px dashed var(--border-subtle)',
-                      borderRight: mandatory ? `1px solid ${leftBorderColor}` : '1px dashed var(--border-subtle)',
-                      borderBottom: mandatory ? `1px solid ${leftBorderColor}` : '1px dashed var(--border-subtle)',
-                      borderRadius: '4px',
-                      padding: '4px 6px',
-                      fontSize: '11px',
-                      overflow: 'hidden',
+                      borderStyle: mandatory ? 'solid' : 'dashed',
                       boxSizing: 'border-box',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      zIndex: isConflict ? 10 + i : 5,
-                      backdropFilter: 'blur(4px)',
                       opacity: sess.start < 8 || sess.end > 19 ? 0.85 : 1,
                     }}
                   >
@@ -250,31 +243,28 @@ export function Timetable({
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           flex: 1,
+                          fontSize: 11,
                         }}
                       >
                         {sess.course.title}
                       </strong>
                       {mandatory && (
                         <span
-                          style={{
-                            fontSize: '9px',
-                            fontWeight: 'bold',
-                            background: 'var(--accent-primary)',
-                            color: '#fff',
-                            padding: '1px 4px',
-                            borderRadius: '4px',
-                            marginLeft: '4px',
-                          }}
+                          className="tt-badge"
+                          style={{ background: 'var(--accent-primary)', color: 'var(--on-accent)', marginLeft: 4 }}
                         >
                           M
                         </span>
                       )}
                     </div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{sess.time}</div>
+                    <div className="mono" style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, color: 'var(--text-muted)' }}>
+                      {sess.time}
+                    </div>
                     <div
                       style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 9.5,
                         color: 'var(--text-secondary)',
-                        fontSize: '10px',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -305,7 +295,7 @@ export function Timetable({
           <h3
             style={{
               margin: '0 0 12px 0',
-              fontSize: '16px',
+              fontSize: 16,
               color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
@@ -316,27 +306,28 @@ export function Timetable({
             Unscheduled courses ({unscheduledCourses.length}) — no fixed timetable; learning contracts &amp; thesis are
             remote-friendly
           </h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {unscheduledCourses.map((c) => (
-                <div
-                  key={c.id}
-                  style={{
-                    background: 'var(--bg-primary)',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-subtle)',
-                    borderLeft: `4px solid ${getModuleColor(c.module)}`,
-                    fontSize: '12px',
-                  }}
-                >
-                  <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--text-primary)' }}>
-                    {c.title}
-                  </strong>
-                  <div style={{ color: 'var(--text-muted)' }}>
-                    {c.cp} CP · {c.module}
+              <div
+                key={c.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <span className="module-dot" style={{ background: getModuleColor(creditModule(c)) }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{c.title}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {c.cp} CP · {creditModule(c)}
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </div>
         );

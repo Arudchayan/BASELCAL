@@ -1,4 +1,4 @@
-import { statusColor, type BucketStatus, type RuleKind } from './degreeRules';
+import type { BucketStatus, RuleKind } from './degreeRules';
 
 export function MetricBox({
   label,
@@ -15,34 +15,50 @@ export function MetricBox({
   kind: RuleKind;
   status: BucketStatus;
 }) {
-  const displayColor = statusColor(status, color);
   const kindHint = kind === 'exact' ? 'exact' : 'min';
+  const pct = Math.min(100, (value / target) * 100);
+
+  const valueColor =
+    status === 'met'
+      ? 'var(--text-primary)'
+      : status === 'short'
+        ? 'var(--warn)'
+        : status === 'overshoot'
+          ? 'var(--bad)'
+          : 'var(--text-muted)';
+  const barColor =
+    status === 'met'
+      ? color
+      : status === 'short'
+        ? 'var(--warn)'
+        : status === 'overshoot'
+          ? 'var(--bad)'
+          : 'var(--border-strong)';
 
   return (
-    <div
-      style={{
-        padding: '16px',
-        borderRadius: '16px',
-        background: 'rgba(128,128,128,0.03)',
-        border: `1px solid ${status === 'empty' ? 'var(--border-subtle)' : displayColor}`,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-      title={kind === 'exact' ? `Must be exactly ${target} CP` : `Minimum ${target} CP`}
-    >
-      <div style={{ fontSize: '24px', fontWeight: 'bold', color: displayColor }}>
-        {value}{' '}
-        <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-          / {target}
-          <span style={{ fontSize: '10px', marginLeft: 4, opacity: 0.8 }}>({kindHint})</span>
-        </span>
+    <div className="metric" title={kind === 'exact' ? `Must be exactly ${target} CP` : `Minimum ${target} CP`}>
+      <div className="metric-top">
+        <span className="micro-label">{label}</span>
+        <span className="metric-kind">{kindHint}</span>
       </div>
-      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{label}</div>
+      <div>
+        <span className="metric-value num" style={{ color: valueColor }}>
+          {value}
+        </span>
+        <span className="metric-target">/ {target}</span>
+      </div>
+      <div className="metric-bar">
+        <div className="metric-bar-fill" style={{ width: `${pct}%`, background: barColor }} />
+      </div>
       {status === 'overshoot' && (
-        <div style={{ fontSize: '11px', color: '#ef4444', marginTop: 4 }}>Overshoot</div>
+        <div className="metric-note" style={{ color: 'var(--bad)' }}>
+          Overshoot
+        </div>
       )}
       {status === 'short' && value > 0 && (
-        <div style={{ fontSize: '11px', color: '#d97706', marginTop: 4 }}>Short</div>
+        <div className="metric-note" style={{ color: 'var(--warn)' }}>
+          Short
+        </div>
       )}
     </div>
   );

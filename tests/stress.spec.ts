@@ -77,7 +77,7 @@ test.describe('BASELCAL App Stress Tests', () => {
         'ML-45366',
       ];
       localStorage.setItem(
-        'basel-ds-plan-v3',
+        'basel-ds-plan-v5',
         JSON.stringify({ s1: ids, s2: [], s3: [], s4: [] }),
       );
       localStorage.removeItem('basel-ds-plan-v2');
@@ -86,7 +86,7 @@ test.describe('BASELCAL App Stress Tests', () => {
 
     await page.reload();
 
-    const timetableBtn = page.getByRole('button', { name: /Timetable/i });
+    const timetableBtn = page.getByRole('button', { name: 'Timetable view' });
     await expect(timetableBtn).toBeVisible();
     await timetableBtn.click();
 

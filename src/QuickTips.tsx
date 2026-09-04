@@ -30,7 +30,7 @@ export function QuickTips() {
       const mathCourses = COURSES.filter((c) => c.module.includes('Math')).slice(0, 3);
       response = `Math picks: ${mathCourses.map((c) => c.title).join(', ')}.`;
     } else if (lower.includes('easy') || lower.includes('intro') || lower.includes('admission')) {
-      response = `Admission Auflagen are exactly ${DEGREE_RULES.admission.target} CP (Analysis 12 + Algorithms 8 + SciComp 8). Confirm against your Zulassungsbescheid.`;
+      response = `This plan models student-specific admission conditions as exactly ${DEGREE_RULES.admission.target} CP (Analysis 12 + Algorithms 8 + SciComp 8). They are not a universal MSc requirement; confirm against your Zulassungsbescheid.`;
     } else if (lower.includes('elective')) {
       response = `Electives must be exactly ${DEGREE_RULES.electives.target} CP. Overshoot fails validation.`;
     } else if (lower.includes('thesis')) {
@@ -45,29 +45,29 @@ export function QuickTips() {
   return (
     <>
       <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.96 }}
         onClick={() => setIsOpen(true)}
         aria-label="Open quick tips"
         style={{
           position: 'fixed',
           bottom: '32px',
           right: '32px',
-          width: '60px',
-          height: '60px',
-          borderRadius: '30px',
+          width: '52px',
+          height: '52px',
+          borderRadius: '12px',
           background: 'var(--accent-primary)',
-          color: '#fff',
+          color: 'var(--on-accent)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           border: 'none',
           cursor: 'pointer',
-          boxShadow: '0 8px 32px var(--accent-glow)',
+          boxShadow: '0 6px 20px -6px var(--accent-glow)',
           zIndex: 100,
         }}
       >
-        <MessageCircle size={28} />
+        <MessageCircle size={22} />
       </motion.button>
 
       <AnimatePresence>
@@ -91,28 +91,26 @@ export function QuickTips() {
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--border-strong)',
             }}
           >
             <div
               style={{
-                padding: '16px',
+                padding: '14px 16px',
                 borderBottom: '1px solid var(--border-subtle)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                background: 'rgba(128,128,128,0.05)',
               }}
             >
               <div>
-                <strong>Quick Tips</strong>
+                <h3 style={{ fontSize: 14, margin: 0, color: 'var(--text-primary)' }}>Quick Tips</h3>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Keyword helper — not an AI model</div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
                 aria-label="Close tips"
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                className="btn btn--quiet"
+                style={{ cursor: 'pointer' }}
               >
                 <X size={18} />
               </button>
@@ -124,12 +122,13 @@ export function QuickTips() {
                   style={{
                     alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
                     background: m.sender === 'user' ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                    color: m.sender === 'user' ? '#fff' : 'var(--text-primary)',
+                    border: m.sender === 'user' ? 'none' : '1px solid var(--border-subtle)',
+                    color: m.sender === 'user' ? 'var(--on-accent)' : 'var(--text-primary)',
                     padding: '10px 12px',
-                    borderRadius: 12,
+                    borderRadius: 10,
                     maxWidth: '85%',
-                    fontSize: 13,
-                    lineHeight: 1.45,
+                    fontSize: 12.5,
+                    lineHeight: 1.5,
                   }}
                 >
                   {m.text}
@@ -138,11 +137,10 @@ export function QuickTips() {
             </div>
             <div
               style={{
-                padding: 16,
+                padding: '12px 16px',
                 borderTop: '1px solid var(--border-subtle)',
                 display: 'flex',
                 gap: 8,
-                background: 'rgba(128,128,128,0.02)',
               }}
             >
               <input
@@ -151,29 +149,15 @@ export function QuickTips() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask about ML, electives…"
                 aria-label="Tip question"
-                style={{
-                  flex: 1,
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 8,
-                  padding: '10px 12px',
-                  color: 'var(--text-primary)',
-                  outline: 'none',
-                }}
+                style={{ flex: 1, padding: '9px 12px', borderRadius: 8 }}
               />
               <button
                 onClick={handleSend}
                 aria-label="Send tip question"
-                style={{
-                  background: 'var(--accent-primary)',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '0 14px',
-                  color: '#fff',
-                  cursor: 'pointer',
-                }}
+                className="btn btn--primary"
+                style={{ padding: '0 12px' }}
               >
-                <Send size={16} />
+                <Send size={15} />
               </button>
             </div>
           </motion.div>

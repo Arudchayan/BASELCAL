@@ -6,10 +6,9 @@ import { DEGREE_RULES, evaluatePlan } from './degreeRules';
 import { findConflicts, isHardClash } from './conflicts';
 import { getPlacementWarnings } from './offering';
 import { allPlannedCourses } from './planStorage';
-import { DATA_FRESHNESS, isStaleWatch } from './dataFreshness';
-import { COVERAGE_POLICY, getModuleDiscrepancy } from './coveragePolicy';
+import { COVERAGE_POLICY, isStaleWatch, getModuleDiscrepancy } from './coveragePolicy';
 import type { Course, PlanState, SemesterId } from './types';
-import { SEMESTER_IDS } from './types';
+import { creditModule, SEMESTER_IDS } from './types';
 
 const BUCKET_COLORS: Record<string, string> = {
   admission: '#d97706',
@@ -65,10 +64,10 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
   const bucketBreakdown = BREAKDOWN_KEYS.map((key) => ({
     key,
     bucket: buckets.find((b) => b.key === key),
-    courses: courses.filter((course) => course.module === DEGREE_RULES[key].module),
+    courses: courses.filter((course) => creditModule(course) === DEGREE_RULES[key].module),
   }));
 
-  const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 36, s2: 36, s3: 42, s4: 46 };
+  const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 37, s3: 42, s4: 46 };
   const loadIssues = SEMESTER_IDS.flatMap((sem) => {
     const cp = plan[sem].reduce((s, c) => s + c.cp, 0);
     const max = SEM_LOAD_MAX[sem];
@@ -89,6 +88,8 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
       !(c.when || '').toLowerCase().includes('learning contract') &&
       (!c.schedule || c.schedule.length === 0),
   );
+  const hasProvisionalRl = courses.some((c) => c.id === 'ML-78174');
+  const hasProvisionalInverseProblems = courses.some((c) => c.id === 'ML-67343');
 
   return (
     <motion.div
@@ -103,11 +104,20 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
         Curriculum Progress
       </h2>
       <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-        Targets per Uni Basel MSc Data Science 2026 program (admission model 12+8+8={admissionTarget} — verify your
-        Zulassungsbescheid). Exact buckets fail on overshoot; foundations are minimums. Catalog review:{' '}
-        {DATA_FRESHNESS.lastReviewed}
-        {!DATA_FRESHNESS.moduleManifestComplete && ' · VV module membership manifest incomplete'}.
+        Degree targets follow the Uni Basel MSc Data Science 2026 program. The {admissionTarget} CP shown here
+        (12+8+8) are student-specific conditions from the admission decision, not a universal MSc
+        requirement. Exact buckets fail on overshoot; foundations are minimums. Catalog review:{' '}
+        {COVERAGE_POLICY.lastVerified.date}
+        {!COVERAGE_POLICY.lastVerified.moduleManifestComplete && ' · VV module membership manifest incomplete'}.
       </p>
+
+      <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--warn-bg)', color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
+        <strong style={{ color: 'var(--warn)' }}>Provisional from Spring 2027 onward.</strong>{' '}
+        Future offerings and timetable slots have not been audited against their live VV semesters. Recheck before
+        enrollment.
+        {hasProvisionalRl && ' ML-78174 Reinforcement Learning is irregular and must be confirmed.'}
+        {hasProvisionalInverseProblems && ' ML-67343 Inverse Problems is irregular and must be confirmed.'}
+      </div>
 
       <div className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
         {displayBuckets.map((b) => (
@@ -168,7 +178,7 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
                 <ul style={{ margin: '6px 0 0', paddingLeft: '16px', color: 'var(--text-muted)', fontSize: '11px', lineHeight: 1.5 }}>
                   {bucketCourses.map((course) => (
                     <li key={course.id}>
-                      {course.code} · {course.cp} CP
+                      {course.code} · {course.cp} CP{course.eligibleModules?.length ? ` · allocated to ${creditModule(course)}` : ''}
                     </li>
                   ))}
                 </ul>

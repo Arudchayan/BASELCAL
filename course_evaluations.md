@@ -2,7 +2,24 @@
 
 Human/agent notes from VV coverage audits. Runtime catalog: `src/courses.ts`.
 
-## 2026-07-21 — Live VV browser audit
+## 2026-09-03 — Fall 2026 module-tree reconciliation
+
+**Source:** Live University of Basel semester program, `periode=2026004`, Data Science program `hid=289451`; captured in `vv_module_manifest.json`.
+
+### Coverage and changes
+
+- The module tree is now populated: **32 entries / 22 unique courses** across Mathematical Foundations, Machine Learning Foundations, Systems Foundations, and Electives.
+- Added three missing electives: `E-41828`, `E-41829`, and `E-76636`.
+- Refreshed official Fall 2026 details for all 22 matching catalog courses, including full titles, language, lecturers, assessment text, and lecture/practical timetable sessions.
+- Five courses are intentionally cross-listed: `12246`, `15731`, `19300`, `45401`, and `66937`.
+- `ML-45401` is therefore not a module dispute: it is explicitly listed in both Machine Learning Foundations and Electives.
+- Spring 2027 is not yet published; the live directory announces publication for 2026-11-30.
+
+### Official-data caution
+
+- Course `41828` currently displays a January 2026 examination date on its Fall 2026 page. This appears stale, so students must verify the assessment date in VV before enrolling.
+
+## 2026-07-21 — Live VV browser audit (historical; superseded for Fall 2026)
 
 **Source:** [Browse UniBasel VV catalog](2793e60d-92eb-40b5-b1f8-0d1528f3a768) → `vv_msc_ds_official.json`
 
@@ -37,9 +54,9 @@ VV semester field not HS/FS 2026; keep in catalog, flag in UI:
 | E-62229 | 62229 | fall 2024 |
 | E-64324 | 64324 | fall 2025 |
 
-### Module tag conflict
+### Module tag conflict (resolved 2026-09-03)
 
-**ML-45401 Bioinformatics Algorithms:** catalog = ML Foundations; VV Modules tab also lists **Electives in Data Science**. Resolve against official program PDF before retagging.
+**ML-45401 Bioinformatics Algorithms:** the populated Fall 2026 tree confirms it is cross-listed in both ML Foundations and Electives; the ML Foundations catalog assignment remains valid.
 
 ### Not in catalog (VV noise)
 

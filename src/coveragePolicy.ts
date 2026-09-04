@@ -19,10 +19,13 @@ export type CoveragePolicy = {
     method: string;
     catalogCoursesWithVvDetail: number;
     moduleManifestComplete: boolean;
+    fall2026UniqueCourses?: number;
+    fall2026ModuleEntries?: number;
     notes: string;
   };
   staleWatchIds: string[];
   moduleDiscrepancies: ModuleDiscrepancy[];
+  moduleCrossListings?: Record<string, string[]>;
 };
 
 export const COVERAGE_POLICY = policy as CoveragePolicy;
@@ -33,4 +36,8 @@ export function getModuleDiscrepancy(courseId: string): ModuleDiscrepancy | unde
 
 export function isDisputedModule(courseId: string): boolean {
   return !!getModuleDiscrepancy(courseId);
+}
+
+export function isStaleWatch(courseId: string): boolean {
+  return COVERAGE_POLICY.staleWatchIds.includes(courseId);
 }

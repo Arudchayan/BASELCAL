@@ -1,11 +1,20 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import { AlertCircle, Maximize2, Plus, X, Zap } from 'lucide-react';
+import { AlertCircle, Maximize2, Plus, StickyNote, X, Zap } from 'lucide-react';
 import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { parseOffering, primaryMismatchMessage } from './offering';
-import { isStaleWatch } from './dataFreshness';
-import { getModuleColor, getPriorityBg, getPriorityColor } from './uiHelpers';
-import type { Course, SemesterId } from './types';
+import { isStaleWatch } from './coveragePolicy';
+import { creditModule, eligibleModulesFor, type Course, type CourseModule, type SemesterId } from './types';
+
+const getModuleColor = (moduleName: string): string => {
+  if (moduleName.includes('Admission')) return 'var(--module-admission)';
+  if (moduleName.includes('Math')) return 'var(--module-math)';
+  if (moduleName.includes('Machine Learning')) return 'var(--module-ml)';
+  if (moduleName.includes('Systems')) return 'var(--module-systems)';
+  if (moduleName.includes('Electives')) return 'var(--module-electives)';
+  if (moduleName.includes('Thesis')) return 'var(--module-thesis)';
+  return 'var(--text-secondary)';
+};
 
 type CourseCardProps = {
   course: Course;
@@ -17,6 +26,7 @@ type CourseCardProps = {
   onNoteChange?: (text: string) => void;
   onShowDetails: () => void;
   onQuickAdd?: () => void;
+  onAllocationChange?: (module: CourseModule) => void;
 };
 
 function CourseCardInner({
@@ -29,8 +39,10 @@ function CourseCardInner({
   onNoteChange,
   onShowDetails,
   onQuickAdd,
+  onAllocationChange,
 }: CourseCardProps) {
   const [copyToast, setCopyToast] = useState<string | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
   // Keep note draft local so typing does not re-render the full DnD board every keystroke
   const [draftNote, setDraftNote] = useState(noteText || '');
   const draftRef = useRef(draftNote);
@@ -42,14 +54,17 @@ function CourseCardInner({
   const discrepancy = disputed ? getModuleDiscrepancy(course.id) : undefined;
   const firstSession = course.schedule?.[0];
   const scheduleCount = course.schedule?.length ?? 0;
+  const eligibleModules = eligibleModulesFor(course);
+  const allocatedModule = creditModule(course);
   const scheduleLabel =
     firstSession && course.scheduleStatus !== 'contract' && course.scheduleStatus !== 'thesis'
-      ? `📅 ${firstSession.day.slice(0, 3)} ${firstSession.time.replace(/\s*[-–—]\s*/g, '-')}${scheduleCount > 1 ? ` +${scheduleCount - 1} more` : ''}`
+      ? `${firstSession.day.slice(0, 3)} ${firstSession.time.replace(/\s*[-–—]\s*/g, '-')}${scheduleCount > 1 ? ` +${scheduleCount - 1}` : ''}`
       : null;
 
   useEffect(() => {
     setDraftNote(noteText || '');
     draftRef.current = noteText || '';
+    if (noteText) setNoteOpen(true);
   }, [noteText, course.id]);
 
   const flushNote = useCallback(() => {
@@ -103,16 +118,12 @@ function CourseCardInner({
           className="course-card"
           style={{
             ...provided.draggableProps.style,
-            marginBottom: '12px',
-            padding: '16px',
+            marginBottom: '10px',
+            padding: '12px 14px',
             position: 'relative',
-            borderLeft: mismatchWarning
-              ? '4px solid #ef4444'
-              : `4px solid ${getModuleColor(course.module)}`,
-            background: snapshot.isDragging ? 'var(--glass-dragging-bg)' : 'var(--bg-secondary)',
-            transition: snapshot.isDragging ? 'none' : 'background 0.2s ease, box-shadow 0.2s ease',
+            background: snapshot.isDragging ? 'var(--glass-dragging-bg)' : undefined,
             cursor: snapshot.isDragging ? 'grabbing' : 'grab',
-            boxShadow: snapshot.isDragging ? '0 8px 32px var(--glass-shadow)' : 'none',
+            boxShadow: snapshot.isDragging ? '0 12px 32px -8px var(--glass-shadow)' : undefined,
           }}
         >
           {isPlanned && onRemove && (
@@ -120,17 +131,24 @@ function CourseCardInner({
               onClick={onRemove}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label={`Remove ${course.title}`}
+              className="btn--quiet"
               style={{
                 position: 'absolute',
-                top: 12,
-                right: 12,
+                top: 8,
+                right: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 26,
+                height: 26,
+                borderRadius: 6,
                 background: 'none',
                 border: 'none',
                 color: 'var(--text-muted)',
                 cursor: 'pointer',
               }}
             >
-              <X size={16} />
+              <X size={14} />
             </button>
           )}
           {!isPlanned && onQuickAdd && (
@@ -144,32 +162,41 @@ function CourseCardInner({
               title="Add to first matching semester"
               style={{
                 position: 'absolute',
-                top: 12,
-                right: 12,
-                background: 'var(--accent-primary)',
-                border: 'none',
-                borderRadius: 6,
-                color: '#fff',
-                cursor: 'pointer',
-                padding: '4px 6px',
+                top: 8,
+                right: 8,
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                background: 'var(--accent-primary)',
+                border: 'none',
+                color: 'var(--on-accent)',
+                cursor: 'pointer',
               }}
             >
-              <Plus size={14} />
+              <Plus size={13} />
             </button>
           )}
           <div
             style={{
               display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: '8px',
-              marginBottom: '8px',
-              paddingRight: '28px',
+              alignItems: 'baseline',
+              gap: 8,
+              marginBottom: 2,
+              paddingRight: 30,
             }}
           >
-            <h4 style={{ margin: '0', fontSize: '15px' }}>
+            <span className="num" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0 }}>
+              {course.code}
+            </span>
+            <span className="num" style={{ fontSize: 10.5, color: 'var(--text-muted)', flexShrink: 0 }}>
+              {course.cp} CP
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, paddingRight: 26 }}>
+            <h4 style={{ margin: 0, fontSize: 13.5, lineHeight: 1.35, fontWeight: 600 }}>
               <a
                 href={course.url || 'https://vorlesungsverzeichnis.unibas.ch'}
                 target="_blank"
@@ -183,237 +210,128 @@ function CourseCardInner({
                   color: 'inherit',
                   textDecoration: 'none',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
+                  alignItems: 'baseline',
+                  gap: 5,
                 }}
                 title="Opens official course page (also copies course code)"
               >
                 {course.title}
-                <Zap size={12} style={{ color: 'var(--text-muted)' }} />
+                <Zap size={11} style={{ color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'center' }} />
               </a>
             </h4>
             <button
               onClick={onShowDetails}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label={`Details for ${course.title}`}
+              title="View Course Details"
               style={{
-                background: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '6px',
-                color: 'var(--text-secondary)',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: 6,
+                color: 'var(--text-muted)',
                 cursor: 'pointer',
-                padding: '4px',
+                padding: 3,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexShrink: 0,
               }}
-              title="View Course Details"
             >
-              <Maximize2 size={14} />
+              <Maximize2 size={13} />
             </button>
           </div>
 
           {copyToast && (
-            <div
-              style={{
-                fontSize: 11,
-                color: '#10b981',
-                marginBottom: 6,
-              }}
-            >
-              {copyToast}
-            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--ok)', marginTop: 4 }}>{copyToast}</div>
           )}
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
-            <span
-              style={{
-                fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                background: 'var(--border-subtle)',
-              }}
-            >
-              {course.code}
-            </span>
-            <span
-              style={{
-                fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                background: 'var(--border-subtle)',
-              }}
-            >
-              {course.cp} CP
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
+            <span className="module-dot" title={allocatedModule} style={{ background: getModuleColor(allocatedModule) }} />
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{course.lang}</span>
+            {eligibleModules.length > 1 && !isPlanned && (
+              <span className="pill pill--blue" title={eligibleModules.join(' or ')}>Cross-listed · {eligibleModules.length} modules</span>
+            )}
             {scheduleLabel && (
-              <span
-                title="First scheduled session"
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border-subtle)',
-                  maxWidth: '140px',
-                  minWidth: 0,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <span title="First scheduled session" className="pill pill--schedule">
                 {scheduleLabel}
               </span>
             )}
-            <span
-              style={{
-                fontSize: '11px',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                background: getPriorityBg(course.priority),
-                color: getPriorityColor(course.priority),
-              }}
-            >
+            <span className={`pill priority-${course.priority.toLowerCase().replace(/\s+/g, '-')}`}>
               {course.priority}
             </span>
-            {course.type === 'Admission' && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  color: '#d97706',
-                }}
-              >
-                Admission Req
-              </span>
-            )}
-            {course.lang === 'German' && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  color: '#ef4444',
-                }}
-              >
-                DE
-              </span>
-            )}
+            {course.type === 'Admission' && <span className="pill pill--amber">Admission Req</span>}
+            {course.lang === 'German' && <span className="pill pill--red">DE</span>}
             {offering.season === 'irregular' && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  color: '#d97706',
-                }}
-                title="Verify this course runs in your target year"
-              >
+              <span className="pill pill--amber" title="Verify this course runs in your target year">
                 Irregular
               </span>
             )}
             {offering.biennial && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(59, 130, 246, 0.15)',
-                  color: '#60a5fa',
-                }}
-                title="Offered every second cycle — confirm availability"
-              >
+              <span className="pill pill--blue" title="Offered every second cycle — confirm availability">
                 Biennial
               </span>
             )}
-            {offering.season === 'contract' && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  color: '#10b981',
-                }}
-              >
-                Contract
-              </span>
-            )}
+            {offering.season === 'contract' && <span className="pill pill--green">Contract</span>}
             {isStaleWatch(course.id) && (
               <span
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  color: '#f87171',
-                }}
+                className="pill pill--red-soft"
                 title={`Stale/irregular offering — VV semester not HS/FS 2026, verify ${course.when} (audit 2026-07-21)`}
               >
                 Verify VV
               </span>
             )}
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '6px',
-              marginBottom: '4px',
-            }}
-          >
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {course.module} · {course.lang}
-            </span>
             {disputed && discrepancy && (
-              <span
-                title={discrepancy.note}
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid rgba(239, 68, 68, 0.35)',
-                  color: '#f87171',
-                  fontWeight: 700,
-                }}
-              >
+              <span title={discrepancy.note} className="pill pill--disputed">
                 Disputed module
               </span>
             )}
           </div>
 
+          {isPlanned && eligibleModules.length > 1 && onAllocationChange && (
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              Credit to
+              <select
+                aria-label={`Credit allocation for ${course.title}`}
+                value={allocatedModule}
+                onChange={(e) => onAllocationChange(e.target.value as CourseModule)}
+                onClick={(e) => e.stopPropagation()}
+                style={{ flex: 1, minWidth: 0, fontSize: 11, padding: '4px 6px' }}
+              >
+                {eligibleModules.map((module) => <option key={module} value={module}>{module}</option>)}
+              </select>
+            </label>
+          )}
+
           {mismatchWarning && (
             <div
               style={{
-                fontSize: '11px',
-                color: '#ef4444',
-                background: 'rgba(239, 68, 68, 0.1)',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                marginBottom: '8px',
+                fontSize: 11,
+                color: 'var(--bad)',
+                background: 'var(--bad-bg)',
+                padding: '5px 9px',
+                borderRadius: 6,
+                marginTop: 8,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: 6,
+                lineHeight: 1.45,
               }}
             >
               <AlertCircle size={12} /> {mismatchWarning}
             </div>
           )}
 
-          {course.note && (
+          {course.note && !noteOpen && (
             <div
               style={{
-                fontSize: '12px',
+                fontSize: 11.5,
                 color: 'var(--text-muted)',
                 fontStyle: 'italic',
-                marginBottom: '8px',
+                marginTop: 7,
+                lineHeight: 1.45,
               }}
             >
               {course.note}
@@ -421,27 +339,51 @@ function CourseCardInner({
           )}
 
           {onNoteChange && (
-            <textarea
-              value={draftNote}
-              onChange={(e) => scheduleFlush(e.target.value)}
-              onBlur={flushNote}
-              placeholder="Add personal notes here (e.g. prerequisite missing)..."
-              style={{
-                width: '100%',
-                background: 'rgba(128,128,128,0.05)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '8px',
-                padding: '8px',
-                color: 'var(--text-primary)',
-                fontSize: '12px',
-                fontFamily: 'inherit',
-                resize: 'none',
-                outline: 'none',
-                minHeight: '44px',
-                marginTop: '4px',
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
-            />
+            <div style={{ marginTop: noteOpen ? 8 : 6 }}>
+              {noteOpen ? (
+                <textarea
+                  value={draftNote}
+                  onChange={(e) => scheduleFlush(e.target.value)}
+                  onBlur={flushNote}
+                  placeholder="Add personal notes here (e.g. prerequisite missing)..."
+                  style={{
+                    width: '100%',
+                    background: 'var(--bg-primary)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 7,
+                    padding: 8,
+                    color: 'var(--text-primary)',
+                    fontSize: 12,
+                    fontFamily: 'inherit',
+                    resize: 'none',
+                    outline: 'none',
+                    minHeight: 44,
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => setNoteOpen(true)}
+                  aria-label={`Toggle note for ${course.title}`}
+                  title="Add a personal note"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    padding: '2px 0',
+                  }}
+                >
+                  <StickyNote size={12} /> Note
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

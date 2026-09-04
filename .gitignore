@@ -15,6 +15,7 @@ test-results
 playwright-report
 blob-report
 playwright/.cache
+.playwright-cli/
 
 # Editor directories and files
 .vscode/*
@@ -28,3 +29,10 @@ playwright/.cache
 *.sw?
 
 .vercel
+
+# VV cache — regeneratable
+vv_scrape_cache.json
+vv_msc_ds_official.json
+vv_audit_probe.json
+vv_audit_table.json
+tree.json

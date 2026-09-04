@@ -3,7 +3,7 @@
  * Single source of truth for UI, Explorer, and validation.
  * Targets live in degree_rules.json (shared with validate_all.cjs).
  */
-import type { Course } from './types';
+import { creditModule, type Course } from './types';
 import rulesJson from '../degree_rules.json';
 
 export type RuleKind = 'exact' | 'min';
@@ -46,7 +46,7 @@ export type BucketEvaluation = {
   ok: boolean;
 };
 
-function statusFor(value: number, target: number, kind: RuleKind): BucketStatus {
+export function statusFor(value: number, target: number, kind: RuleKind): BucketStatus {
   if (value === 0) return 'empty';
   if (kind === 'exact') {
     if (value < target) return 'short';
@@ -58,7 +58,7 @@ function statusFor(value: number, target: number, kind: RuleKind): BucketStatus 
 }
 
 export function sumModule(courses: Course[], moduleName: string): number {
-  return courses.filter((c) => c.module === moduleName).reduce((acc, c) => acc + c.cp, 0);
+  return courses.filter((c) => creditModule(c) === moduleName).reduce((acc, c) => acc + c.cp, 0);
 }
 
 export function computeStats(courses: Course[]): DegreeStats {

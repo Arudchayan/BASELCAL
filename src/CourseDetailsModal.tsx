@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, BookOpen, Calendar, Maximize2, X, Zap } from 'lucide-react';
+import { AlertCircle, BookOpen, Calendar, CheckCircle2, Maximize2, X, Zap } from 'lucide-react';
 import { getModuleDiscrepancy } from './coveragePolicy';
-import { isStaleWatch } from './dataFreshness';
+import { isStaleWatch } from './coveragePolicy';
 import { isMandatoryAttendance } from './conflicts';
 import { parseOffering } from './offering';
-import { getPriorityBg, getPriorityColor } from './uiHelpers';
-import type { Course } from './types';
+import { creditModule, eligibleModulesFor, type Course } from './types';
 
 export function CourseDetailsModal({ course, onClose }: { course: Course; onClose: () => void }) {
   useEffect(() => {
@@ -52,9 +51,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
+            background: 'rgba(20,12,10,0.55)',
             zIndex: 1,
           }}
           onClick={onClose}
@@ -76,98 +73,62 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             flexDirection: 'column',
             background: 'var(--bg-primary)',
             border: '1px solid var(--border-strong)',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.4)',
-            borderRadius: '20px',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.45)',
+            borderRadius: '14px',
             overflow: 'hidden',
           }}
         >
           <div
             style={{
-              padding: '20px 24px',
+              padding: '18px 22px',
               borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              background: 'rgba(128,128,128,0.03)',
+              background: 'transparent',
             }}
           >
             <div>
-              <h2 style={{ margin: '0 0 8px 0', fontSize: '20px', color: 'var(--text-primary)' }}>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '19px', color: 'var(--text-primary)' }}>
                 {course.title}
               </h2>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <span
-                  style={{
-                    fontSize: '12px',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    background: 'var(--border-subtle)',
-                  }}
-                >
-                  {course.code}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <span className="pill pill--lg pill--code">{course.code}</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {eligibleModulesFor(course).length > 1
+                    ? `Eligible: ${eligibleModulesFor(course).join(' · ')}`
+                    : course.module}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{course.module}</span>
+                {course.allocatedModule && (
+                  <span className="pill pill--blue">Planned allocation: {creditModule(course)}</span>
+                )}
                 {discrepancy && (
-                  <span
-                    title={discrepancy.note}
-                    style={{
-                      fontSize: '11px',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      background: 'rgba(217, 119, 6, 0.15)',
-                      color: '#d97706',
-                      fontWeight: 700,
-                    }}
-                  >
+                  <span title={discrepancy.note} className="pill pill--amber pill--bold">
                     Disputed module
+                  </span>
+                )}
+                {(course.provenance?.lastVerified || course.verifiedAt) && (
+                  <span
+                    className="pill pill--green"
+                    title="Date this course's VV detail was last verified against the official catalog"
+                  >
+                    <CheckCircle2 size={11} /> Verified {course.provenance?.lastVerified || course.verifiedAt}
                   </span>
                 )}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
                 <span
-                  style={{
-                    fontSize: '11px',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    background: getPriorityBg(course.priority),
-                    color: getPriorityColor(course.priority),
-                  }}
+                  className={`pill priority-${course.priority.toLowerCase().replace(/\s+/g, '-')}`}
+                  style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {course.priority}
                 </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    background: 'var(--border-subtle)',
-                  }}
-                >
-                  {course.type}
-                </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    background: 'var(--border-subtle)',
-                  }}
-                >
-                  {course.lang}
-                </span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    background: 'var(--border-subtle)',
-                  }}
-                >
-                  {course.cp} CP
-                </span>
+                <span className="pill">{course.type}</span>
+                <span className="pill">{course.lang}</span>
+                <span className="pill">{course.cp} CP</span>
               </div>
               {discrepancy && (
-                <p style={{ margin: '10px 0 0', fontSize: 12, color: '#d97706', lineHeight: 1.45, maxWidth: 480 }}>
+                <p style={{ margin: '10px 0 0', fontSize: 12, color: 'var(--warn)', lineHeight: 1.45, maxWidth: 480 }}>
                   Catalog: {discrepancy.catalogModule}. VV Modules tab: {discrepancy.vvModulesTab}. Resolve against the
                   program PDF before counting.
                 </p>
@@ -179,9 +140,9 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                     marginTop: '10px',
                     padding: '8px 10px',
                     borderRadius: '8px',
-                    background: 'rgba(217, 119, 6, 0.12)',
-                    border: '1px solid rgba(217, 119, 6, 0.35)',
-                    color: '#d97706',
+                    background: 'var(--warn-bg)',
+                    border: '1px solid var(--warn)',
+                    color: 'var(--warn)',
                     fontSize: '12px',
                     lineHeight: 1.45,
                   }}
@@ -224,14 +185,18 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             <div>
                 <strong
                   style={{
-                    color: 'var(--text-primary)',
+                    color: 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                     marginBottom: '8px',
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
                   }}
                 >
-                  <Zap size={16} color="var(--accent-primary)" /> Course description
+                  <Zap size={13} color="var(--accent-primary)" /> Course description
                 </strong>
                 <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {course.description || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{missingField}</span>}
@@ -243,21 +208,22 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                 gap: '16px',
-                background: 'rgba(128,128,128,0.03)',
+                background: 'transparent',
                 padding: '16px',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 border: '1px solid var(--border-subtle)',
               }}
             >
               <div>
                   <strong
                     style={{
-                      color: 'var(--text-primary)',
+                      color: 'var(--text-muted)',
                       display: 'block',
                       marginBottom: '4px',
-                      fontSize: '12px',
+                      fontSize: '10.5px',
+                      fontWeight: 700,
                       textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+                      letterSpacing: '0.08em',
                     }}
                   >
                     Lecturer
@@ -275,12 +241,13 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               <div>
                   <strong
                     style={{
-                      color: 'var(--text-primary)',
+                      color: 'var(--text-muted)',
                       display: 'block',
                       marginBottom: '4px',
-                      fontSize: '12px',
+                      fontSize: '10.5px',
+                      fontWeight: 700,
                       textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+                      letterSpacing: '0.08em',
                     }}
                   >
                     Exam Type
@@ -298,12 +265,13 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               <div>
                   <strong
                     style={{
-                      color: 'var(--text-primary)',
+                      color: 'var(--text-muted)',
                       display: 'block',
                       marginBottom: '4px',
-                      fontSize: '12px',
+                      fontSize: '10.5px',
+                      fontWeight: 700,
                       textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
+                      letterSpacing: '0.08em',
                     }}
                   >
                     Offering
@@ -322,22 +290,26 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
 
             <div
               style={{
-                background: 'rgba(128,128,128,0.03)',
+                background: 'transparent',
                 padding: '12px 16px',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 border: '1px solid var(--border-subtle)',
               }}
             >
               <strong
                 style={{
-                  color: 'var(--text-primary)',
+                  color: 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   marginBottom: '8px',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
                 }}
               >
-                <AlertCircle size={16} color="var(--accent-primary)" /> Placement warnings
+                <AlertCircle size={13} color="var(--text-muted)" /> Placement warnings
               </strong>
               <div
                 style={{
@@ -358,14 +330,18 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             <div>
               <strong
                 style={{
-                  color: 'var(--text-primary)',
+                  color: 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   marginBottom: '8px',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
                 }}
               >
-                <Calendar size={16} color="var(--accent-primary)" /> Attendance sensitivity
+                <Calendar size={13} color="var(--text-muted)" /> Attendance sensitivity
               </strong>
               <span
                 style={{
@@ -375,9 +351,9 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                   fontWeight: 600,
                   padding: '4px 8px',
                   borderRadius: '12px',
-                  background: mandatoryAttendance ? 'rgba(99, 102, 241, 0.15)' : 'var(--border-subtle)',
+                  background: mandatoryAttendance ? 'var(--accent-glow)' : 'var(--bg-tertiary)',
                   color: mandatoryAttendance ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  border: '1px solid var(--border-subtle)',
+                  border: mandatoryAttendance ? '1px solid var(--accent-primary)' : '1px solid transparent',
                 }}
               >
                 {mandatoryAttendance ? 'Mandatory attendance (hard clash if overlapping)' : 'Flexible / exam-only'}
@@ -387,14 +363,18 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             <div>
                 <strong
                   style={{
-                    color: 'var(--text-primary)',
+                    color: 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                     marginBottom: '8px',
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
                   }}
                 >
-                  <Calendar size={16} color="var(--accent-primary)" /> Weekly Schedule
+                  <Calendar size={13} color="var(--text-muted)" /> Weekly Schedule
                 </strong>
                 {course.schedule && course.schedule.length > 0 ? (
                   <ul
@@ -420,9 +400,9 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                           border: '1px solid var(--border-subtle)',
                         }}
                       >
-                        <div style={{ fontWeight: 'bold', width: '90px' }}>{sess.day}</div>
-                        <div style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>{sess.time}</div>
-                        <div style={{ color: 'var(--text-muted)' }}>{sess.room}</div>
+                        <div style={{ fontWeight: 600, width: '90px' }}>{sess.day}</div>
+                        <div className="num" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--accent-primary)' }}>{sess.time}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{sess.room}</div>
                       </li>
                     ))}
                   </ul>
@@ -436,14 +416,18 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
             <div>
                 <strong
                   style={{
-                    color: 'var(--text-primary)',
+                    color: 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                     marginBottom: '8px',
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
                   }}
                 >
-                  <BookOpen size={16} color="var(--accent-primary)" /> Syllabus Highlights
+                  <BookOpen size={13} color="var(--text-muted)" /> Syllabus Highlights
                 </strong>
                 {course.syllabus && Array.isArray(course.syllabus) && course.syllabus.length > 0 ? (
                   <ul
@@ -452,7 +436,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                       paddingLeft: '24px',
                       lineHeight: 1.6,
                       color: 'var(--text-secondary)',
-                      fontSize: '14px',
+                      fontSize: '13.5px',
                     }}
                   >
                     {course.syllabus.map((item, i) => (
@@ -466,22 +450,26 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
 
             <div
               style={{
-                background: course.prerequisites ? 'rgba(239, 68, 68, 0.05)' : 'rgba(128,128,128,0.03)',
-                border: course.prerequisites ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid var(--border-subtle)',
+                background: course.prerequisites ? 'var(--bad-bg)' : 'transparent',
+                border: course.prerequisites ? '1px solid var(--bad)' : '1px solid var(--border-subtle)',
                 padding: '16px',
-                borderRadius: '12px',
+                borderRadius: '10px',
               }}
             >
               <strong
                 style={{
-                  color: course.prerequisites ? '#ef4444' : 'var(--text-primary)',
+                  color: course.prerequisites ? 'var(--bad)' : 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   marginBottom: '8px',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
                 }}
               >
-                <AlertCircle size={16} /> Prerequisites
+                <AlertCircle size={13} color={course.prerequisites ? 'var(--bad)' : 'var(--text-muted)'} /> Prerequisites
               </strong>
               <div
                 style={{

@@ -6,15 +6,13 @@ import {
   DEGREE_RULES,
   evaluatePlan,
   statusColor,
-  type BucketStatus,
+  statusFor,
   type DegreeStats,
-  type RuleKind,
 } from './degreeRules';
 import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
-import { isStaleWatch } from './dataFreshness';
+import { isStaleWatch } from './coveragePolicy';
 import { getPlacementWarnings } from './offering';
-import { getPriorityBg, getPriorityColor } from './uiHelpers';
-import type { Course } from './types';
+import { eligibleModulesFor, type Course } from './types';
 
 type BucketDef = {
   /** Exact catalog module string — must match Course.module */
@@ -32,7 +30,7 @@ const BUCKETS: BucketDef[] = [
     statsKey: 'admission',
     title: 'Conditional Admission',
     required: true,
-    desc: 'Exactly 28 CP bachelor Auflagen (model: Analysis 12 + Algorithms 8 + SciComp 8).',
+    desc: 'This student’s individualized admission conditions total exactly 28 CP (Analysis 12 + Algorithms 8 + SciComp 8); this is not a universal MSc requirement.',
     color: '#d97706',
   },
   {
@@ -77,43 +75,6 @@ const BUCKETS: BucketDef[] = [
   },
 ];
 
-function ruleFor(key: keyof DegreeStats): { target: number; kind: RuleKind } {
-  switch (key) {
-    case 'admission':
-      return DEGREE_RULES.admission;
-    case 'math':
-      return DEGREE_RULES.math;
-    case 'ml':
-      return DEGREE_RULES.ml;
-    case 'systems':
-      return DEGREE_RULES.systems;
-    case 'foundationsSum':
-      return DEGREE_RULES.foundationsSum;
-    case 'electives':
-      return DEGREE_RULES.electives;
-    case 'thesis':
-      return DEGREE_RULES.thesis;
-    case 'mscTotal':
-      return DEGREE_RULES.mscTotal;
-    case 'grandTotal':
-      return DEGREE_RULES.grandTotal;
-    default: {
-      const _exhaustive: never = key;
-      return _exhaustive;
-    }
-  }
-}
-
-function bucketStatus(value: number, target: number, kind: RuleKind): BucketStatus {
-  if (value === 0) return 'empty';
-  if (kind === 'exact') {
-    if (value < target) return 'short';
-    if (value > target) return 'overshoot';
-    return 'met';
-  }
-  return value < target ? 'short' : 'met';
-}
-
 function moduleColor(moduleName: string): string {
   return BUCKETS.find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
 }
@@ -143,9 +104,11 @@ export const CourseExplorer = ({
   const coursesByBucket = useMemo(() => {
     const grouped: Record<string, Course[]> = {};
     BUCKETS.forEach((b) => (grouped[b.module] = []));
-    COURSES.forEach((c) => {
-      const bucket = BUCKETS.find((b) => c.module === b.module);
-      if (bucket) grouped[bucket.module].push(c as Course);
+    COURSES.forEach((rawCourse) => {
+      const course = rawCourse as Course;
+      eligibleModulesFor(course).forEach((module) => {
+        if (grouped[module]) grouped[module].push(course);
+      });
     });
     return grouped;
   }, []);
@@ -174,8 +137,8 @@ export const CourseExplorer = ({
     : [];
 
   const totalCp = evaluation.stats.grandTotal;
-  const totalStatus = bucketStatus(totalCp, DEGREE_RULES.grandTotal.target, DEGREE_RULES.grandTotal.kind);
-  const foundationsStatus = bucketStatus(
+  const totalStatus = statusFor(totalCp, DEGREE_RULES.grandTotal.target, DEGREE_RULES.grandTotal.kind);
+  const foundationsStatus = statusFor(
     evaluation.stats.foundationsSum,
     DEGREE_RULES.foundationsSum.target,
     DEGREE_RULES.foundationsSum.kind,
@@ -183,9 +146,9 @@ export const CourseExplorer = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
       className="glass-panel"
       role="dialog"
@@ -206,9 +169,9 @@ export const CourseExplorer = ({
     >
       <div
         style={{
-          padding: '24px 32px',
-          borderBottom: '1px solid var(--border-strong)',
-          background: 'var(--bg-secondary)',
+          padding: '18px 28px',
+          borderBottom: '1px solid var(--border-subtle)',
+          background: 'var(--bg-primary)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -220,44 +183,33 @@ export const CourseExplorer = ({
           <h1
             style={{
               margin: 0,
-              fontSize: '28px',
+              fontSize: '24px',
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
               color: 'var(--text-primary)',
             }}
           >
-            <Target size={32} color="var(--accent-primary)" />
+            <Target size={24} color="var(--accent-primary)" />
             Degree Requirements Roadmap
           </h1>
-          <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', fontSize: '15px' }}>
+          <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
             <strong>Wishlist only</strong> — starring here does not place courses on the board. Need exactly{' '}
             <strong>{DEGREE_RULES.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
             <strong style={{ color: statusColor(totalStatus, 'var(--accent-primary)') }}>{totalCp} CP</strong>
             {' · '}Foundations sum:{' '}
-            <strong style={{ color: statusColor(foundationsStatus, '#6366f1') }}>
+            <strong style={{ color: statusColor(foundationsStatus, 'var(--accent-primary)') }}>
               {evaluation.stats.foundationsSum}/{DEGREE_RULES.foundationsSum.target}
             </strong>
             {totalStatus === 'overshoot' && (
-              <span style={{ color: '#ef4444', marginLeft: 8 }}>(overshoot)</span>
+              <span style={{ color: 'var(--bad)', marginLeft: 8 }}>(overshoot)</span>
             )}
           </p>
         </div>
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.98 }}
           onClick={onClose}
-          style={{
-            padding: '12px 24px',
-            borderRadius: '12px',
-            border: 'none',
-            background: 'var(--accent-primary)',
-            color: '#fff',
-            fontSize: '15px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px var(--accent-glow)',
-          }}
+          className="btn btn--primary"
         >
           Return to Planner
         </motion.button>
@@ -266,9 +218,9 @@ export const CourseExplorer = ({
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-primary)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '48px' }}>
           {BUCKETS.map((bucket) => {
-            const rule = ruleFor(bucket.statsKey);
+            const rule = DEGREE_RULES[bucket.statsKey];
             const currentCp = evaluation.stats[bucket.statsKey];
-            const status = bucketStatus(currentCp, rule.target, rule.kind);
+            const status = statusFor(currentCp, rule.target, rule.kind);
             const progressPercent = Math.min(100, (currentCp / rule.target) * 100);
             const color = bucket.color;
             const barColor = statusColor(status, color);
@@ -280,7 +232,7 @@ export const CourseExplorer = ({
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-end',
-                    borderBottom: `2px solid ${color}40`,
+                    borderBottom: '1px solid var(--border-subtle)',
                     paddingBottom: '12px',
                     flexWrap: 'wrap',
                     gap: 12,
@@ -288,41 +240,37 @@ export const CourseExplorer = ({
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                      <h2 style={{ margin: 0, fontSize: '22px', color: 'var(--text-primary)' }}>{bucket.title}</h2>
+                      <h2 style={{ margin: 0, fontSize: '19px', color: 'var(--text-primary)' }}>{bucket.title}</h2>
                       {bucket.required && (
                         <span
+                          className="pill pill--red pill--bold"
                           style={{
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            color: '#ef4444',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
                             fontSize: '11px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
-                            fontWeight: 'bold',
                           }}
                         >
                           <ShieldAlert size={12} /> MUST TAKE
                         </span>
                       )}
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      <span className="micro-label">
                         {rule.kind === 'exact' ? 'exact' : 'minimum'}
                       </span>
                     </div>
-                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>{bucket.desc}</p>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '13px' }}>{bucket.desc}</p>
                   </div>
 
                   <div style={{ width: '200px', textAlign: 'right' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: barColor }}>
-                      {currentCp} / {rule.target} CP
+                    <div className="num" style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: barColor, fontFamily: 'var(--font-mono)' }}>
+                      <span className="num">{currentCp}</span> / <span className="num">{rule.target}</span> CP
                       {status === 'overshoot' ? ' (over)' : status === 'met' ? ' ✓' : ''}
                     </div>
-                    <div style={{ height: '8px', background: 'var(--border-subtle)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '4px', background: 'var(--bg-tertiary)', borderRadius: '2px', overflow: 'hidden' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercent}%` }}
-                        style={{ height: '100%', background: barColor, borderRadius: '4px' }}
+                        style={{ height: '100%', background: barColor, borderRadius: '2px' }}
                       />
                     </div>
                   </div>
@@ -338,18 +286,18 @@ export const CourseExplorer = ({
                     return (
                       <motion.div
                         key={course.id}
-                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileHover={{ y: -1, boxShadow: '0 3px 12px -6px rgba(0,0,0,0.25)' }}
                         style={{
-                          background: isSelected ? `${color}15` : 'var(--bg-secondary)',
+                          background: isSelected ? `${color}12` : 'var(--bg-secondary)',
                           border: `1px solid ${isSelected ? color : 'var(--border-subtle)'}`,
-                          borderRadius: '12px',
+                          borderRadius: '10px',
                           padding: '16px',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '12px',
-                          transition: 'all 0.2s',
+                          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                           position: 'relative',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                          boxShadow: 'none',
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -366,16 +314,8 @@ export const CourseExplorer = ({
                             {disputed && (
                               <span
                                 title="Module membership disputed vs VV — verify program PDF"
-                                style={{
-                                  marginLeft: 8,
-                                  fontSize: 10,
-                                  fontWeight: 700,
-                                  color: '#d97706',
-                                  background: 'rgba(217, 119, 6, 0.12)',
-                                  padding: '2px 6px',
-                                  borderRadius: 6,
-                                  verticalAlign: 'middle',
-                                }}
+                                className="pill pill--amber pill--bold"
+                                style={{ marginLeft: 8, verticalAlign: 'middle' }}
                               >
                                 Disputed module
                               </span>
@@ -401,56 +341,31 @@ export const CourseExplorer = ({
                           >
                             <Star
                               size={20}
-                              fill={isSelected ? '#f59e0b' : 'none'}
-                              color={isSelected ? '#f59e0b' : 'var(--text-muted)'}
+                              fill={isSelected ? 'var(--warn)' : 'none'}
+                              color={isSelected ? 'var(--warn)' : 'var(--text-muted)'}
                             />
                           </motion.button>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
-                            {course.code}
-                          </span>
-                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          <span className="pill pill--code">{course.code}</span>
+                          <span className="pill num" style={{ fontFamily: 'var(--font-mono)' }}>
                             {course.cp} CP
                           </span>
                           <span
-                            style={{
-                              background: getPriorityBg(course.priority),
-                              color: getPriorityColor(course.priority),
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              border: '1px solid var(--border-subtle)',
-                            }}
+                            className={`pill priority-${course.priority.toLowerCase().replace(/\s+/g, '-')}`}
                           >
                             {course.priority}
                           </span>
-                          <span style={{ background: 'var(--bg-primary)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
-                            {course.when}
-                          </span>
+                          <span className="pill">{course.when}</span>
                           {firstSession && (
-                            <span
-                              style={{
-                                background: 'var(--bg-primary)',
-                                padding: '4px 8px',
-                                borderRadius: '6px',
-                                border: '1px solid var(--border-subtle)',
-                              }}
-                              title="First weekly timetable slot"
-                            >
+                            <span className="pill pill--schedule" title="First weekly timetable slot">
                               {firstSession.day} · {firstSession.time}
                             </span>
                           )}
                           {stale && (
                             <span
-                              style={{
-                                background: 'rgba(217, 119, 6, 0.12)',
-                                color: '#d97706',
-                                padding: '4px 8px',
-                                borderRadius: '6px',
-                                border: '1px solid rgba(217, 119, 6, 0.25)',
-                                fontWeight: 700,
-                              }}
+                              className="pill pill--amber pill--bold"
                               title="VV schedule may be from an older offering — re-check Vorlesungsverzeichnis"
                             >
                               Verify VV
@@ -468,11 +383,11 @@ export const CourseExplorer = ({
                             alignItems: 'center',
                           }}
                         >
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
                             {exam ? `${exam.slice(0, 80)}${exam.length > 80 ? '...' : ''}` : 'Check details'}
                           </span>
                           <motion.button
-                            whileHover={{ x: 5 }}
+                            whileHover={{ x: 3 }}
                             type="button"
                             onClick={() => setSelectedCourse(course)}
                             style={{
@@ -513,14 +428,12 @@ export const CourseExplorer = ({
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'rgba(0,0,0,0.6)',
+              background: 'rgba(20,12,10,0.55)',
               zIndex: 100,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               padding: '32px',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
             }}
             onClick={() => setSelectedCourse(null)}
           >
@@ -541,19 +454,19 @@ export const CourseExplorer = ({
                 maxWidth: '800px',
                 maxHeight: '90vh',
                 background: 'var(--bg-primary)',
-                borderRadius: '24px',
+                borderRadius: '14px',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
                 border: '1px solid var(--border-strong)',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.45)',
               }}
             >
               <div
                 style={{
-                  padding: '24px 32px',
+                  padding: '18px 28px',
                   borderBottom: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-secondary)',
+                  background: 'var(--bg-primary)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'flex-start',
@@ -562,78 +475,35 @@ export const CourseExplorer = ({
                 <div>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
                     <span
+                      className="micro-label"
                       style={{
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
                         color: moduleColor(selectedCourse.module),
                       }}
                     >
                       {selectedCourse.module}
                     </span>
                   </div>
-                  <h2 style={{ margin: 0, fontSize: '28px', color: 'var(--text-primary)' }}>{selectedCourse.title}</h2>
+                  <h2 style={{ margin: 0, fontSize: '22px', color: 'var(--text-primary)' }}>{selectedCourse.title}</h2>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '12px' }}>
+                    <span className="pill pill--lg pill--code">{selectedCourse.code}</span>
+                    <span className="pill pill--lg num" style={{ fontFamily: 'var(--font-mono)' }}>{selectedCourse.cp} CP</span>
                     <span
-                      style={{
-                        fontSize: '12px',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        background: 'var(--border-subtle)',
-                      }}
-                    >
-                      {selectedCourse.code}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        background: 'var(--border-subtle)',
-                      }}
-                    >
-                      {selectedCourse.cp} CP
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        background: getPriorityBg(selectedCourse.priority),
-                        color: getPriorityColor(selectedCourse.priority),
-                      }}
+                      className={`pill pill--lg priority-${selectedCourse.priority.toLowerCase().replace(/\s+/g, '-')}`}
                     >
                       {selectedCourse.priority}
                     </span>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        padding: '2px 8px',
-                        borderRadius: '12px',
-                        background: 'var(--border-subtle)',
-                      }}
-                    >
-                      {selectedCourse.lang}
-                    </span>
+                    <span className="pill pill--lg">{selectedCourse.lang}</span>
                   </div>
                 </div>
                 <motion.button
-                  whileHover={{ rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: 0.94 }}
                   onClick={() => setSelectedCourse(null)}
                   aria-label="Close"
+                  className="icon-btn"
                   style={{
-                    background: 'var(--bg-tertiary)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '36px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: 'var(--text-muted)',
+                    borderRadius: '8px',
+                    width: '34px',
+                    height: '34px',
                   }}
                 >
                   <X size={20} />
@@ -646,16 +516,16 @@ export const CourseExplorer = ({
                     {stale && (
                       <div
                         style={{
-                          background: 'rgba(217, 119, 6, 0.12)',
-                          border: '1px solid rgba(217, 119, 6, 0.3)',
-                          color: '#d97706',
+                          background: 'var(--warn-bg)',
+                          borderLeft: '3px solid var(--warn)',
+                          color: 'inherit',
                           padding: '12px 16px',
-                          borderRadius: '12px',
+                          borderRadius: '10px',
                           fontSize: '13px',
                           lineHeight: 1.5,
                         }}
                       >
-                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--warn)' }}>
                           <ShieldAlert size={16} /> Verify VV offering before enrolling
                         </strong>
                         <div style={{ marginTop: '4px' }}>
@@ -667,17 +537,17 @@ export const CourseExplorer = ({
                     {discrepancy && (
                       <div
                         style={{
-                          background: 'rgba(217, 119, 6, 0.12)',
-                          border: '1px solid rgba(217, 119, 6, 0.3)',
-                          color: '#d97706',
+                          background: 'var(--warn-bg)',
+                          borderLeft: '3px solid var(--warn)',
+                          color: 'inherit',
                           padding: '12px 16px',
-                          borderRadius: '12px',
+                          borderRadius: '10px',
                           fontSize: '13px',
                           lineHeight: 1.5,
                         }}
                         title={discrepancy.note}
                       >
-                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--warn)' }}>
                           <ShieldAlert size={16} /> Disputed module membership
                         </strong>
                         <div style={{ marginTop: '4px' }}>
@@ -689,16 +559,16 @@ export const CourseExplorer = ({
                     {placementWarnings.length > 0 && (
                       <div
                         style={{
-                          background: 'rgba(217, 119, 6, 0.08)',
-                          border: '1px solid rgba(217, 119, 6, 0.25)',
-                          color: '#d97706',
+                          background: 'var(--warn-bg)',
+                          borderLeft: '3px solid var(--warn)',
+                          color: 'inherit',
                           padding: '12px 16px',
-                          borderRadius: '12px',
+                          borderRadius: '10px',
                           fontSize: '13px',
                           lineHeight: 1.5,
                         }}
                       >
-                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <strong style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--warn)' }}>
                           <AlertCircle size={16} /> Placement warnings
                         </strong>
                         <ul style={{ margin: '6px 0 0', paddingLeft: '20px' }}>
@@ -800,24 +670,24 @@ export const CourseExplorer = ({
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                    <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  <div style={{ background: 'transparent', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                    <strong className="micro-label" style={{ display: 'block', marginBottom: '4px' }}>
                       Lecturer
                     </strong>
                     <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '500' }}>
                       {selectedCourse.lecturer || 'Not specified'}
                     </div>
                   </div>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                    <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  <div style={{ background: 'transparent', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                    <strong className="micro-label" style={{ display: 'block', marginBottom: '4px' }}>
                       Credits & Semester
                     </strong>
                     <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: '500' }}>
                       {selectedCourse.cp} CP · {selectedCourse.when}
                     </div>
                   </div>
-                  <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                    <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  <div style={{ background: 'transparent', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                    <strong className="micro-label" style={{ display: 'block', marginBottom: '4px' }}>
                       Assessment
                     </strong>
                     <div style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4 }}>
@@ -825,8 +695,8 @@ export const CourseExplorer = ({
                     </div>
                   </div>
                   {selectedCourse.prerequisites && (
-                    <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                      <strong style={{ display: 'block', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <div style={{ background: 'transparent', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                      <strong className="micro-label" style={{ display: 'block', marginBottom: '4px' }}>
                         Prerequisites
                       </strong>
                       <div style={{ color: 'var(--text-primary)', fontSize: '14px', lineHeight: 1.4 }}>
@@ -844,38 +714,34 @@ export const CourseExplorer = ({
 
               <div
                 style={{
-                  padding: '24px 32px',
+                  padding: '18px 28px',
                   borderTop: '1px solid var(--border-subtle)',
-                  background: 'var(--bg-secondary)',
+                  background: 'var(--bg-primary)',
                   display: 'flex',
                   justifyContent: 'flex-end',
                 }}
               >
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     toggleShortlist(selectedCourse.id);
                     setSelectedCourse(null);
                   }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    background: shortlist.includes(selectedCourse.id) ? 'rgba(245, 158, 11, 0.15)' : 'var(--accent-primary)',
-                    color: shortlist.includes(selectedCourse.id) ? '#d97706' : '#fff',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    boxShadow: shortlist.includes(selectedCourse.id) ? 'none' : '0 4px 12px var(--accent-glow)',
-                  }}
+                  className={
+                    shortlist.includes(selectedCourse.id)
+                      ? 'btn btn--ghost'
+                      : 'btn btn--primary'
+                  }
+                  style={
+                    shortlist.includes(selectedCourse.id)
+                      ? { color: 'var(--warn)', borderColor: 'var(--warn)' }
+                      : undefined
+                  }
                 >
                   <Star
-                    size={20}
-                    fill={shortlist.includes(selectedCourse.id) ? '#f59e0b' : 'none'}
-                    color={shortlist.includes(selectedCourse.id) ? '#f59e0b' : 'currentColor'}
+                    size={16}
+                    fill={shortlist.includes(selectedCourse.id) ? 'var(--warn)' : 'none'}
+                    color={shortlist.includes(selectedCourse.id) ? 'var(--warn)' : 'currentColor'}
                   />
                   {shortlist.includes(selectedCourse.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
                 </motion.button>

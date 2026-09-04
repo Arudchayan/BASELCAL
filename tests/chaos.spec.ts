@@ -6,7 +6,7 @@ test.describe('Chaos Monkey Tests', () => {
 
     const themeToggle = page.getByRole('button', { name: /Toggle theme/i });
     const boardBtn = page.getByRole('button', { name: /Board/i });
-    const timetableBtn = page.getByRole('button', { name: /Timetable/i });
+    const timetableBtn = page.getByRole('button', { name: 'Timetable view' });
 
     for (let i = 0; i < 20; i++) {
       await themeToggle.click();
@@ -56,7 +56,7 @@ test.describe('Chaos Monkey Tests', () => {
   test('simultaneous drag and drop with view switching', async ({ page }) => {
     await page.goto('/');
 
-    const timetableBtn = page.getByRole('button', { name: /Timetable/i });
+    const timetableBtn = page.getByRole('button', { name: 'Timetable view' });
     const firstCourseCard = page
       .locator('.glass-panel')
       .filter({ has: page.locator('a[href*="vorlesungsverzeichnis"], a[href*="unibas.ch"]') })

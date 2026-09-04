@@ -1,0 +1,749 @@
+{
+  "version": 1,
+  "period": "2026004",
+  "periodLabel": "HS 2026",
+  "fetchedAt": "2026-09-03T05:46:44.203Z",
+  "siteUpdated": "03.09.2026 05:04 V3",
+  "source": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=303302",
+  "modules": {
+    "Mathematical Foundations": [
+      {
+        "code": "79161",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Concentration",
+        "cp": 6,
+        "scheduleSummary": "Jiří Černý - wöchentlich: Wednesday 14.15-16.00",
+        "vvId": "302802"
+      },
+      {
+        "code": "12246",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Numerical Methods for Partial Differential Equations",
+        "cp": 8,
+        "scheduleSummary": "Helmut Harbrecht - wöchentlich: Tuesday 10.15-12.00 - wöchentlich: Thursday 10.15-12.00",
+        "vvId": "302777"
+      },
+      {
+        "code": "66096",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Mathematics of Data Science",
+        "cp": 8,
+        "scheduleSummary": "Aurelien Lucchi - wöchentlich: Monday 16.15-18.00 - wöchentlich: Tuesday 16.15-18.00 - wöchentlich: Thursday 08.15-10.00",
+        "vvId": "301338"
+      },
+      {
+        "code": "19300",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Random processes: Theory and applications from physics to finance",
+        "cp": 4,
+        "scheduleSummary": "Jörg Lehmann - wöchentlich: Wednesday 09.00-10.15 - wöchentlich: Wednesday 10.15-12.00",
+        "vvId": "302622"
+      },
+      {
+        "code": "79161",
+        "section": "02",
+        "format": "Practical course",
+        "title": "Concentration",
+        "cp": 6,
+        "scheduleSummary": "Jiří Černý - wöchentlich: Monday 14.15-16.00",
+        "vvId": "302803"
+      },
+      {
+        "code": "12246",
+        "section": "02",
+        "format": "Practical course",
+        "title": "Numerical Methods for Partial Differential Equations",
+        "cp": 8,
+        "scheduleSummary": "Helmut Harbrecht - wöchentlich: Thursday 14.15-16.00",
+        "vvId": "302778"
+      }
+    ],
+    "Machine Learning Foundations": [
+      {
+        "code": "45401",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Bioinformatics Algorithms",
+        "cp": 4,
+        "scheduleSummary": "Volker Roth - wöchentlich: Tuesday 13.15-14.00 - wöchentlich: Thursday 14.15-16.00",
+        "vvId": "301990"
+      },
+      {
+        "code": "66937",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Foundations of Deep Learning",
+        "cp": 6,
+        "scheduleSummary": "Aurelien Lucchi - wöchentlich: Wednesday 12.15-14.00 - wöchentlich: Thursday 16.15-18.00",
+        "vvId": "301995"
+      }
+    ],
+    "Systems Foundations": [
+      {
+        "code": "45402",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Foundations of Distributed Systems",
+        "cp": 8,
+        "scheduleSummary": "Heiko Schuldt - wöchentlich: Thursday 10.15-12.00 - wöchentlich: Friday 10.15-12.00",
+        "vvId": "301991"
+      },
+      {
+        "code": "15731",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Multimedia Retrieval",
+        "cp": 6,
+        "scheduleSummary": "Roger Weber - wöchentlich: Friday 15.15-18.00",
+        "vvId": "301992"
+      },
+      {
+        "code": "45402",
+        "section": "02",
+        "format": "Practical course",
+        "title": "Foundations of Distributed Systems",
+        "cp": 8,
+        "scheduleSummary": "Heiko Schuldt - wöchentlich: Tuesday 10.15-12.00",
+        "vvId": "305500"
+      }
+    ],
+    "Electives in Data Science": [
+      {
+        "code": "11681",
+        "section": "01",
+        "format": "Internship",
+        "title": "Computational Physics",
+        "cp": 2,
+        "scheduleSummary": "Stefan Goedecker - wöchentlich: Monday 12.00-13.00",
+        "vvId": "302603"
+      },
+      {
+        "code": "18545",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Advanced Mathematics for Economics",
+        "cp": 3,
+        "scheduleSummary": "Thomas Zehrt Check \"Dates and Rooms\" online",
+        "vvId": "302006"
+      },
+      {
+        "code": "55662",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Applied Mathematics and Informatics in Drug Discovery",
+        "cp": 2,
+        "scheduleSummary": "Jitao David Zhang - wöchentlich: Friday 12.15-14.00",
+        "vvId": "302761"
+      },
+      {
+        "code": "45401",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Bioinformatics Algorithms",
+        "cp": 4,
+        "scheduleSummary": "Volker Roth - wöchentlich: Tuesday 13.15-14.00 - wöchentlich: Thursday 14.15-16.00",
+        "vvId": "301990"
+      },
+      {
+        "code": "11680",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Computational Physics",
+        "cp": 4,
+        "scheduleSummary": "Stefan Goedecker - wöchentlich: Monday 10.15-12.00",
+        "vvId": "302602"
+      },
+      {
+        "code": "25637",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Molecular Simulations with Chemical and Biological Applications",
+        "cp": 3,
+        "scheduleSummary": "Markus Meuwly - wöchentlich: Thursday 16.15-18.00",
+        "vvId": "302413"
+      },
+      {
+        "code": "12246",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Numerical Methods for Partial Differential Equations",
+        "cp": 8,
+        "scheduleSummary": "Helmut Harbrecht - wöchentlich: Tuesday 10.15-12.00 - wöchentlich: Thursday 10.15-12.00",
+        "vvId": "302777"
+      },
+      {
+        "code": "45400",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Planning and Optimization",
+        "cp": 8,
+        "scheduleSummary": "Malte Helmert - wöchentlich: Monday 14.15-16.00 - wöchentlich: Wednesday 14.15-16.00",
+        "vvId": "301993"
+      },
+      {
+        "code": "20901",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Quantum Computation and Error Correction",
+        "cp": 4,
+        "scheduleSummary": "James Wootton - wöchentlich: Tuesday 14.00-16.00",
+        "vvId": "302620"
+      },
+      {
+        "code": "55048",
+        "section": "01",
+        "format": "Lecture",
+        "title": "The AI Economy: Business Strategies and Policy Issues",
+        "cp": 3,
+        "scheduleSummary": "Check \"Dates and Rooms\" online",
+        "vvId": "301664"
+      },
+      {
+        "code": "10684",
+        "section": "01",
+        "format": "Lecture",
+        "title": "Univariate Time Series Analysis",
+        "cp": 3,
+        "scheduleSummary": "Patrick Schmidt - wöchentlich: Friday 10.15-12.00",
+        "vvId": "302021"
+      },
+      {
+        "code": "66937",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Foundations of Deep Learning",
+        "cp": 6,
+        "scheduleSummary": "Aurelien Lucchi - wöchentlich: Wednesday 12.15-14.00 - wöchentlich: Thursday 16.15-18.00",
+        "vvId": "301995"
+      },
+      {
+        "code": "69469",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Introduction to LTI-Systems and Control",
+        "cp": 3,
+        "scheduleSummary": "Georg Rauter - wöchentlich: Tuesday 08.15-10.00",
+        "vvId": "301223"
+      },
+      {
+        "code": "15731",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Multimedia Retrieval",
+        "cp": 6,
+        "scheduleSummary": "Roger Weber - wöchentlich: Friday 15.15-18.00",
+        "vvId": "301992"
+      },
+      {
+        "code": "41828",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Natural Science Perspectives on Sustainability: The Food System",
+        "cp": 3,
+        "scheduleSummary": "Alejandra Morán Ordóñez - wöchentlich: Tuesday 14.15-16.00",
+        "vvId": "303387"
+      },
+      {
+        "code": "19300",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Random processes: Theory and applications from physics to finance",
+        "cp": 4,
+        "scheduleSummary": "Jörg Lehmann - wöchentlich: Wednesday 09.00-10.15 - wöchentlich: Wednesday 10.15-12.00",
+        "vvId": "302622"
+      },
+      {
+        "code": "41829",
+        "section": "01",
+        "format": "Lecture with practical courses",
+        "title": "Social Science Perspectives on Sustainability: The Food System",
+        "cp": 3,
+        "scheduleSummary": "Janina Grabs - wöchentlich: Tuesday 16.15-18.00",
+        "vvId": "303388"
+      },
+      {
+        "code": "12246",
+        "section": "02",
+        "format": "Practical course",
+        "title": "Numerical Methods for Partial Differential Equations",
+        "cp": 8,
+        "scheduleSummary": "Helmut Harbrecht - wöchentlich: Thursday 14.15-16.00",
+        "vvId": "302778"
+      },
+      {
+        "code": "45400",
+        "section": "02",
+        "format": "Practical course",
+        "title": "Planning and Optimization",
+        "cp": 8,
+        "scheduleSummary": "Malte Helmert - wöchentlich: Wednesday 16.15-18.00",
+        "vvId": "305011"
+      },
+      {
+        "code": "76636",
+        "section": "01",
+        "format": "Practical course",
+        "title": "Quantum Computation and Error Correction",
+        "cp": 2,
+        "scheduleSummary": "James Wootton - wöchentlich: Tuesday 16.00-18.00",
+        "vvId": "302621"
+      },
+      {
+        "code": "64323",
+        "section": "01",
+        "format": "Seminar",
+        "title": "Applied Programming Projects",
+        "cp": 3,
+        "scheduleSummary": "Lukas Rosenthaler - wöchentlich: Monday 14.15-16.00",
+        "vvId": "303302"
+      }
+    ],
+    "Preparation Master's Thesis": []
+  },
+  "details": {
+    "301223": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Nicolas Gerig (nicolas.gerig@unibas.ch)\nAysegül Kilic (aysegul.kilic@unibas.ch)\nGeorg Rauter (georg.rauter@unibas.ch, Assessor)\nCédric Schicklin (cedric.schicklin@unibas.ch)\nCarina Schmidt (carina.schmidt@unibas.ch)",
+      "description": "The lecture will be held in inverted classroom format. The lectures for the following week, will be online in form of videos on Tuesday night before the next lecture the Tuesday after. The students are required to watch the lecture and prepare questions until the next lecture in case they need further explanations of the course content. After answering questions, the lecture assistants will perform exercises together with the participants of the course to train and solidify the knowledge from the last lecture. In total, the participants of this course will learn to calculate the time response of a system purely by hand in order to understand the underlying principles of the calculations. The exercises and lectures will be accompanied by exercises also in Matlab to show state of the art tools to the participants in order to appreciate existing solution methods over manual solution. But the basic understanding of linear time-invariant crontrol systems is in the focus so that students get a feeling how control systems work in principle and if results are plausible.\n\nLecture content:\nIntroduction to control systems: open- vs. closed\nControl schemes\nLTI-Systems\nSolution of LTI-Systems\nLaplace transform\nState space models: 1st-, 2nd-, and higher order\nTransfer function\nStep response\nCascaded systems\nStability: Asymptotic- and BIBO-stability\nBack transform\nLinearization of LTI-Systems\nBODE diagram\nPolar plots\nRoot-Locus plots\nNyquist stability criterium\nPID-control (and tuning)",
+      "prerequisites": null,
+      "language": "German",
+      "exam": "exam — The exam will be held in written form (2.5h). The students will not need any digital tool for problem solving. Accordingly, the allowed tools to bring to the exam is a sheet of hand-written formulas. Otherwise only tools for writing on paper are needed. For convenience, previous exams are provided in the lecture materials for the students to get an idea of the format, content, and complexity of exams.",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "08:15 - 10:00",
+          "room": "Hegenheimermattweg 167B, Lecture Hall 02. 097"
+        }
+      ]
+    },
+    "301338": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Foivos Alimisis (foivos.alimisis@unibas.ch)\nLorenzo Baldassari (lorenzo.baldassari@unibas.ch)\nAurelien Lucchi (aurelien.lucchi@unibas.ch, Assessor)",
+      "description": "This course provides an introduction to modern probability theory and its applications in high-dimensional data analysis. We begin with the fundamentals of probability, conditioning, and independence, then study limiting phenomena and concentration inequalities. Building on these foundations, the course explores random vectors, high-dimensional geometry, and random matrix theory, with applications to understanding spectral properties, the Marchenko–Pastur law, and double descent phenomena. Advanced topics include matrix concentration bounds, functional calculus, and stochastic processes. The course combines theory with exercises and a mid-term exam to reinforce understanding of these topics.",
+      "prerequisites": null,
+      "language": "English",
+      "exam": "continuous assessment — Mid-term exam on XX.XX.XXXXInformation regarding the assessment:Continuous assessment 20%Short exercises in class (15min)*6Mid-term exam 35%Final exam 45%Final exam on XX.XX.XXXX",
+      "schedule": [
+        {
+          "day": "Monday",
+          "time": "16:15 - 18:00",
+          "room": "Kollegienhaus, Hörsaal 116"
+        },
+        {
+          "day": "Tuesday",
+          "time": "16:15 - 18:00",
+          "room": "Kollegienhaus, Seminarraum 104"
+        },
+        {
+          "day": "Thursday",
+          "time": "08:15 - 10:00",
+          "room": "Kollegienhaus, Hörsaal 119"
+        }
+      ]
+    },
+    "301664": {
+      "frequency": "Irregular",
+      "lecturers": "Stephen Weymouth (stephen.weymouth@unibas.ch)",
+      "description": "The rise of artificial intelligence (AI) is transforming business strategies, reshaping economies, and igniting new social and political debates. This course examines the powerful role of AI in revolutionizing industries, exploring how firms are using AI-driven strategies to restructure operations, create value, and outpace competitors. Through case studies and hands-on group projects, we will analyze real-world competitive strategies using AI. We’ll also investigate how AI impacts society at large, tackling complex issues such as job displacement, privacy, misinformation, and the future of global cooperation. Students will actively engage in debates about the trade-offs of emerging business models, and evaluate AI regulation in key regions like the US, Europe, and China. By the end of the course, students will have the chance to propose solutions to pressing policy challenges in a collaborative, interactive setting. This course is designed for students eager to understand not just the mechanics of AI-powered business, but also the broader implications for society and global governance. If you’re looking to engage deeply with the future of technology and its influence on the world, this course offers an essential toolkit.",
+      "prerequisites": "Recommended Prerequisites:Introduction to Business (Grundlagen der Betriebswirtschaftslehre, 10125)Introduction to Economics (Grundlagen der Volkswirtschaftslehre, 10130)Globalization and European Integration (Globalisierung und europäische Integration, 34504)",
+      "language": "English",
+      "exam": "record of achievement — Course attendance is compulsory. Attendance and good preparation are prerequisites for being a valuable participant in the class. You are expected to prepare for and attend every class and participate actively.Assessment details:Final grades will be determined on a combination of class participation (10%), group presentations (35%), quiz (10%) and a final (closed-book) examination 35%).Date of final examination: 14 August 2026, 12:15 - 13:15You will receive the room details for the examination by e-mail.",
+      "schedule": []
+    },
+    "301990": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Volker Roth (volker.roth@unibas.ch, Assessor)",
+      "description": "In this lecture, an introduction into main bioinformatics algorithms is provided. We will discuss both \"classical\" topics such as Hidden Markov Models, Markov chains, phylogenetic trees and \"modern\" approaches based on sophisticated (deep) learning models.",
+      "prerequisites": "Mathematische Methoden IMathematische Methoden IIEinführung in die Statistik",
+      "language": "English",
+      "exam": "continuous assessment — Oral exam: in order to participate, you need to hand in at least 70% of all exercise sheets.Expected dates: January 13/14/14/15, 2027. Spiegelgasse 1, room 00.003.",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "13:15 - 14:00",
+          "room": "Spiegelgasse 1, Seminarraum U1.001"
+        },
+        {
+          "day": "Thursday",
+          "time": "14:15 - 16:00",
+          "room": "Biozentrum, Seminarraum U1.197"
+        }
+      ]
+    },
+    "301991": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Florina M. Ciorba (florina.ciorba@unibas.ch)\nHeiko Schuldt (heiko.schuldt@unibas.ch, Assessor)\nChristian Tschudin (christian.tschudin@unibas.ch)\nIsabel Wagner (isabel.wagner@unibas.ch)",
+      "description": "The course will introduce basic algorithms and protocols needed for parallel and distributed systems. It will lay the foundations for the specialized courses on Computer Networks, High Performance Computing, Distributed Information Systems and Privacy-Preserving Methods for Data Science and Distributed Systems that will be offered in the spring semester.",
+      "prerequisites": "You successfully completed the following Bachelor courses (or have at acquired the corresponding skills): Basics of Programming / Extended Basics of Programming, Programming Project, Computer Architecture & Operating Systems, Databases, and Internet Technologies.",
+      "language": "English",
+      "exam": "continuous assessment — At the end of the semester, individual oral examinations (30 mins each) will take place.Admission criteria for the oral exam: The course will feature four exercises (one each for communication, data, processing, and privacy). Each exercise will be assessed with a test. In total, at least 3/4 of the overall points for the tests must be earned (and at least 50% of each individual test).Expected dates of the oral exams: January 20/21/22/25/26, 2027, Spiegelgasse 1, room 00.003.",
+      "schedule": [
+        {
+          "day": "Thursday",
+          "time": "10:15 - 12:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.002"
+        },
+        {
+          "day": "Friday",
+          "time": "10:15 - 12:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.002"
+        }
+      ]
+    },
+    "301992": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Roger Weber (roger.weber@unibas.ch, Assessor)",
+      "description": "Introduction to multimedia retrieval with a focus on classical text retrieval, web retrieval, extraction and machine learning of features for images, audio, and video, index structures, search algorithms, and concrete implementations. The course is touching on past and current information retrieval techniques and search algorithms.",
+      "prerequisites": "Basics of programmingMathematical foundations (for some parts)",
+      "language": "English",
+      "exam": "continuous assessment — Written Exam. Expected date: Friday, January 8, 2027, 2-4 p.m., Biozentrum, room U1.131.",
+      "schedule": [
+        {
+          "day": "Friday",
+          "time": "15:15 - 18:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.002"
+        }
+      ]
+    },
+    "301993": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Malte Helmert (malte.helmert@unibas.ch, Assessor)\nGabriele Röger (gabriele.roeger@unibas.ch)",
+      "description": "The course provides an introduction to the theory and algorithms for automated planning, with an emphasis on classical planning. Automated planning is concerned with determining a sequence of actions that transforms a given initial state into a desirable state in a very large state space. Topics covered include: planning formalisms and normal forms; progression and regression; computational complexity of planning; heuristics for classical planning based on delete relaxation, abstraction, landmarks, critical paths and network flows; formal relationships between heuristics.",
+      "prerequisites": "Good knowledge in the foundations and core areas of computer science are assumed, in particular algorithms and data structures, complexity theory, mathematical logic and programming.Most importantly, good knowledge of the contents of the courses \"Theory of Computer Science\" (10948) and  \"Foundations of Artificial Intelligence\" (13548) is assumed, in particular the topic of NP-completeness from the theory course and the topics of state-space search and propositional logic from the AI course. Students who have not previously passed the prerequisite courses are strongly advised to learn the necessary material in self-study prior to the beginning of this course. If you are interested in participating in this course but do not yet have sufficient knowledge of these topics, we strongly encourage you to contact the lecturers prior to the semester to discuss a possible self-study plan.",
+      "language": "English",
+      "exam": "continuous assessment — Marked homework exercises will be handed out in order to support and assess the learning progress. To qualify for the written examination, students must obtain at least 50% of the total marks from the exercises. Exercise marks do not contribute to the final grade for the course, which is exclusively based on the written examination.Expected date: Wednesday, January 27, 2027, 2-4 p.m., Biozentrum, M.E. Müller Saal U1.111.",
+      "schedule": [
+        {
+          "day": "Monday",
+          "time": "14:15 - 16:00",
+          "room": "Spiegelgasse 1, Seminarraum  00.003"
+        },
+        {
+          "day": "Wednesday",
+          "time": "14:15 - 16:00",
+          "room": "Spiegelgasse 1, Seminarraum  00.003"
+        }
+      ]
+    },
+    "301995": {
+      "frequency": "Irregular",
+      "lecturers": "Aurelien Lucchi (aurelien.lucchi@unibas.ch, Assessor)",
+      "description": "The class focuses on the theoretical concepts behind Deep learning. We will discuss the following concepts:\n\nGeneral introduction to linear networks, activations, etc\nApproximation Theory\nComplexity Theory\nNetwork Architectures\nOptimization\nOptimization Landscape of Neural Networks\nNeural Tangent Kernel\nRegularization\nGeneralization bounds\nAdversarial examples",
+      "prerequisites": "- Machine Learning (classification, regression, kernels, etc)- Linear algebra- Calculus, Basic concepts in topology- Probability theory (random variable, expectation, density, etc)- Some non-mandatory exercises will require coding in python (reasonable coding skills in another programming language should be sufficient to learn python)Note that a significant part of the class focuses on understanding theoretical aspects, we will thus be covering proofs that require a good knowledge of the mathematical concepts discussed above.",
+      "language": "English",
+      "exam": "continuous assessment — Continuous assessmentNote the following split:15% continuous assesment (short exercises and Q&As given in class)25% mid-term exam (written). Date: during exercise session on Thursday, 30.10.202525% project (writeup and presentation)35% final exam (written)Expected date final exam: Thursday, February 4, 2027, 10-12 a.m., Biozentrum U1.131.",
+      "schedule": [
+        {
+          "day": "Wednesday",
+          "time": "12:15 - 14:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.002"
+        },
+        {
+          "day": "Thursday",
+          "time": "16:15 - 18:00",
+          "room": "Kollegienhaus, Hörsaal 115"
+        }
+      ]
+    },
+    "302006": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Thomas Zehrt (thomas.zehrt@unibas.ch, Assessor)",
+      "description": "1.Linear Algebra: linear independence, matrices, eigenvalues and eigenvectors, Spectral theorem and spectral decomposition of symmetric matrices, quadratic forms\n2.Multivariable calculus: differentiability, gradient, Taylor's formula, concave and convex functions, quasi-concave and quasi-convex functions\n3.Static optimization: local and global extrema, unconstrained and constrained optimization problems, Lagrange and Kuhn-Tucker",
+      "prerequisites": "Good to very good knowledge of mathematical fundamentals (as taught in 10135 Mathematik 1 and 10136 Mathematik 2).",
+      "language": "English",
+      "exam": "record of achievement — There are exercises and a written exam.You do not have to solve the exercises. If you hand in solutions to all the exercises, they will be marked. These marks are averaged together to give the preliminary mark. At the end of the term, there will be an examination.Your final mark will be the arithmetic mean of your preliminary mark and your examination mark if the arithmetic mean of your preliminary mark and your examination mark is greater than your examination mark. Otherwise, your final mark will be your examination mark.If you do not hand in the solutions to the exercises, your examination mark will be your final mark.",
+      "schedule": []
+    },
+    "302021": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Patrick Schmidt (patrick.schmidt@unibas.ch, Assessor)",
+      "description": "Contents:\n\nThe course covers basic concepts of univariate time series analysis with an emphasis on methods and models that are used in economics, finance and related fields. Further topics, including multivariate models such as vector autoregressions (VARs) and cointegration, are studied in a follow-up course \"Advanced Time Series\" in spring.\n\nThe course will study notions such as autocorrelation, stationarity, AR(I)MA models and their seasonal extensions, model selection and diagnostics, forecasting, unit roots, and volatility models. Empirical illustrations will make use of the R language for statistical computing and graphics. There may be lab sessions.\n\nSoftware / programming language: R, see https://www.R-project.org/. Basic knowledge of R is expected.",
+      "prerequisites": "Students from Master's programmes of the Faculty of Business and Economics: Completed Bachelor's degree. In addition, successful completion of Econometrics (MSc) is strongly recommended. Basic knowledge of R is expected.Other participants: Basic statistics (incl. regression basics) and mathematics. Basic knowledge of R is expected.",
+      "language": "English",
+      "exam": "exam — Written exam:written repeat exam:In addition, there will be several assignments, for which students may work in groups of two. Assignments will account for 30% of the final grade.IMPORTANT:For courses with a main lecture exam, a repeat exam is offered in addition to the regular examination date.This repeat examination can only be taken if the student has taken part in and failed the regular examination (grade < 4.0) see English translation of the study guide of our master programs by December 13, 2021: Paragraph 4.13.4.1.",
+      "schedule": [
+        {
+          "day": "Friday",
+          "time": "10:15 - 12:00",
+          "room": "Wirtschaftswissenschaftliche Fakultät, Auditorium"
+        }
+      ]
+    },
+    "302413": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Markus Meuwly (m.meuwly@unibas.ch, Assessor)",
+      "description": "Electronic structure theory and calculations\nIntroduction to molecular dynamics and Monte Carlo simulations\nForce fields\nReactions in gas phase and solution\nConformational sampling",
+      "prerequisites": null,
+      "language": "English",
+      "exam": "continuous assessment",
+      "schedule": [
+        {
+          "day": "Thursday",
+          "time": "16:15 - 18:00",
+          "room": "Chemie, Physikalische, Kleiner Hörsaal PC 4.04"
+        }
+      ]
+    },
+    "302602": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Stefan Goedecker (stefan.goedecker@unibas.ch, Assessor)",
+      "description": "Es werden numerische Methoden diskutiert, die es erlauben Probleme aus allen klassischen Gebieten der Physik, wie\nMechanik, Thermodynamik, Elektrodynamik und Quantenmechanik zu loesen. Da ein Teil der Uebungen Programmierkenntnisse erfordert\nwird auch eine kurze Einfuehrung in die Fortran Programmierung gegeben.",
+      "prerequisites": null,
+      "language": "German",
+      "exam": "continuous assessment — Muendliche Pruefung nach Ende der Vorlesung",
+      "schedule": [
+        {
+          "day": "Monday",
+          "time": "10:15 - 12:00",
+          "room": "Physik, Seminarzimmer 4.1"
+        }
+      ]
+    },
+    "302603": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Stefan Goedecker (stefan.goedecker@unibas.ch, Assessor)",
+      "description": null,
+      "prerequisites": "Belegen der Computational Physics VorlesungDIe Projekte werden zuhause geloest und Assistenten geben bei Bedarf online Hilfe. Die Loesung wird dann auch per email abgegeben",
+      "language": "German",
+      "exam": "continuous assessment — Entwickeln korrekter Computerprogramme",
+      "schedule": [
+        {
+          "day": "Monday",
+          "time": "12:00 - 13:00",
+          "room": "Physik, Seminarzimmer 4.1"
+        }
+      ]
+    },
+    "302620": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Pierre Fromholz (pierre.fromholz@unibas.ch)\nJames Wootton (james.wootton@unibas.ch, Assessor)",
+      "description": "Quantum information theory is the basis of multiple emerging technologies, such as quantum computation and quantum crypotography. It allows us to understand how quantum effects in physical systems may be harnessed for new forms of communication and information processing.\n\nIn this course we will first introduce the basics of information theory in general. This will then be adapted to the case of qubits, the quantum analogue of the bit, to form a quantum theory of information. Examples of how this can be used to understand complex quantum effects such as entanglement will also be explored. The course will then move on to discussing how noise can be managed in quantum systems by means of quantum error correction.\n\nThe course will also feature some hands on experience with quantum technology, with excercises using IBM's 5 qubit quantum processor.",
+      "prerequisites": "Basic familiarity with linear algebra and programming would be an advantage.",
+      "language": "English",
+      "exam": "continuous assessment",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "14:00 - 16:00",
+          "room": "Physik, Alter Hörsaal 2, 1.22"
+        }
+      ]
+    },
+    "302621": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Pierre Fromholz (pierre.fromholz@unibas.ch)\nZoé McIntyre (zoe.mcintyre@unibas.ch)\nAbhikbrata Sarkar (abhikbrata.sarkar@unibas.ch)\nJames Wootton (james.wootton@unibas.ch, Assessor)",
+      "description": null,
+      "prerequisites": null,
+      "language": "English",
+      "exam": "continuous assessment",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "16:00 - 18:00",
+          "room": "Physik, Alter Hörsaal 2, 1.22"
+        }
+      ]
+    },
+    "302622": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Jörg Lehmann (joerg.lehmann@unibas.ch, Assessor)",
+      "description": "Basics of probability theory; Random processes: General concepts; Markov processes: Master equation, Fokker-Planck equation, stochastic differential equations; Mathematical finance",
+      "prerequisites": null,
+      "language": "English",
+      "exam": "continuous assessment — Written exam after the end of the lecture.",
+      "schedule": [
+        {
+          "day": "Wednesday",
+          "time": "09:00 - 10:15",
+          "room": "Physik, Seminarzimmer 4.1"
+        },
+        {
+          "day": "Wednesday",
+          "time": "10:15 - 12:00",
+          "room": "Physik, Seminarzimmer 4.1"
+        }
+      ]
+    },
+    "302761": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Jitao David Zhang (jitao-david.zhang@unibas.ch, Assessor)",
+      "description": "Applied mathematics and computer science are indispensable in modern drug discovery. They enable decisions that have direct impacts on lives. This introductory course offers a practitioner’s review of mathematical concepts, informatics tools, and industrial approaches in relevant fields, especially bioinformatics, molecular modelling, cheminformatics, mathematical modelling, experiment design and statistical inference, machine learning, and emerging deep-learning and generative approaches to artificial intelligence.\n\nIt is hoped that the students are exposed to the interdisciplinary and multiscale modelling nature of drug discovery. The ideal outcome is that the participants are motivated to deepen their knowledge in relevant fields in future study and practice in order to solve open challenges in drug discovery.",
+      "prerequisites": "The course requires in-person attendence. Unfortunately, no remote or virtual attendance options are available.Students of natrual sciences, including biology, physics, chemistry, pharmacy, and medical students are as much welcome as students of mathematics and computer sciences.Though no prerequisite courses are obligatory, elementary understanding of statistics, probability, calculus, and ordinary differential equations are helpful. High-school knowledge in physics, chemistry, and biology are required. Knowledge and proficiency in at least one programming language (preferably C/C++, Java, R, Python, or Julia) is very helpful to try real-world problems.",
+      "language": "English",
+      "exam": "continuous assessment — Scores will be given in scale 1-6 by 0.5. The final note is given by participation including quizzes (30%), offline activities (40%), and a collaboration challenge in the final session (30%).",
+      "schedule": [
+        {
+          "day": "Friday",
+          "time": "12:15 - 14:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.002"
+        }
+      ]
+    },
+    "302777": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Helmut Harbrecht (helmut.harbrecht@unibas.ch, Assessor)",
+      "description": "Numerical methods for the solution of elliptic and parabolic partial differential equations. The focus of the course lies on finite element methods, implementation, and convergence theory.",
+      "prerequisites": "Analysis und Lineare Algebra oder Mathematische Methoden I-IV, Einführung in die Numerik, Numerik der Differentialgleichungen. Knowledge of a programming language, e.g. Matlab.",
+      "language": "German",
+      "exam": "continuous assessment — PASS/FAIL: Solving the weekly homework + 30 min oral exam in January/February 2026.",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:15 - 12:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.001"
+        },
+        {
+          "day": "Thursday",
+          "time": "10:15 - 12:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.001"
+        }
+      ]
+    },
+    "302778": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Valentin Comment (valentin.comment@unibas.ch)\nHelmut Harbrecht (helmut.harbrecht@unibas.ch, Assessor)",
+      "description": null,
+      "prerequisites": null,
+      "language": "German",
+      "exam": "continuous assessment",
+      "schedule": [
+        {
+          "day": "Thursday",
+          "time": "14:15 - 16:00",
+          "room": "Spiegelgasse 5, Seminarraum  05.001"
+        }
+      ]
+    },
+    "302802": {
+      "frequency": "Irregular",
+      "lecturers": "Jiří Černý (jiri.cerny@unibas.ch, Assessor)",
+      "description": "This lecture introduces concentration phenomena: the remarkable principle that random objects often behave almost deterministically when the number of inputs diverges. It develops the fundational tools for controlling fluctuations of random variables, such as the classical inequalities (Hoeffding, Bernstein, and McDiarmid), together with modern geometric and probabilistic perspectives. We illustrate these techniques in applications in random matrix theory, statistics, and possibly machine learning, and theoretical computer science. The course emphasizes both intuition and rigorous methods.",
+      "prerequisites": null,
+      "language": "English",
+      "exam": "continuous assessment — Written test to exercises and oral exam (20 min).",
+      "schedule": [
+        {
+          "day": "Wednesday",
+          "time": "14:15 - 16:00",
+          "room": "Alte Universität, Seminarraum -201"
+        }
+      ]
+    },
+    "302803": {
+      "frequency": "Irregular",
+      "lecturers": "Jiří Černý (jiri.cerny@unibas.ch, Assessor)\nTimo Schlüter (timo.schlueter@unibas.ch)",
+      "description": null,
+      "prerequisites": null,
+      "language": "German",
+      "exam": "continuous assessment",
+      "schedule": [
+        {
+          "day": "Monday",
+          "time": "14:15 - 16:00",
+          "room": "Kollegienhaus, Seminarraum 212"
+        }
+      ]
+    },
+    "303302": {
+      "frequency": "Irregular",
+      "lecturers": "Lukas Rosenthaler (lukas.rosenthaler@unibas.ch, Assessor)",
+      "description": "Accompanied realization of programming projects on a self-chosen topic.\nDive into the dynamic world of programming with this hands-on seminar. Here, you get to bring your programming ideas to life by working on a project of your own choice. This seminar provides a unique platform to not only apply your programming skills but also to innovate and explore new possibilities in the realm of computer science and artificial intelligence (AI, ML). Whether your interest lies in developing a database or solving a complex data problem, this seminar is the perfect opportunity to turn your concepts into reality under expert guidance.\n----\nBegleitete Durchführung von Programmierprojekten zu einem selbstgewählten Thema.\nTauchen Sie mit diesem praxisnahen Seminar in die dynamische Welt der Programmierung ein. Hier können Sie Ihre Programmier-Ideen durch die Arbeit an einem Projekt Ihrer Wahl zum Leben erwecken. Dieses Seminar bietet eine einzigartige Plattform, um nicht nur Ihre Programmierkenntnisse anzuwenden, sondern auch innovativ zu sein und neue Möglichkeiten im Bereich der Informatik und der künstlichen Intelligenz (AI, ML) zu erkunden. Ganz gleich, ob Sie sich für die Entwicklung einer Datenbank oder die Lösung eines komplexen Datenproblems interessieren, dieses Seminar ist die perfekte Gelegenheit, um Ihre Konzepte unter fachkundiger Anleitung in die Tat umzusetzen.",
+      "prerequisites": "Proven basic knowledge of programming (e.g. a course on the introduction to programming with Python)If the course is oversubscribed, the number of participants will be limited. In this case, students of Digital Humanities will be given preferential admission.Bitte melden Sie sich nach der Anmeldung über die Self Services auch noch in ADAM an / After completing your registration via Self Services please also register in ADAM.",
+      "language": "English",
+      "exam": "continuous assessment — Will be announced in the course.",
+      "schedule": [
+        {
+          "day": "Monday",
+          "time": "14:15 - 16:00",
+          "room": "Kollegienhaus, Seminarraum 103"
+        }
+      ]
+    },
+    "303387": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Alejandra Morán Ordóñez (alejandra.moranordonez@unibas.ch, Assessor)",
+      "description": "The course is offered within the scope of the program \"Pathways to Sustainability\": https://msd.unibas.ch/en/study-programs/pathways-to-sustainability-tqne/\nThe program consists of 3 introductory lectures with practical courses (lecture A and B are offered in fall semesters, C is offered in spring semesters) dedicated to conveying the foundations of sustainable development. An additional integration seminar (D, offered in spring semesters) engages with interdisciplinary work. The assignment and completion of D requires the successful completion of two lectures from the above mentioned lectures A, B and C.\n\nThis course (lecture A) deals with the analysis of sustainability problems and problem solving from a natural sciences perspective. There is a special focus on food production and its interdependencies and impacts on natural ecosystems.\nIn this course, students will learn about what the planetary boundaries are, and how the global food production system is contributing to transgressing them with a special focus on land use change, overexploitation of resources and ecosystem impacts. The course addresses topics such as the expansion of the agricultural frontier, the need to protect the last remains of intact natural ecosystems and the linkages between climatic, biodiversity and food production crisis. We also discuss options for more positive and sustainable food productions systems, from agroecological alternatives as opposed to intensive agriculture to sustainable diets.\n\nThe course consist on weekly lectures and topic-specific practical work: the lectures deal with systematic overview knowledge and a set of specific aspects of (un-) sustainable food production and ecosystems conservation. The practical assignments focus on empirical case studies of how food production intersects with different aspects of environmental and resources conservation and involves active student participation.",
+      "prerequisites": "This course is open to students of the University of Basel and of EUCOR sustainability programs who are at least in their third bachelor semester, or who are studying at Master or PhD level.MSD 2017 & MSD 2026Students for whom this course is a mandatory class but who have already taken a similar course should contact Prof. Dr. Alejandra Morán Ordóñez to arrange an alternative option.For both MSD, the final course selection is to be fixed in a learning agreement (template available on the website MSD).",
+      "language": "English",
+      "exam": "record of achievement — Compulsory attendance in presence of lecture and practical course, submission of learning portfolio according to the announced requirements.Final written examination on 12. January 2026; repeat exam on 26. January 2026 (details acccording to information of lecturer): 60 minutes. For details regarding dates and room see online course directory/section \"dates and rooms\".Practical courses:Details about the task will be announced in class during the kick-off session of the policy briefs on 09. October 2026.A follow-up will take place on 20. November 2026.For details regarding the room allocation see online course directory/section \"dates and rooms\".",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "14:15 - 16:00",
+          "room": "Kollegienhaus, Hörsaal 117"
+        }
+      ]
+    },
+    "303388": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Janina Grabs (janina.grabs@unibas.ch, Assessor)",
+      "description": "The course is offered within the scope of the program \"Pathways to Sustainability\": https://msd.unibas.ch/en/study-programs/pathways-to-sustainability-tqne/\nThe program consists of 3 introductory lectures with practical courses (lecture A and B are offered in fall semesters, C is offered in spring semesters) dedicated to conveying the foundations of sustainable development. An additional integration seminar (D, offered in spring semesters) engages with interdisciplinary work. The assignment and completion of D requires the successful completion of two lectures from the above mentioned lectures A, B and C.\n\nThis lecture with exercises deals with the analysis of sustainability problems and problem solving from different social science perspectives. It seeks to clarify the prerequisites and conditions, as well as the possibilities and limits of dealing with sustainability problems and fostering societal transformations toward sustainability.\nThe food system is analyzed from a social, cultural and political perspective in relation to sustainable development: What can social sciences contribute to a differentiated understanding of food-related sustainability problems and their solutions? (e.g., producer poverty and living incomes; health impacts of food production and consumption; food governance and governing a sustainable food system etc.).\nThe course consists of weekly lectures alongside a practical exercise. The lecture provides systematic overview knowledge and introduces a set of specific social science concepts, approaches and theories. In the practical exercise, students will work in groups on a specific food product and value chain and apply the social science knowledge attained in class. These exercises will culminate in a final presentation where students will compare and contrast their findings across products and sectors.",
+      "prerequisites": "This course is open to students of the University of Basel and EUCOR sustainability program who are at least in their third bachelor semester, or who are studying at Master or PhD level.MSD 2017 & MSD 2026Students for whom this course is a mandatory class but who have already taken a similar course should contact Prof. Dr. Janina Grabs to arrange an alternative option.The final course selection is to be fixed in a learning agreement (template available on the website MSD; for both MSD curricula).",
+      "language": "English",
+      "exam": "record of achievement — Compulsory attendance in presence of lecture and practical course, submission of learning portfolio according to the announced requirements.Final written examination/repeat exam (details acccording to information of lecturer): 90 minutes. For details regarding dates and room see online course directory/section \"dates and rooms\".Practical courses:Details about the task will be announced in class during the kick-off session of the policy briefs on 09. October 2026.A follow-up will take place on 20. November 2026.For details regarding the room allocation see online course directory/section \"dates and rooms\".",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "16:15 - 18:00",
+          "room": "Kollegienhaus, Hörsaal 117"
+        }
+      ]
+    },
+    "305011": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Malte Helmert (malte.helmert@unibas.ch, Assessor)\nGabriele Röger (gabriele.roeger@unibas.ch)",
+      "description": "see description of the lecture",
+      "prerequisites": "see description of the lecture",
+      "language": "English",
+      "exam": "continuous assessment — see description of the lecture",
+      "schedule": [
+        {
+          "day": "Wednesday",
+          "time": "16:15 - 18:00",
+          "room": "Spiegelgasse 1, Seminarraum  00.003"
+        }
+      ]
+    },
+    "305500": {
+      "frequency": "Every fall sem.",
+      "lecturers": "Florina M. Ciorba (florina.ciorba@unibas.ch)\nHeiko Schuldt (heiko.schuldt@unibas.ch, Assessor)\nChristian Tschudin (christian.tschudin@unibas.ch)\nIsabel Wagner (isabel.wagner@unibas.ch)",
+      "description": null,
+      "prerequisites": null,
+      "language": "English",
+      "exam": "continuous assessment",
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:15 - 12:00",
+          "room": "Pharmazentrum, Seminarraum U1075"
+        }
+      ]
+    }
+  },
+  "crossListedCourses": {
+    "12246": [
+      "Mathematical Foundations",
+      "Electives in Data Science"
+    ],
+    "15731": [
+      "Systems Foundations",
+      "Electives in Data Science"
+    ],
+    "19300": [
+      "Mathematical Foundations",
+      "Electives in Data Science"
+    ],
+    "45401": [
+      "Machine Learning Foundations",
+      "Electives in Data Science"
+    ],
+    "66937": [
+      "Machine Learning Foundations",
+      "Electives in Data Science"
+    ]
+  }
+}

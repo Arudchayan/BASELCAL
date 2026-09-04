@@ -10,18 +10,23 @@
     "preview": "vite preview",
     "validate": "node validate_all.cjs",
     "audit:vv": "node vv_msc_ds_official_scrape.cjs",
+    "audit:modules": "node scrape_module_manifest.cjs",
+    "refresh:modules": "node scrape_module_manifest.cjs --apply",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
     "framer-motion": "^12.42.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
