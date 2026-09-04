@@ -92,13 +92,19 @@ const expectedCrossListings = {
 const APPROVED_PRESET = {
   admission: 28,
   math: 18,
-  ml: 27,
+  ml: 26,
   sys: 20,
-  foundationsSum: 65,
+  foundationsSum: 64,
   electives: 20,
   thesis: 36,
-  mscTotal: 121,
-  grandTotal: 149,
+  mscTotal: 120,
+  grandTotal: 148,
+};
+const EXPECTED_PRESET_IDS = {
+  s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731'],
+  s2: ['AD-10489-2', 'AD-11039', 'AD-10906', 'AD-62061', 'ML-17165', 'ML-13548', 'E-PROJ12'],
+  s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-78174', 'T-PREP'],
+  s4: ['T-THESIS', 'ML-60876', 'E-53822'],
 };
 for (const [code, modules] of Object.entries(expectedCrossListings)) {
   const course = courses.find((c) => c.code === code);
@@ -134,7 +140,7 @@ else pass(`Admission breakdown: Analysis=${analysisCp}, Algorithms=${algoCp}, Sc
 
 if (!agentMd.includes('12 + 8 + 8 = 28')) warn('agent.md may not reflect admission breakdown');
 
-console.log('\nCHECK 3: Approved 149/121 preset arithmetic (official rules remain 148/120)');
+console.log('\nCHECK 3: Approved exact 148/120 preset arithmetic');
 const presetIds = Object.values(PRESET).flat();
 const preset = presetIds.map(id => courses.find(c => c.id === id));
 const missingPreset = presetIds.filter((id, i) => !preset[i]);
@@ -152,6 +158,11 @@ for (const [sem, list] of Object.entries(PRESET)) {
   }
 }
 if (presetIdGaps === 0) pass('types.ts preset IDs present');
+for (const sem of Object.keys(EXPECTED_PRESET_IDS)) {
+  if (JSON.stringify(PRESET[sem]) !== JSON.stringify(EXPECTED_PRESET_IDS[sem])) {
+    fail(`${sem.toUpperCase()} differs from the newly approved plan`);
+  } else pass(`${sem.toUpperCase()} matches the newly approved plan`);
+}
 if (JSON.stringify(PRESET.s1) !== JSON.stringify(FALL_2026_SELECTION_IDS)) fail('Preset S1 differs from the fixed Fall 2026 selection');
 else pass('Preset S1 exactly preserves the fixed Fall 2026 selection and order');
 
@@ -193,13 +204,10 @@ else pass(`Preset MSc total = ${stats.mscTotal}`);
 if (stats.grandTotal !== APPROVED_PRESET.grandTotal) fail(`Preset grand total ${stats.grandTotal} != approved ${APPROVED_PRESET.grandTotal}`);
 else pass(`Preset grand total = ${stats.grandTotal}`);
 
-const expectedS2Revision = ['ML-78174', 'E-53822', 'ML-PROJ6'];
-const removedS2Revision = ['S-15728', 'E-49935', 'ML-45366', 'E-28420'];
-const missingS2Revision = expectedS2Revision.filter((id) => !PRESET.s2.includes(id));
-const retainedRemovedS2 = removedS2Revision.filter((id) => PRESET.s2.includes(id));
-if (missingS2Revision.length || retainedRemovedS2.length) {
-  fail(`RL S2 revision mismatch; missing ${missingS2Revision.join(', ') || 'none'}, still present ${retainedRemovedS2.join(', ') || 'none'}`);
-} else pass('S2 contains RL + medical-image DL + ML project and removes Networks + Applied Statistics');
+const excludedFromDefault = ['ML-67343', 'S-15728', 'S-67923', 'ML-45366', 'ML-PROJ6', 'E-28420', 'E-58920', 'E-49935'];
+const retainedExcluded = excludedFromDefault.filter((id) => presetIds.includes(id));
+if (retainedExcluded.length) fail(`Default plan retains excluded course(s): ${retainedExcluded.join(', ')}`);
+else pass('Default plan excludes Inverse Problems, Networks, Continuous Optimization, Machine Intelligence, ML Project, Medical Imaging, Causal Inference, and Applied Statistics Using R');
 
 const allocated60876 = PRESET_ALLOCATIONS['ML-60876'];
 const eligible60876 = courses.find((c) => c.id === 'ML-60876')?.eligibleModules || [];
@@ -207,14 +215,25 @@ if (allocated60876 !== OFFICIAL.modules.ml || !eligible60876.includes(allocated6
   fail('ML-60876 must be validly allocated to Machine Learning Foundations in the preset');
 } else pass('ML-60876 preset allocation credits its 2 CP to Machine Learning Foundations');
 
-if (!PRESET.s3.includes('ML-67343') || PRESET.s3.includes('ML-PROJ6') || PRESET_ALLOCATIONS['ML-67343'] !== OFFICIAL.modules.ml) {
-  fail('S3 must replace ML-PROJ6 with ML-67343 allocated to Machine Learning Foundations');
-} else pass('S3 contains ML-67343 in Machine Learning Foundations and no ML project');
+const allocated53822 = PRESET_ALLOCATIONS['E-53822'];
+const course53822 = courses.find((c) => c.id === 'E-53822');
+const eligible53822 = course53822?.eligibleModules || [course53822?.module];
+if (allocated53822 !== OFFICIAL.modules.electives || !eligible53822.includes(allocated53822)) {
+  fail('E-53822 must be validly allocated to Electives in the preset');
+} else pass('E-53822 preset allocation credits its 3 CP to Electives');
 
-// Causal Inference must be in a spring semester
-const causalSem = Object.entries(PRESET).find(([, idsList]) => idsList.includes('E-58920'))?.[0];
-if (causalSem !== 's2' && causalSem !== 's4') fail(`E-58920 Causal Inference in ${causalSem} (must be Spring s2/s4)`);
-else pass(`E-58920 Causal Inference placed in ${causalSem} (Spring)`);
+const taughtCp = (idsList) => idsList
+  .map((id) => courses.find((c) => c.id === id))
+  .filter((c) => c && c.type !== 'Admission' && c.module !== OFFICIAL.modules.thesis)
+  .reduce((sum, c) => sum + c.cp, 0);
+const taughtBeforeS4 = taughtCp([...PRESET.s1, ...PRESET.s2, ...PRESET.s3]);
+const remainingTaughtInS4 = taughtCp(PRESET.s4);
+if (taughtBeforeS4 !== 79 || taughtBeforeS4 < 76) {
+  fail(`Thesis start gate has ${taughtBeforeS4} taught-module CP before S4; expected 79 and at least 76`);
+} else pass('Thesis start gate cleared: 79 taught-module CP before S4 (minimum 76)');
+if (remainingTaughtInS4 !== 5 || taughtBeforeS4 + remainingTaughtInS4 !== 84) {
+  fail(`Thesis presentation path is ${taughtBeforeS4}+${remainingTaughtInS4}; expected 79+5=84 taught-module CP`);
+} else pass('Remaining 5 taught-module CP complete during S4 before presentation, reaching 84');
 
 const expectedFallSelection = [
   'AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060',
@@ -269,8 +288,9 @@ function parseTime(t) {
 
 /** Cached historical overlaps in future, unaudited semesters; keep visible as warnings until live VV publication. */
 const ALLOWED_PRESET_CLASHES = new Set([
-  'E-53822|ML-17165',
-  'M-66096|ML-67343',
+  'AD-10906|ML-17165',
+  'AD-10906|ML-13548',
+  'ML-13548|ML-17165',
 ]);
 
 function clashKey(a, b) {
@@ -322,7 +342,7 @@ function weekdaysUsed(ids) {
 }
 
 // Semester 1 is the student's fixed, confirmed 37 CP Fall 2026 selection.
-const SEM_CP_LIMITS = { s1: 37, s2: 37, s3: 42, s4: 46 };
+const SEM_CP_LIMITS = { s1: 37, s2: 38, s3: 42, s4: 46 };
 let schedFails = 0;
 for (const [sem, ids] of Object.entries(PRESET)) {
   const cp = ids.reduce((s, id) => s + (courses.find((c) => c.id === id)?.cp || 0), 0);

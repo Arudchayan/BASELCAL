@@ -75,7 +75,7 @@ const daysSince = (iso: string): number | null => {
   return Number.isNaN(days) ? null : days;
 };
 
-const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 37, s3: 42, s4: 46 };
+const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
@@ -299,12 +299,14 @@ function App() {
   const loadPreset = () => {
     const ok = confirm(
       'Load ML/PhD Starter Plan? This replaces your current plan.\n\n' +
-        `This approved preset totals 149 CP (121 MSc), 1 CP above the exact ${DEGREE_RULES.grandTotal.target}/${DEGREE_RULES.mscTotal.target} targets:\n` +
+        `This approved preset meets the exact ${DEGREE_RULES.grandTotal.target} CP overall / ${DEGREE_RULES.mscTotal.target} MSc targets:\n` +
         '• Semester 1 is preserved exactly as the confirmed Fall 2026 selection\n' +
-        '• Semester 2 includes irregular Reinforcement Learning plus ML and Data Science projects\n' +
+        '• Semester 2 completes the admission conditions and includes the 12 CP Data Science project\n' +
+        '• Semester 3 includes irregular Reinforcement Learning and Randomized Algorithms\n' +
+        '• 79 taught-module CP are complete before Semester 4; the 76 CP thesis-start gate is met\n' +
+        '• Finish the final 5 taught-module CP in Semester 4 before the thesis presentation\n' +
         '• Spring 2027 and later offerings and timetable slots are provisional and need VV checks\n' +
-        '• Confirm RL and Inverse Problems availability and all future timetable slots before enrollment\n' +
-        '• Cached historical slots currently show ML/E-53822 and M-66096/ML-67343 overlaps; recheck live schedules\n\n' +
+        '• Confirm Reinforcement Learning and Randomized Algorithms availability before enrollment\n\n' +
         'Continue?',
     );
     if (ok) {

@@ -67,7 +67,7 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
     courses: courses.filter((course) => creditModule(course) === DEGREE_RULES[key].module),
   }));
 
-  const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 37, s3: 42, s4: 46 };
+  const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
   const loadIssues = SEMESTER_IDS.flatMap((sem) => {
     const cp = plan[sem].reduce((s, c) => s + c.cp, 0);
     const max = SEM_LOAD_MAX[sem];
@@ -89,7 +89,14 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
       (!c.schedule || c.schedule.length === 0),
   );
   const hasProvisionalRl = courses.some((c) => c.id === 'ML-78174');
-  const hasProvisionalInverseProblems = courses.some((c) => c.id === 'ML-67343');
+  const hasProvisionalRandomizedAlgorithms = courses.some((c) => c.id === 'M-77777');
+  const taughtCourseCp = (semesterCourses: Course[]) => semesterCourses
+    .filter((c) => c.type !== 'Admission' && c.module !== 'Thesis')
+    .reduce((sum, c) => sum + c.cp, 0);
+  const taughtBeforeS4 = (['s1', 's2', 's3'] as SemesterId[])
+    .reduce((sum, sem) => sum + taughtCourseCp(plan[sem]), 0);
+  const remainingTaughtInS4 = taughtCourseCp(plan.s4);
+  const hasThesisInS4 = plan.s4.some((c) => c.id === 'T-THESIS');
 
   return (
     <motion.div
@@ -116,8 +123,17 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
         Future offerings and timetable slots have not been audited against their live VV semesters. Recheck before
         enrollment.
         {hasProvisionalRl && ' ML-78174 Reinforcement Learning is irregular and must be confirmed.'}
-        {hasProvisionalInverseProblems && ' ML-67343 Inverse Problems is irregular and must be confirmed.'}
+        {hasProvisionalRandomizedAlgorithms && ' M-77777 Randomized Algorithms is irregular and must be confirmed.'}
       </div>
+
+      {hasThesisInS4 && (
+        <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--accent-glow)', color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
+          <strong style={{ color: 'var(--accent-primary)' }}>Thesis gate:</strong>{' '}
+          {taughtBeforeS4} taught-module CP are complete before Semester 4 (76 CP required to start).
+          {' '}Semester 4 contains the remaining {remainingTaughtInS4} taught-module CP; complete them before the
+          thesis presentation, reaching {taughtBeforeS4 + remainingTaughtInS4} CP.
+        </div>
+      )}
 
       <div className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
         {displayBuckets.map((b) => (

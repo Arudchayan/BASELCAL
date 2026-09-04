@@ -12,7 +12,7 @@ npm run dev
 ## Accuracy checks
 
 ```bash
-npm run validate   # catalog rules + approved 149 / 121 CP preset checks
+npm run validate   # catalog rules + approved exact 148 / 120 CP preset checks
 npm run audit:modules # compare against the live Fall 2026 MSc DS module tree
 npm test           # Playwright UI / logic tests
 npm run build      # typecheck + production build
@@ -25,7 +25,8 @@ npm run build      # typecheck + production build
 
 ## Persistence
 
-- Allocation-aware plan references (`basel-ds-plan-v6`); empty storage seeds the confirmed Fall 2026 selections plus the approved 149 CP ML/PhD outline
+- Allocation-aware plan references (`basel-ds-plan-v6`); empty storage seeds the confirmed Fall 2026 selections plus the approved exact 148 CP outline
+- Only recognized prior defaults upgrade automatically; custom saved plans are preserved
 - Degree targets: `degree_rules.json` (shared by UI + `npm run validate`)
 - Freshness / disputed modules: `coverage_policy.json` → `src/coveragePolicy.ts`
 - Export JSON includes an unofficial-planner disclaimer
