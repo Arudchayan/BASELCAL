@@ -65,6 +65,12 @@ export function Timetable({
         </div>
       </div>
 
+      {activeSem !== 's1' && (
+        <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'rgba(217,119,6,0.1)', color: 'var(--text-secondary)', fontSize: 12 }}>
+          <strong style={{ color: '#d97706' }}>Provisional timetable.</strong> Spring 2027 and later slots use historical data and must be rechecked in the live VV.
+        </div>
+      )}
+
       {conflicts.length > 0 && (
         <div
           style={{

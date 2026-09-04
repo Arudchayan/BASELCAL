@@ -30,7 +30,7 @@ export function QuickTips() {
       const mathCourses = COURSES.filter((c) => c.module.includes('Math')).slice(0, 3);
       response = `Math picks: ${mathCourses.map((c) => c.title).join(', ')}.`;
     } else if (lower.includes('easy') || lower.includes('intro') || lower.includes('admission')) {
-      response = `Admission Auflagen are exactly ${DEGREE_RULES.admission.target} CP (Analysis 12 + Algorithms 8 + SciComp 8). Confirm against your Zulassungsbescheid.`;
+      response = `This plan models student-specific admission conditions as ${DEGREE_RULES.admission.target} CP. They are not a universal MSc requirement; confirm against your Zulassungsbescheid.`;
     } else if (lower.includes('elective')) {
       response = `Electives must be exactly ${DEGREE_RULES.electives.target} CP. Overshoot fails validation.`;
     } else if (lower.includes('thesis')) {

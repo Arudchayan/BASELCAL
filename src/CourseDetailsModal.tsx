@@ -6,7 +6,7 @@ import { isStaleWatch } from './dataFreshness';
 import { isMandatoryAttendance } from './conflicts';
 import { parseOffering } from './offering';
 import { getPriorityBg, getPriorityColor } from './uiHelpers';
-import type { Course } from './types';
+import { creditModule, eligibleModulesFor, type Course } from './types';
 
 export function CourseDetailsModal({ course, onClose }: { course: Course; onClose: () => void }) {
   useEffect(() => {
@@ -106,7 +106,10 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
                 >
                   {course.code}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{course.module}</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                  {eligibleModulesFor(course).length > 1 ? `Eligible: ${eligibleModulesFor(course).join(' · ')}` : course.module}
+                </span>
+                {course.allocatedModule && <span className="pill">Planned: {creditModule(course)}</span>}
                 {discrepancy && (
                   <span
                     title={discrepancy.note}

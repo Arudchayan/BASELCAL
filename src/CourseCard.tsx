@@ -5,7 +5,7 @@ import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { parseOffering, primaryMismatchMessage } from './offering';
 import { isStaleWatch } from './dataFreshness';
 import { getModuleColor, getPriorityBg, getPriorityColor } from './uiHelpers';
-import type { Course, SemesterId } from './types';
+import { creditModule, eligibleModulesFor, type Course, type CourseModule, type SemesterId } from './types';
 
 type CourseCardProps = {
   course: Course;
@@ -17,6 +17,7 @@ type CourseCardProps = {
   onNoteChange?: (text: string) => void;
   onShowDetails: () => void;
   onQuickAdd?: () => void;
+  onAllocationChange?: (module: CourseModule) => void;
 };
 
 function CourseCardInner({
@@ -29,6 +30,7 @@ function CourseCardInner({
   onNoteChange,
   onShowDetails,
   onQuickAdd,
+  onAllocationChange,
 }: CourseCardProps) {
   const [copyToast, setCopyToast] = useState<string | null>(null);
   // Keep note draft local so typing does not re-render the full DnD board every keystroke
@@ -40,6 +42,8 @@ function CourseCardInner({
   const offering = parseOffering(course.when);
   const disputed = isDisputedModule(course.id);
   const discrepancy = disputed ? getModuleDiscrepancy(course.id) : undefined;
+  const eligibleModules = eligibleModulesFor(course);
+  const allocatedModule = creditModule(course);
   const firstSession = course.schedule?.[0];
   const scheduleCount = course.schedule?.length ?? 0;
   const scheduleLabel =
@@ -108,7 +112,7 @@ function CourseCardInner({
             position: 'relative',
             borderLeft: mismatchWarning
               ? '4px solid #ef4444'
-              : `4px solid ${getModuleColor(course.module)}`,
+              : `4px solid ${getModuleColor(allocatedModule)}`,
             background: snapshot.isDragging ? 'var(--glass-dragging-bg)' : 'var(--bg-secondary)',
             transition: snapshot.isDragging ? 'none' : 'background 0.2s ease, box-shadow 0.2s ease',
             cursor: snapshot.isDragging ? 'grabbing' : 'grab',
@@ -369,7 +373,7 @@ function CourseCardInner({
             }}
           >
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {course.module} · {course.lang}
+              {allocatedModule} · {course.lang}
             </span>
             {disputed && discrepancy && (
               <span
@@ -388,6 +392,26 @@ function CourseCardInner({
               </span>
             )}
           </div>
+
+          {eligibleModules.length > 1 && !isPlanned && (
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+              Cross-listed: {eligibleModules.join(' or ')}
+            </div>
+          )}
+          {isPlanned && eligibleModules.length > 1 && onAllocationChange && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, fontSize: 11, color: 'var(--text-muted)' }} onPointerDown={(e) => e.stopPropagation()}>
+              Credit to
+              <select
+                aria-label={`Credit allocation for ${course.title}`}
+                value={allocatedModule}
+                onChange={(e) => onAllocationChange(e.target.value as CourseModule)}
+                onClick={(e) => e.stopPropagation()}
+                style={{ flex: 1, minWidth: 0, fontSize: 11 }}
+              >
+                {eligibleModules.map((module) => <option key={module} value={module}>{module}</option>)}
+              </select>
+            </label>
+          )}
 
           {mismatchWarning && (
             <div

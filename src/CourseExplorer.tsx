@@ -14,7 +14,7 @@ import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { isStaleWatch } from './dataFreshness';
 import { getPlacementWarnings } from './offering';
 import { getPriorityBg, getPriorityColor } from './uiHelpers';
-import type { Course } from './types';
+import { eligibleModulesFor, type Course } from './types';
 
 type BucketDef = {
   /** Exact catalog module string — must match Course.module */
@@ -32,7 +32,7 @@ const BUCKETS: BucketDef[] = [
     statsKey: 'admission',
     title: 'Conditional Admission',
     required: true,
-    desc: 'Exactly 28 CP bachelor Auflagen (model: Analysis 12 + Algorithms 8 + SciComp 8).',
+    desc: 'This student’s individualized admission conditions total 28 CP; this is not a universal MSc requirement.',
     color: '#d97706',
   },
   {
@@ -143,9 +143,11 @@ export const CourseExplorer = ({
   const coursesByBucket = useMemo(() => {
     const grouped: Record<string, Course[]> = {};
     BUCKETS.forEach((b) => (grouped[b.module] = []));
-    COURSES.forEach((c) => {
-      const bucket = BUCKETS.find((b) => c.module === b.module);
-      if (bucket) grouped[bucket.module].push(c as Course);
+    COURSES.forEach((rawCourse) => {
+      const course = rawCourse as Course;
+      eligibleModulesFor(course).forEach((module) => {
+        if (grouped[module]) grouped[module].push(course);
+      });
     });
     return grouped;
   }, []);

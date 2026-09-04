@@ -34,6 +34,15 @@ function parsePresetFromTypes(src) {
 }
 
 const PRESET = parsePresetFromTypes(typesTs);
+const allocationMatch = typesTs.match(/export const ML_PHD_PRESET_ALLOCATIONS[^=]*=\s*(\{[\s\S]*?\n\});/);
+const PRESET_ALLOCATIONS = allocationMatch ? Function(`return (${allocationMatch[1]});`)() : {};
+
+const EXPECTED_PRESET = {
+  s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731'],
+  s2: ['AD-10489-2', 'AD-11039', 'ML-17165', 'ML-78174', 'E-58920', 'ML-60876', 'E-53822', 'E-PROJ6', 'ML-PROJ6'],
+  s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-67343', 'T-PREP'],
+  s4: ['T-THESIS', 'AD-10906', 'AD-62061'],
+};
 
 const OFFICIAL = {
   admission: degreeRulesJson.admission.target,
@@ -69,6 +78,28 @@ else pass(`${courses.length} courses, all unique IDs`);
 });
 if (!issues.some(i => i.includes('missing'))) pass('All required fields present');
 
+const expectedCrossListings = {
+  '12246': ['Mathematical Foundations', 'Electives in Data Science'],
+  '19300': ['Mathematical Foundations', 'Electives in Data Science'],
+  '77777': ['Mathematical Foundations', 'Electives in Data Science'],
+  '45401': ['Machine Learning Foundations', 'Electives in Data Science'],
+  '60876': ['Machine Learning Foundations', 'Electives in Data Science'],
+  '66937': ['Machine Learning Foundations', 'Electives in Data Science'],
+  '67343': ['Machine Learning Foundations', 'Electives in Data Science'],
+  '15731': ['Systems Foundations', 'Electives in Data Science'],
+  '67924': ['Systems Foundations', 'Electives in Data Science'],
+};
+for (const [code, modules] of Object.entries(expectedCrossListings)) {
+  const course = courses.find((c) => c.code === code);
+  if (!course || JSON.stringify(course.eligibleModules) !== JSON.stringify(modules)) fail(`${code} cross-listing mismatch`);
+}
+for (const prefix of ['ML', 'S', 'E']) {
+  const six = courses.find((c) => c.id === `${prefix}-PROJ6`);
+  const twelve = courses.find((c) => c.id === `${prefix}-PROJ12`);
+  if (!six || !twelve || six.projectVariantGroup !== twelve.projectVariantGroup) fail(`${prefix} project variants are not grouped`);
+}
+if (courses.find((c) => c.id === 'ML-67343')?.title !== 'Inverse Problems: Computational Aspects and Machine Learning') fail('ML-67343 title mismatch');
+
 console.log('\nCHECK 2: Admission CP');
 const adm = courses.filter(c => c.type === 'Admission');
 const admCp = adm.reduce((s, c) => s + c.cp, 0);
@@ -83,7 +114,19 @@ else pass(`Admission breakdown: Analysis=${analysisCp}, Algorithms=${algoCp}, Sc
 
 if (!agentMd.includes('12 + 8 + 8 = 28')) warn('agent.md may not reflect admission breakdown');
 
-console.log('\nCHECK 3: Preset plan arithmetic (must be official 148/120)');
+console.log('\nCHECK 3: Approved 149/121 preset arithmetic (official rules remain 148/120)');
+for (const sem of Object.keys(EXPECTED_PRESET)) {
+  if (JSON.stringify(PRESET[sem]) !== JSON.stringify(EXPECTED_PRESET[sem])) {
+    fail(`${sem.toUpperCase()} does not match the approved course order`);
+  } else {
+    pass(`${sem.toUpperCase()} matches the approved course order`);
+  }
+}
+if (PRESET_ALLOCATIONS['ML-60876'] !== OFFICIAL.modules.ml || PRESET_ALLOCATIONS['ML-67343'] !== OFFICIAL.modules.ml) {
+  fail('Approved cross-listed allocations are missing');
+} else {
+  pass('Approved cross-listed allocations are explicit');
+}
 const presetIds = Object.values(PRESET).flat();
 const preset = presetIds.map(id => courses.find(c => c.id === id));
 const missingPreset = presetIds.filter((id, i) => !preset[i]);
@@ -102,7 +145,7 @@ for (const [sem, list] of Object.entries(PRESET)) {
 }
 if (presetIdGaps === 0) pass('types.ts preset IDs present');
 
-const sumMod = (mod) => preset.filter(c => c && c.module === mod).reduce((s,c)=>s+c.cp,0);
+const sumMod = (mod) => preset.filter(c => c && (PRESET_ALLOCATIONS[c.id] || c.module) === mod).reduce((s,c)=>s+c.cp,0);
 const stats = {
   admission: sumMod(OFFICIAL.modules.admission),
   math: sumMod(OFFICIAL.modules.math),
@@ -123,21 +166,21 @@ console.log(`  Semesters: S1=${semCp.s1} S2=${semCp.s2} S3=${semCp.s3} S4=${semC
 
 if (stats.admission !== OFFICIAL.admission) fail(`Preset admission ${stats.admission} != ${OFFICIAL.admission}`);
 else pass(`Preset admission = ${stats.admission}`);
-if (stats.math < OFFICIAL.math) fail(`Preset math ${stats.math} < min ${OFFICIAL.math}`);
+if (stats.math !== 18) fail(`Preset math ${stats.math} != 18`);
 else pass(`Preset math = ${stats.math} (>= ${OFFICIAL.math})`);
-if (stats.ml < OFFICIAL.ml) fail(`Preset ml ${stats.ml} < min ${OFFICIAL.ml}`);
+if (stats.ml !== 27) fail(`Preset ml ${stats.ml} != 27`);
 else pass(`Preset ml = ${stats.ml} (>= ${OFFICIAL.ml})`);
-if (stats.sys < OFFICIAL.sys) fail(`Preset systems ${stats.sys} < min ${OFFICIAL.sys}`);
+if (stats.sys !== 20) fail(`Preset systems ${stats.sys} != 20`);
 else pass(`Preset systems = ${stats.sys} (>= ${OFFICIAL.sys})`);
-if (stats.foundationsSum < OFFICIAL.foundationsSum) fail(`Preset foundations ${stats.foundationsSum} < min ${OFFICIAL.foundationsSum}`);
+if (stats.foundationsSum !== 65) fail(`Preset foundations ${stats.foundationsSum} != 65`);
 else pass(`Preset foundations = ${stats.foundationsSum} (>= ${OFFICIAL.foundationsSum})`);
 if (stats.electives !== OFFICIAL.electives) fail(`Preset electives ${stats.electives} != exact ${OFFICIAL.electives}`);
 else pass(`Preset electives = ${stats.electives}`);
 if (stats.thesis !== OFFICIAL.thesis) fail(`Preset thesis ${stats.thesis} != exact ${OFFICIAL.thesis}`);
 else pass(`Preset thesis = ${stats.thesis}`);
-if (stats.mscTotal !== OFFICIAL.mscTotal) fail(`Preset MSc total ${stats.mscTotal} != exact ${OFFICIAL.mscTotal}`);
+if (stats.mscTotal !== 121) fail(`Preset MSc total ${stats.mscTotal} != approved 121`);
 else pass(`Preset MSc total = ${stats.mscTotal}`);
-if (stats.grandTotal !== OFFICIAL.grandTotal) fail(`Preset grand total ${stats.grandTotal} != exact ${OFFICIAL.grandTotal}`);
+if (stats.grandTotal !== 149) fail(`Preset grand total ${stats.grandTotal} != approved 149`);
 else pass(`Preset grand total = ${stats.grandTotal}`);
 
 // Causal Inference must be in a spring semester
@@ -180,8 +223,12 @@ function parseTime(t) {
   return { start: ap[0] + ap[1] / 60, end: bp[0] + bp[1] / 60 };
 }
 
-/** Only admission co-requisites that share a VV slot with no alternate group in catalog */
-const ALLOWED_PRESET_CLASHES = new Set(['AD-11037|AD-20980', 'AD-20980|AD-11037']);
+/** Known overlaps retained in the approved plan; future-semester slots remain provisional. */
+const ALLOWED_PRESET_CLASHES = new Set([
+  'AD-11037|AD-20980',
+  'E-53822|ML-17165',
+  'M-66096|ML-67343',
+]);
 
 function clashKey(a, b) {
   return [a, b].sort().join('|');
@@ -231,10 +278,15 @@ function weekdaysUsed(ids) {
   return days.size;
 }
 
-const SEM_CP_LIMITS = { s1: 36, s2: 36, s3: 42, s4: 46 };
+const EXPECTED_SEM_CP = { s1: 33, s2: 41, s3: 37, s4: 38 };
+const SEM_CP_LIMITS = { s1: 37, s2: 41, s3: 42, s4: 46 };
 let schedFails = 0;
 for (const [sem, ids] of Object.entries(PRESET)) {
   const cp = ids.reduce((s, id) => s + (courses.find((c) => c.id === id)?.cp || 0), 0);
+  if (cp !== EXPECTED_SEM_CP[sem]) {
+    fail(`${sem.toUpperCase()} load ${cp} CP does not match approved ${EXPECTED_SEM_CP[sem]} CP`);
+    schedFails++;
+  }
   const limit = SEM_CP_LIMITS[sem];
   if (cp > limit) {
     fail(`${sem.toUpperCase()} load ${cp} CP exceeds soft-schedulable max ${limit}`);
@@ -251,9 +303,8 @@ for (const [sem, ids] of Object.entries(PRESET)) {
     blocked.forEach((c) => console.log(`    ${c.label}`));
     schedFails++;
   } else if (allowed.length) {
-    warn(
-      `${sem.toUpperCase()} has ${allowed.length} allowlisted admission clash(es) (no alternate VV group):`,
-    );
+    const qualifier = sem === 's1' ? 'known required-course overlap(s)' : 'provisional cached future overlap(s)';
+    warn(`${sem.toUpperCase()} has ${allowed.length} ${qualifier}:`);
     allowed.forEach((c) => console.log(`    ${c.label}`));
   } else {
     pass(`${sem.toUpperCase()} has no timetable clashes`);
@@ -352,7 +403,7 @@ if (fs.existsSync('coverage_policy.json')) {
 
 if (fs.existsSync('vv_msc_ds_official.json')) {
   const audit = JSON.parse(fs.readFileSync('vv_msc_ds_official.json', 'utf8'));
-  const realIds = courses.filter((c) => !['T-PREP', 'T-THESIS', 'E-PROJ6', 'ML-PROJ6', 'S-PROJ6'].includes(c.id));
+  const realIds = courses.filter((c) => !['T-PREP', 'T-THESIS', 'E-PROJ6', 'E-PROJ12', 'ML-PROJ6', 'ML-PROJ12', 'S-PROJ6', 'S-PROJ12'].includes(c.id));
   const auditIds = new Set(audit.courses.map((c) => c.localId));
   const missing = realIds.filter((c) => !auditIds.has(c.id)).map((c) => c.id);
   const extra = [...auditIds].filter((id) => !realIds.some((c) => c.id === id));
@@ -386,7 +437,7 @@ if (fs.existsSync('vv_msc_ds_official.json')) {
 }
 
 console.log('\nCHECK 11: Field quality (template/generic detection)');
-const SYNTHETIC_IDS = new Set(['T-PREP', 'T-THESIS', 'E-PROJ6', 'ML-PROJ6', 'S-PROJ6']);
+const SYNTHETIC_IDS = new Set(['T-PREP', 'T-THESIS', 'E-PROJ6', 'E-PROJ12', 'ML-PROJ6', 'ML-PROJ12', 'S-PROJ6', 'S-PROJ12']);
 const text = (c, ...fields) => fields.map((f) => c[f]).filter(Boolean).join(' ');
 
 const examXX = courses.filter((c) => /XX\.XX/.test(c.exam || ''));

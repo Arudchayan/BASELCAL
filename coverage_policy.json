@@ -17,7 +17,7 @@
   "titleNormalization": "full_vv_title",
   "titleNormalizationNotes": "Do not strip text before colons in scrape apply step. ML-78174 canonical title is the full VV string.",
   "preserveCpIds": ["AD-10489-1", "AD-10489-2"],
-  "syntheticIds": ["T-PREP", "T-THESIS", "E-PROJ6", "ML-PROJ6", "S-PROJ6"],
+  "syntheticIds": ["T-PREP", "T-THESIS", "E-PROJ6", "E-PROJ12", "ML-PROJ6", "ML-PROJ12", "S-PROJ6", "S-PROJ12"],
   "lastVerified": {
     "date": "2026-07-21",
     "method": "vv_msc_ds_official_scrape.cjs live Playwright scrape",
@@ -40,16 +40,18 @@
     "E-64324"
   ],
   "staleWatchNotes": "VV semester metadata not HS/FS 2026 — irregular or biennial; keep in catalog but flag for planners.",
-  "moduleDiscrepancies": [
-    {
-      "id": "ML-45401",
-      "code": "45401",
-      "catalogModule": "Machine Learning Foundations",
-      "vvModulesTab": "Electives in Data Science (Master's Studies: Data Science)",
-      "resolution": "pending_program_pdf",
-      "note": "Catalog follows program PDF; VV Modules tab lists elective. Do not auto-retag without PDF authority."
-    }
-  ],
+  "moduleDiscrepancies": [],
+  "moduleCrossListings": {
+    "12246": ["Mathematical Foundations", "Electives in Data Science"],
+    "19300": ["Mathematical Foundations", "Electives in Data Science"],
+    "77777": ["Mathematical Foundations", "Electives in Data Science"],
+    "45401": ["Machine Learning Foundations", "Electives in Data Science"],
+    "60876": ["Machine Learning Foundations", "Electives in Data Science"],
+    "66937": ["Machine Learning Foundations", "Electives in Data Science"],
+    "67343": ["Machine Learning Foundations", "Electives in Data Science"],
+    "15731": ["Systems Foundations", "Electives in Data Science"],
+    "67924": ["Systems Foundations", "Electives in Data Science"]
+  },
   "vvAuditArtifacts": [
     "vv_msc_ds_official.json",
     "vv_audit_table.json",

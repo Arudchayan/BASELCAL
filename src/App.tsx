@@ -36,7 +36,10 @@ import {
 } from './planStorage';
 import { DATA_FRESHNESS } from './dataFreshness';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
-import { ML_PHD_PRESET_IDS, SEMESTERS, SEMESTER_IDS, type Course, type PlanState, type SemesterId } from './types';
+import {
+  ML_PHD_PRESET_IDS, SEMESTERS, SEMESTER_IDS, eligibleModulesFor, withCourseAllocation,
+  type Course, type CourseModule, type PlanState, type SemesterId,
+} from './types';
 import './index.css';
 
 const CourseExplorer = lazy(() =>
@@ -132,7 +135,13 @@ function App() {
   };
 
   const toggleShortlist = (id: string) => {
-    setShortlist((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setShortlist((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      const selected = (COURSES as Course[]).find((course) => course.id === id);
+      if (!selected?.projectVariantGroup) return [...prev, id];
+      return [...prev.filter((existingId) =>
+        (COURSES as Course[]).find((course) => course.id === existingId)?.projectVariantGroup !== selected.projectVariantGroup), id];
+    });
   };
 
   const updateNote = (id: string, text: string) => {
@@ -140,20 +149,24 @@ function App() {
   };
 
   const plannedCourseIds = useMemo(() => new Set(allPlannedCourses(plan).map((c) => c.id)), [plan]);
+  const plannedProjectGroups = useMemo(() => new Set(
+    allPlannedCourses(plan).flatMap((c) => c.projectVariantGroup ? [c.projectVariantGroup] : []),
+  ), [plan]);
 
   const catalogCourses = useMemo(() => {
     return (COURSES as Course[]).filter((c) => {
       const matchSearch = (c.title + ' ' + c.code + ' ' + (c.note || ''))
         .toLowerCase()
         .includes(searchLower);
-      const matchModule = moduleFilter ? c.module === moduleFilter : true;
+      const matchModule = moduleFilter ? eligibleModulesFor(c).includes(moduleFilter as CourseModule) : true;
       const matchPriority = priorityFilter ? c.priority === priorityFilter : true;
       const matchShortlist = showShortlistOnly ? shortlist.includes(c.id) : true;
       const matchSemester = matchesSemesterFilter(c, semesterFilter);
-      const notPlanned = !plannedCourseIds.has(c.id);
+      const notPlanned = !plannedCourseIds.has(c.id) &&
+        (!c.projectVariantGroup || !plannedProjectGroups.has(c.projectVariantGroup));
       return matchSearch && matchModule && matchPriority && matchShortlist && matchSemester && notPlanned;
     });
-  }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, showShortlistOnly, shortlist]);
+  }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, plannedProjectGroups, showShortlistOnly, shortlist]);
 
   const preferredSemesterFor = (course: Course): SemesterId => {
     const meta = parseOffering(course.when);
@@ -167,11 +180,19 @@ function App() {
   };
 
   const quickAddCourse = (course: Course) => {
-    if (plannedCourseIds.has(course.id)) return;
+    if (plannedCourseIds.has(course.id) ||
+      (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
     const sem = semesterFilter || preferredSemesterFor(course);
     updatePlan((prev) => ({
       ...prev,
       [sem]: [...prev[sem], course],
+    }));
+  };
+
+  const allocateCourse = (sem: SemesterId, index: number, module: CourseModule) => {
+    updatePlan((prev) => ({
+      ...prev,
+      [sem]: prev[sem].map((course, i) => i === index ? withCourseAllocation(course, module) : course),
     }));
   };
 
@@ -194,7 +215,8 @@ function App() {
     if (source.droppableId === 'catalog') {
       const courseId = draggableId;
       const course = COURSES.find((c) => c.id === courseId) as Course | undefined;
-      if (!course || plannedCourseIds.has(course.id)) return;
+      if (!course || plannedCourseIds.has(course.id) ||
+        (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
       const destSem = destination.droppableId as SemesterId;
       updatePlan((prev) => {
         const newDestItems = Array.from(prev[destSem]);
@@ -239,11 +261,11 @@ function App() {
   const loadPreset = () => {
     const ok = confirm(
       'Load ML/PhD Starter Plan? This replaces your current plan.\n\n' +
-        `This preset satisfies ${DEGREE_RULES.grandTotal.target} CP with balanced semester loads:\n` +
-        '• Sci Comp practical and Distributed Systems are in different falls (no Fri double-book)\n' +
-        '• Algorithms is in Sem 4 so it does not clash with Machine Learning\n' +
-        '• One known admission clash remains: Analysis I exercise vs Sci Comp lecture (Tue)\n' +
-        '• Sem 2 includes ML-78174 (irregular — verify VV); Sem 3 needs project supervisors\n\n' +
+        `This approved preset totals 149 CP (121 MSc), 1 CP above the exact ${DEGREE_RULES.grandTotal.target}/${DEGREE_RULES.mscTotal.target} targets:\n` +
+        '• Semester 1 is preserved exactly as the confirmed Fall 2026 selection\n' +
+        '• Spring 2027 and later offerings and timetable slots are provisional\n' +
+        '• Confirm RL and Inverse Problems availability before enrollment\n' +
+        '• Cached historical slots show ML/E-53822 and M-66096/ML-67343 overlaps; recheck live schedules\n\n' +
         'Continue?',
     );
     if (ok) {
@@ -727,6 +749,7 @@ function App() {
                                   noteText={personalNotes[course.id]}
                                   onNoteChange={(text) => updateNote(course.id, text)}
                                   onShowDetails={() => setActiveCourseDetails(course)}
+                                  onAllocationChange={(module) => allocateCourse(sem.id as SemesterId, index, module)}
                                 />
                               ))}
                               {provided.placeholder}
