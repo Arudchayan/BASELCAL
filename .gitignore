@@ -11,11 +11,20 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.local
+.env.*.local
+config/student.local.json
 test-results
 playwright-report
 blob-report
 playwright/.cache
 .playwright-cli/
+.playwright-mcp/
+tmp/
+output/
+shots/
+.omo/
 
 # Editor directories and files
 .vscode/*

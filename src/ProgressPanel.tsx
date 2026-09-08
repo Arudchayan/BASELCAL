@@ -24,15 +24,23 @@ const BUCKET_COLORS: Record<string, string> = {
 
 const BREAKDOWN_KEYS = ['admission', 'math', 'ml', 'systems', 'electives', 'thesis'] as const;
 
-export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanState; courses?: Course[] }) {
+export function ProgressPanel({
+  plan,
+  courses: providedCourses,
+  admissionTarget,
+}: {
+  plan: PlanState;
+  courses?: Course[];
+  admissionTarget: number;
+}) {
   const [showAllConflicts, setShowAllConflicts] = useState(false);
   const courses = providedCourses ?? allPlannedCourses(plan);
-  const { stats, buckets, isComplete, issues } = evaluatePlan(courses);
-  const admissionTarget = DEGREE_RULES.admission.target;
-  const mscTarget = DEGREE_RULES.mscTotal.target;
-  const grandTarget = DEGREE_RULES.grandTotal.target;
+  const { stats, buckets, isComplete, issues, rules } = evaluatePlan(courses, admissionTarget);
+  const mscTarget = rules.mscTotal.target;
+  const grandTarget = rules.grandTotal.target;
 
   const displayBuckets = buckets.filter((b) =>
+    (b.key !== 'admission' || admissionTarget > 0) &&
     ['admission', 'math', 'ml', 'systems', 'foundationsSum', 'electives', 'thesis', 'mscTotal'].includes(b.key),
   );
 
@@ -111,9 +119,9 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
         Curriculum Progress
       </h2>
       <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-        Degree targets follow the Uni Basel MSc Data Science 2026 program. The {admissionTarget} CP shown here
-        (12+8+8) are student-specific conditions from the admission decision, not a universal MSc
-        requirement. Exact buckets fail on overshoot; foundations are minimums. Catalog review:{' '}
+        Degree targets follow the Uni Basel MSc Data Science 2026 programme. Admission (Auflagen) is
+        student-specific — currently {admissionTarget} CP, set from your letter (0 means none). Exact buckets fail
+        on overshoot; foundations are minimums. Catalog review:{' '}
         {COVERAGE_POLICY.lastVerified.date}
         {!COVERAGE_POLICY.lastVerified.moduleManifestComplete && ' · VV module membership manifest incomplete'}.
       </p>
@@ -205,7 +213,7 @@ export function ProgressPanel({ plan, courses: providedCourses }: { plan: PlanSt
       </details>
 
       <div style={{ marginTop: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        {stats.admission === admissionTarget ? (
+        {admissionTarget === 0 && stats.admission === 0 ? null : stats.admission === admissionTarget ? (
           <div
             style={{
               display: 'flex',

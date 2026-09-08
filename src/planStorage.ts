@@ -1,7 +1,7 @@
 import { COURSES } from './courses';
+import { STUDENT_CONFIG } from './studentConfig';
 import {
-  CURRENT_PLAN_IDS,
-  ML_PHD_PRESET_ALLOCATIONS,
+  EXAMPLE_PLAN_ALLOCATIONS,
   SEMESTER_IDS,
   type Course,
   type CourseModule,
@@ -113,9 +113,12 @@ export function rehydratePlanDetailed(idMap: Record<string, unknown>): Rehydrate
   return { plan, droppedIds, duplicateIds };
 }
 
-function applyPresetAllocations(idMap: Record<SemesterId, string[]>): Record<SemesterId, SerializedCourseRef[]> {
+function applyPresetAllocations(
+  idMap: Record<SemesterId, string[]>,
+  allocations: Partial<Record<string, CourseModule>> = EXAMPLE_PLAN_ALLOCATIONS,
+): Record<SemesterId, SerializedCourseRef[]> {
   const withAllocation = (id: string): SerializedCourseRef => {
-    const allocatedModule = ML_PHD_PRESET_ALLOCATIONS[id];
+    const allocatedModule = allocations[id];
     return allocatedModule ? { id, allocatedModule } : id;
   };
   return {
@@ -124,6 +127,48 @@ function applyPresetAllocations(idMap: Record<SemesterId, string[]>): Record<Sem
     s3: idMap.s3.map(withAllocation),
     s4: idMap.s4.map(withAllocation),
   };
+}
+
+function emptyPlanRefs(): SerializedPlan {
+  return { s1: [], s2: [], s3: [], s4: [] };
+}
+
+function studentSeedRefs(): SerializedPlan | null {
+  if (!STUDENT_CONFIG?.seedPlan || !STUDENT_CONFIG.plan || typeof STUDENT_CONFIG.plan !== 'object') {
+    return null;
+  }
+  const allocations = {
+    ...EXAMPLE_PLAN_ALLOCATIONS,
+    ...(STUDENT_CONFIG.allocations as Partial<Record<string, CourseModule>> | undefined),
+  };
+  const plan = STUDENT_CONFIG.plan as Record<string, unknown>;
+  const asIds = (value: unknown): string[] => {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap((item) => {
+      if (typeof item === 'string') return [item];
+      if (item && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string') {
+        return [(item as { id: string }).id];
+      }
+      return [];
+    });
+  };
+  const idMap: Record<SemesterId, string[]> = {
+    s1: asIds(plan.s1),
+    s2: asIds(plan.s2),
+    s3: asIds(plan.s3),
+    s4: asIds(plan.s4),
+  };
+  const refs = applyPresetAllocations(idMap, allocations);
+  for (const sem of SEMESTER_IDS) {
+    const items = Array.isArray(plan[sem]) ? plan[sem] as unknown[] : [];
+    refs[sem] = items.map((item, index) => {
+      if (item && typeof item === 'object' && typeof (item as { allocatedModule?: unknown }).allocatedModule === 'string') {
+        return item as SerializedCourseRef;
+      }
+      return refs[sem][index];
+    }).filter(Boolean);
+  }
+  return refs;
 }
 
 export function planToRefs(plan: PlanState): SerializedPlan {
@@ -164,67 +209,11 @@ function migrateLegacyPlan(raw: unknown): RehydrateResult | null {
   return rehydratePlanDetailed(idMap);
 }
 
-const RECOGNIZED_PRIOR_DEFAULTS: Array<{
-  ids: Record<SemesterId, string[]>;
-  allocations: Partial<Record<string, CourseModule>>;
-}> = [
-  {
-    ids: {
-      s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731'],
-      s2: ['AD-10489-2', 'AD-11039', 'ML-17165', 'ML-78174', 'S-15728', 'E-58920', 'ML-60876', 'E-49935', 'E-PROJ6'],
-      s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-PROJ6', 'T-PREP'],
-      s4: ['T-THESIS', 'AD-10906', 'AD-62061'],
-    },
-    allocations: { 'ML-60876': 'Electives in Data Science' },
-  },
-  {
-    ids: {
-      s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731'],
-      s2: ['AD-10489-2', 'AD-11039', 'ML-17165', 'ML-78174', 'E-58920', 'ML-60876', 'E-53822', 'E-PROJ6', 'ML-PROJ6'],
-      s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-67343', 'T-PREP'],
-      s4: ['T-THESIS', 'AD-10906', 'AD-62061'],
-    },
-    allocations: {
-      'ML-60876': 'Machine Learning Foundations',
-      'ML-67343': 'Machine Learning Foundations',
-    },
-  },
-];
-
-function isRecognizedPriorDefaultPlan(raw: Record<string, unknown>): boolean {
-  const idsBySemester = Object.fromEntries(SEMESTER_IDS.map((sem) => {
-    const items = Array.isArray(raw[sem]) ? raw[sem] as unknown[] : [];
-    return [sem, items.map((item) => typeof item === 'string'
-      ? item
-      : item && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string'
-        ? (item as { id: string }).id
-        : '')];
-  })) as Record<SemesterId, string[]>;
-  const allocations = Object.fromEntries(SEMESTER_IDS.flatMap((sem) => {
-    const items = Array.isArray(raw[sem]) ? raw[sem] as unknown[] : [];
-    return items.flatMap((item) => item && typeof item === 'object' &&
-      typeof (item as { id?: unknown }).id === 'string' &&
-      typeof (item as { allocatedModule?: unknown }).allocatedModule === 'string'
-      ? [[(item as { id: string }).id, (item as { allocatedModule: string }).allocatedModule]]
-      : []);
-  }));
-  return RECOGNIZED_PRIOR_DEFAULTS.some((prior) =>
-    SEMESTER_IDS.every((sem) => JSON.stringify(idsBySemester[sem]) === JSON.stringify(prior.ids[sem])) &&
-    JSON.stringify(allocations) === JSON.stringify(prior.allocations),
-  );
-}
-
 export function loadPlanFromStorageDetailed(): RehydrateResult {
   try {
     const current = localStorage.getItem(STORAGE_KEYS.plan);
     if (current) {
-      const parsed = JSON.parse(current) as Record<string, unknown>;
-      if (isRecognizedPriorDefaultPlan(parsed)) {
-        const revised = rehydratePlanDetailed(applyPresetAllocations(CURRENT_PLAN_IDS));
-        savePlanToStorage(revised.plan);
-        return revised;
-      }
-      return rehydratePlanDetailed(parsed);
+      return rehydratePlanDetailed(JSON.parse(current) as Record<string, unknown>);
     }
     const legacyV5 = localStorage.getItem(STORAGE_KEYS.planLegacyV5);
     if (legacyV5) {
@@ -234,15 +223,15 @@ export function loadPlanFromStorageDetailed(): RehydrateResult {
         return migrated;
       }
     }
-    // Earlier revisions used obsolete provisional/preset selections; seed the confirmed current plan instead.
     localStorage.removeItem(STORAGE_KEYS.planLegacyV4);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV3);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV2);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV1);
   } catch {
-    // Corrupt storage — fall through to default preset
+    // Corrupt storage — fall through to empty or private seed
   }
-  const seeded = rehydratePlanDetailed(applyPresetAllocations(CURRENT_PLAN_IDS));
+  const seed = studentSeedRefs() ?? emptyPlanRefs();
+  const seeded = rehydratePlanDetailed(seed);
   savePlanToStorage(seeded.plan);
   return seeded;
 }
@@ -327,6 +316,9 @@ export function allPlannedCourses(plan: PlanState): Course[] {
   return [...plan.s1, ...plan.s2, ...plan.s3, ...plan.s4];
 }
 
-export function buildPresetPlan(presetIds: Record<SemesterId, string[]>): PlanState {
-  return rehydratePlan(applyPresetAllocations(presetIds));
+export function buildPresetPlan(
+  presetIds: Record<SemesterId, string[]>,
+  allocations: Partial<Record<string, CourseModule>> = EXAMPLE_PLAN_ALLOCATIONS,
+): PlanState {
+  return rehydratePlan(applyPresetAllocations(presetIds, allocations));
 }

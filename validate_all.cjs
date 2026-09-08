@@ -4,7 +4,8 @@
  *
  * Official targets (Uni Basel MSc Data Science 2026):
  *   Admission exact 28, foundations min 18×3 and min 64 sum,
- *   electives exact 20, thesis exact 36, MSc exact 120, grand exact 148.
+ *   electives exact 20, thesis exact 36, MSc exact 120.
+ *   Admission (Auflagen) is student-specific; the public example outline uses 28.
  */
 const fs = require('fs');
 
@@ -22,26 +23,10 @@ const degreeRules = fs.readFileSync('src/degreeRules.ts', 'utf8');
 const agentMd = fs.readFileSync('agent.md', 'utf8');
 const degreeRulesJson = JSON.parse(fs.readFileSync('degree_rules.json', 'utf8'));
 const coveragePolicy = JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8'));
+const examplePlan = JSON.parse(fs.readFileSync('src/examplePlan.json', 'utf8'));
 
-/** Parse ML_PHD_PRESET_IDS from types.ts — single source of truth for preset IDs */
-function parsePresetFromTypes(src) {
-  const match = src.match(/export const ML_PHD_PRESET_IDS[^=]*=\s*(\{[\s\S]*?\n\});/);
-  if (!match) throw new Error('Could not parse ML_PHD_PRESET_IDS from types.ts');
-  // Strip line comments then evaluate as object literal
-  const cleaned = match[1].replace(/\/\/[^\n]*/g, '');
-  // eslint-disable-next-line no-new-func
-  return Function(`"use strict"; return (${cleaned});`)();
-}
-
-const PRESET = parsePresetFromTypes(typesTs);
-const presetAllocationsMatch = typesTs.match(/export const ML_PHD_PRESET_ALLOCATIONS[^=]*=\s*(\{[\s\S]*?\n\});/);
-const PRESET_ALLOCATIONS = presetAllocationsMatch
-  ? Function(`"use strict"; return (${presetAllocationsMatch[1].replace(/\/\/[^\n]*/g, '')});`)()
-  : {};
-const fallSelectionMatch = typesTs.match(/export const FALL_2026_SELECTION_IDS\s*=\s*\[([\s\S]*?)\]\s*as const;/);
-const FALL_2026_SELECTION_IDS = fallSelectionMatch
-  ? [...fallSelectionMatch[1].matchAll(/'([^']+)'/g)].map((match) => match[1])
-  : [];
+const PRESET = examplePlan.plan;
+const PRESET_ALLOCATIONS = examplePlan.allocations || {};
 
 const OFFICIAL = {
   admission: degreeRulesJson.admission.target,
@@ -89,23 +74,8 @@ const expectedCrossListings = {
   '67924': ['Systems Foundations', 'Electives in Data Science'],
 };
 
-const APPROVED_PRESET = {
-  admission: 28,
-  math: 18,
-  ml: 26,
-  sys: 20,
-  foundationsSum: 64,
-  electives: 20,
-  thesis: 36,
-  mscTotal: 120,
-  grandTotal: 148,
-};
-const EXPECTED_PRESET_IDS = {
-  s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731'],
-  s2: ['AD-10489-2', 'AD-11039', 'AD-10906', 'AD-62061', 'ML-17165', 'ML-13548', 'E-PROJ12'],
-  s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-78174', 'T-PREP'],
-  s4: ['T-THESIS', 'ML-60876', 'E-53822'],
-};
+const EXAMPLE_ADMISSION = examplePlan.admissionTarget ?? 0;
+const EXPECTED_PRESET_IDS = examplePlan.plan;
 for (const [code, modules] of Object.entries(expectedCrossListings)) {
   const course = courses.find((c) => c.code === code);
   if (!course || JSON.stringify(course.eligibleModules) !== JSON.stringify(modules)) {
@@ -126,11 +96,11 @@ const inverseProblems = courses.find((c) => c.id === 'ML-67343');
 if (inverseProblems?.title !== 'Inverse Problems: Computational Aspects and Machine Learning') fail('ML-67343 title is not canonical');
 else pass('ML-67343 canonical title present');
 
-console.log('\nCHECK 2: Admission CP');
+console.log('\nCHECK 2: Admission catalog (typical Auflagen set, not a universal requirement)');
 const adm = courses.filter(c => c.type === 'Admission');
 const admCp = adm.reduce((s, c) => s + c.cp, 0);
 if (admCp !== 28) fail(`Admission catalog total ${admCp} != 28`);
-else pass(`Admission catalog = ${admCp} CP (${adm.length} courses)`);
+else pass(`Admission catalog = ${admCp} CP (${adm.length} courses) — typical package, student target is configurable`);
 
 const analysisCp = adm.filter(c => /analysis/i.test(c.title)).reduce((s,c)=>s+c.cp,0);
 const algoCp = adm.filter(c => /algorithm|data structure/i.test(c.title)).reduce((s,c)=>s+c.cp,0);
@@ -138,33 +108,22 @@ const sciCp = adm.filter(c => /scientific computing/i.test(c.title)).reduce((s,c
 if (analysisCp + algoCp + sciCp !== 28) fail(`Admission sub-groups sum ${analysisCp}+${algoCp}+${sciCp} != 28`);
 else pass(`Admission breakdown: Analysis=${analysisCp}, Algorithms=${algoCp}, SciComp=${sciCp}`);
 
-if (!agentMd.includes('12 + 8 + 8 = 28')) warn('agent.md may not reflect admission breakdown');
+if (!agentMd.includes('student-specific') && !agentMd.includes('Auflagen')) warn('agent.md may not state that admission is student-specific');
 
-console.log('\nCHECK 3: Approved exact 148/120 preset arithmetic');
+console.log('\nCHECK 3: Public example outline arithmetic');
 const presetIds = Object.values(PRESET).flat();
 const preset = presetIds.map(id => courses.find(c => c.id === id));
 const missingPreset = presetIds.filter((id, i) => !preset[i]);
 if (missingPreset.length) fail(`Preset missing IDs: ${missingPreset.join(', ')}`);
 else pass('All preset IDs exist in catalog');
 
-// Ensure types.ts preset matches
-let presetIdGaps = 0;
-for (const [sem, list] of Object.entries(PRESET)) {
-  for (const id of list) {
-    if (!typesTs.includes(`'${id}'`) && !typesTs.includes(`"${id}"`)) {
-      fail(`types.ts ML_PHD_PRESET_IDS missing ${id} (${sem})`);
-      presetIdGaps++;
-    }
-  }
-}
-if (presetIdGaps === 0) pass('types.ts preset IDs present');
+if (!typesTs.includes('EXAMPLE_PLAN_IDS')) fail('types.ts must export EXAMPLE_PLAN_IDS from examplePlan.json');
+else pass('types.ts wires the public example outline');
 for (const sem of Object.keys(EXPECTED_PRESET_IDS)) {
   if (JSON.stringify(PRESET[sem]) !== JSON.stringify(EXPECTED_PRESET_IDS[sem])) {
-    fail(`${sem.toUpperCase()} differs from the newly approved plan`);
-  } else pass(`${sem.toUpperCase()} matches the newly approved plan`);
+    fail(`${sem.toUpperCase()} example outline is internally inconsistent`);
+  } else pass(`${sem.toUpperCase()} example outline IDs present`);
 }
-if (JSON.stringify(PRESET.s1) !== JSON.stringify(FALL_2026_SELECTION_IDS)) fail('Preset S1 differs from the fixed Fall 2026 selection');
-else pass('Preset S1 exactly preserves the fixed Fall 2026 selection and order');
 
 const sumMod = (mod) => preset.filter(c => c && (PRESET_ALLOCATIONS[c.id] || c.module) === mod).reduce((s,c)=>s+c.cp,0);
 const stats = {
@@ -185,29 +144,30 @@ Object.entries(PRESET).forEach(([sem, idsList]) => {
 });
 console.log(`  Semesters: S1=${semCp.s1} S2=${semCp.s2} S3=${semCp.s3} S4=${semCp.s4}`);
 
-if (stats.admission !== APPROVED_PRESET.admission) fail(`Preset admission ${stats.admission} != ${APPROVED_PRESET.admission}`);
-else pass(`Preset admission = ${stats.admission}`);
-if (stats.math !== APPROVED_PRESET.math) fail(`Preset math ${stats.math} != ${APPROVED_PRESET.math}`);
-else pass(`Preset math = ${stats.math} (official min ${OFFICIAL.math})`);
-if (stats.ml !== APPROVED_PRESET.ml) fail(`Preset ml ${stats.ml} != ${APPROVED_PRESET.ml}`);
-else pass(`Preset ml = ${stats.ml} (official min ${OFFICIAL.ml})`);
-if (stats.sys !== APPROVED_PRESET.sys) fail(`Preset systems ${stats.sys} != ${APPROVED_PRESET.sys}`);
-else pass(`Preset systems = ${stats.sys} (official min ${OFFICIAL.sys})`);
-if (stats.foundationsSum !== APPROVED_PRESET.foundationsSum) fail(`Preset foundations ${stats.foundationsSum} != ${APPROVED_PRESET.foundationsSum}`);
-else pass(`Preset foundations = ${stats.foundationsSum} (official min ${OFFICIAL.foundationsSum})`);
-if (stats.electives !== APPROVED_PRESET.electives) fail(`Preset electives ${stats.electives} != exact ${APPROVED_PRESET.electives}`);
-else pass(`Preset electives = ${stats.electives}`);
-if (stats.thesis !== APPROVED_PRESET.thesis) fail(`Preset thesis ${stats.thesis} != exact ${APPROVED_PRESET.thesis}`);
-else pass(`Preset thesis = ${stats.thesis}`);
-if (stats.mscTotal !== APPROVED_PRESET.mscTotal) fail(`Preset MSc total ${stats.mscTotal} != approved ${APPROVED_PRESET.mscTotal}`);
-else pass(`Preset MSc total = ${stats.mscTotal}`);
-if (stats.grandTotal !== APPROVED_PRESET.grandTotal) fail(`Preset grand total ${stats.grandTotal} != approved ${APPROVED_PRESET.grandTotal}`);
-else pass(`Preset grand total = ${stats.grandTotal}`);
+if (stats.admission !== EXAMPLE_ADMISSION) fail(`Example admission ${stats.admission} != ${EXAMPLE_ADMISSION}`);
+else pass(`Example admission = ${stats.admission} (configurable; sample uses ${EXAMPLE_ADMISSION})`);
+if (stats.math < OFFICIAL.math) fail(`Example math ${stats.math} < official min ${OFFICIAL.math}`);
+else pass(`Example math = ${stats.math} (official min ${OFFICIAL.math})`);
+if (stats.ml < OFFICIAL.ml) fail(`Example ml ${stats.ml} < official min ${OFFICIAL.ml}`);
+else pass(`Example ml = ${stats.ml} (official min ${OFFICIAL.ml})`);
+if (stats.sys < OFFICIAL.sys) fail(`Example systems ${stats.sys} < official min ${OFFICIAL.sys}`);
+else pass(`Example systems = ${stats.sys} (official min ${OFFICIAL.sys})`);
+if (stats.foundationsSum < OFFICIAL.foundationsSum) fail(`Example foundations ${stats.foundationsSum} < official min ${OFFICIAL.foundationsSum}`);
+else pass(`Example foundations = ${stats.foundationsSum} (official min ${OFFICIAL.foundationsSum})`);
+if (stats.electives !== OFFICIAL.electives) fail(`Example electives ${stats.electives} != exact ${OFFICIAL.electives}`);
+else pass(`Example electives = ${stats.electives}`);
+if (stats.thesis !== OFFICIAL.thesis) fail(`Example thesis ${stats.thesis} != exact ${OFFICIAL.thesis}`);
+else pass(`Example thesis = ${stats.thesis}`);
+if (stats.mscTotal !== OFFICIAL.mscTotal) fail(`Example MSc total ${stats.mscTotal} != official ${OFFICIAL.mscTotal}`);
+else pass(`Example MSc total = ${stats.mscTotal}`);
+const expectedGrand = OFFICIAL.mscTotal + EXAMPLE_ADMISSION;
+if (stats.grandTotal !== expectedGrand) fail(`Example grand total ${stats.grandTotal} != ${expectedGrand}`);
+else pass(`Example grand total = ${stats.grandTotal} (120 MSc + ${EXAMPLE_ADMISSION} admission)`);
 
-const excludedFromDefault = ['ML-67343', 'S-15728', 'S-67923', 'ML-45366', 'ML-PROJ6', 'E-28420', 'E-58920', 'E-49935'];
-const retainedExcluded = excludedFromDefault.filter((id) => presetIds.includes(id));
-if (retainedExcluded.length) fail(`Default plan retains excluded course(s): ${retainedExcluded.join(', ')}`);
-else pass('Default plan excludes Inverse Problems, Networks, Continuous Optimization, Machine Intelligence, ML Project, Medical Imaging, Causal Inference, and Applied Statistics Using R');
+const excludedFromExample = ['ML-67343', 'S-15728', 'S-67923', 'ML-45366', 'ML-PROJ6', 'E-28420', 'E-58920', 'E-49935'];
+const retainedExcluded = excludedFromExample.filter((id) => presetIds.includes(id));
+if (retainedExcluded.length) fail(`Example outline retains excluded course(s): ${retainedExcluded.join(', ')}`);
+else pass('Example outline excludes Inverse Problems, Networks, Continuous Optimization, Machine Intelligence, ML Project, Medical Imaging, Causal Inference, and Applied Statistics Using R');
 
 const allocated60876 = PRESET_ALLOCATIONS['ML-60876'];
 const eligible60876 = courses.find((c) => c.id === 'ML-60876')?.eligibleModules || [];
@@ -235,21 +195,12 @@ if (remainingTaughtInS4 !== 5 || taughtBeforeS4 + remainingTaughtInS4 !== 84) {
   fail(`Thesis presentation path is ${taughtBeforeS4}+${remainingTaughtInS4}; expected 79+5=84 taught-module CP`);
 } else pass('Remaining 5 taught-module CP complete during S4 before presentation, reaching 84');
 
-const expectedFallSelection = [
-  'AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060',
-  'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731',
-];
-const fallSelectionDiff = [
-  ...setDiff(expectedFallSelection, FALL_2026_SELECTION_IDS),
-  ...setDiff(FALL_2026_SELECTION_IDS, expectedFallSelection),
-];
-const fallSelectionCp = FALL_2026_SELECTION_IDS.reduce(
+const exampleS1Cp = PRESET.s1.reduce(
   (sum, id) => sum + (courses.find((course) => course.id === id)?.cp || 0),
   0,
 );
-if (fallSelectionDiff.length) fail(`Fall 2026 selections differ from confirmed timetable: ${fallSelectionDiff.join(', ')}`);
-else if (fallSelectionCp !== 37) fail(`Fall 2026 selections total ${fallSelectionCp} CP instead of 37 CP`);
-else pass('Confirmed Fall 2026 timetable selections present (9 courses, 37 CP)');
+if (PRESET.s1.length !== 9 || exampleS1Cp !== 37) fail(`Example S1 has ${PRESET.s1.length} courses / ${exampleS1Cp} CP; expected 9 / 37`);
+else pass('Example S1 is a complete 9-course / 37 CP fall semester');
 
 console.log('\nCHECK 4: Truth layer present');
 if (!degreeRules.includes('DEGREE_RULES') || !degreeRules.includes('evaluatePlan')) fail('degreeRules.ts missing DEGREE_RULES/evaluatePlan');
@@ -341,7 +292,7 @@ function weekdaysUsed(ids) {
   return days.size;
 }
 
-// Semester 1 is the student's fixed, confirmed 37 CP Fall 2026 selection.
+// Example outline keeps S1 at a schedulable 37 CP fall load.
 const SEM_CP_LIMITS = { s1: 37, s2: 38, s3: 42, s4: 46 };
 let schedFails = 0;
 for (const [sem, ids] of Object.entries(PRESET)) {
@@ -401,14 +352,10 @@ if (fs.existsSync('vv_scrape_cache.json')) {
 }
 
 console.log('\nCHECK 8: agent.md accuracy');
-if (agentMd.includes('perfectly mathematically balanced') && agentMd.includes('148')) {
-  // OK if it still says 148 and is accurate
-}
-if (/S2.*40 CP|Spring - 40/.test(agentMd) && !/42|46|40/.test('')) {
-  // soft
-}
-if (agentMd.includes('122') || /150 CP/.test(agentMd) && !agentMd.includes('148')) {
-  warn('agent.md may still reference old 150/122 totals');
+if (agentMd.includes('this student') || agentMd.includes('Visa:') || /Efringerstrasse/i.test(agentMd)) {
+  fail('agent.md still contains personal student details');
+} else {
+  pass('agent.md has no personal student details');
 }
 if (!agentMd.includes('Last verified') && !agentMd.includes('last verified')) {
   warn('agent.md missing last-verified date');
@@ -417,6 +364,11 @@ if (agentMd.includes('exactly 120') || agentMd.includes('Exactly 120') || agentM
   pass('agent.md references 120 CP MSc');
 } else {
   warn('agent.md may not state exact 120 MSc');
+}
+if (fs.existsSync('config/student.local.json') && !fs.readFileSync('.gitignore', 'utf8').includes('student.local.json')) {
+  fail('config/student.local.json must be gitignored');
+} else {
+  pass('Private student config is gitignored');
 }
 
 function setDiff(a, b) {

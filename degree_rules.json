@@ -1,5 +1,5 @@
 {
-  "admission": { "target": 28, "kind": "exact", "module": "Admission requirement" },
+  "admission": { "target": 0, "kind": "exact", "module": "Admission requirement", "configurable": true },
   "math": { "target": 18, "kind": "min", "module": "Mathematical Foundations" },
   "ml": { "target": 18, "kind": "min", "module": "Machine Learning Foundations" },
   "systems": { "target": 18, "kind": "min", "module": "Systems Foundations" },
@@ -7,5 +7,5 @@
   "electives": { "target": 20, "kind": "exact", "module": "Electives in Data Science" },
   "thesis": { "target": 36, "kind": "exact", "module": "Thesis" },
   "mscTotal": { "target": 120, "kind": "exact" },
-  "grandTotal": { "target": 148, "kind": "exact" }
+  "grandTotal": { "target": 120, "kind": "exact", "derived": "mscPlusAdmission" }
 }

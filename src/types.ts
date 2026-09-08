@@ -1,4 +1,5 @@
 import type { COURSES } from './courses';
+import examplePlan from './examplePlan.json';
 
 export type ScheduleSession = { day: string; time: string; room: string };
 
@@ -65,43 +66,9 @@ export const SEMESTERS = [
   { id: 's4' as const, title: 'Sem 4 · provisional (Inc. Thesis)' },
 ];
 
-/** Approved four-semester plan: 28 admission + 120 MSc = 148 CP.
- * Hands-on / PhD path with schedulability constraints:
- * - Never co-schedule Sci Comp practical (AD-62060) with FDS (S-45402) — both Fri 10–12 mandatory
- * - Analysis practical uses the selected group 05 (Tue 14:15), avoiding the Scientific Computing lecture
- */
-export const ML_PHD_PRESET_IDS: Record<SemesterId, string[]> = {
-  // 37 CP — fixed, confirmed Fall 2026 selection; do not rebalance this semester.
-  s1: ['AD-10489-1', 'AD-11037', 'AD-20980', 'AD-62060', 'M-19300', 'ML-45401', 'E-55662', 'E-64323', 'S-15731'],
-  // 38 CP — finish admission conditions, ML core, AI, and the 12 CP Data Science project.
-  s2: ['AD-10489-2', 'AD-11039', 'AD-10906', 'AD-62061', 'ML-17165', 'ML-13548', 'E-PROJ12'],
-  // 38 CP — math/systems foundations, RL, Systems project, and thesis preparation.
-  s3: ['M-66096', 'M-77777', 'S-45402', 'S-PROJ6', 'ML-78174', 'T-PREP'],
-  // 35 CP — thesis plus the final 5 taught-module CP before presentation.
-  s4: ['T-THESIS', 'ML-60876', 'E-53822'],
-};
-
-/** Explicit credit choices for cross-listed courses in the ML/PhD preset. */
-export const ML_PHD_PRESET_ALLOCATIONS: Partial<Record<string, CourseModule>> = {
-  'ML-60876': 'Machine Learning Foundations',
-  'E-53822': 'Electives in Data Science',
-};
-
-/** Courses selected in the official Fall 2026 semester-program timetable. */
-export const FALL_2026_SELECTION_IDS = [
-  'AD-10489-1',
-  'AD-11037',
-  'AD-20980',
-  'AD-62060',
-  'M-19300',
-  'ML-45401',
-  'E-55662',
-  'E-64323',
-  'S-15731',
-] as const;
-
-/** Personal working plan: actual Fall 2026 enrollment plus the existing future-semester outline. */
-export const CURRENT_PLAN_IDS: Record<SemesterId, string[]> = {
-  ...ML_PHD_PRESET_IDS,
-  s1: [...FALL_2026_SELECTION_IDS],
-};
+/** Public sample outline — not a personal enrollment and not an official recommendation. */
+export const EXAMPLE_PLAN_IDS: Record<SemesterId, string[]> = examplePlan.plan as Record<SemesterId, string[]>;
+export const EXAMPLE_PLAN_ALLOCATIONS: Partial<Record<string, CourseModule>> =
+  examplePlan.allocations as Partial<Record<string, CourseModule>>;
+export const EXAMPLE_PLAN_ADMISSION_TARGET = examplePlan.admissionTarget;
+export const EXAMPLE_PLAN_NAME = examplePlan.name;

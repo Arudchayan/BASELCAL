@@ -321,6 +321,25 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 4px;
 }
 
+.admission-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.admission-control input {
+  width: 4.2rem;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: inherit;
+}
+
 /* ---------- Cards ---------- */
 
 .course-card {

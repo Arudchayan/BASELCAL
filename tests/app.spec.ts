@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { loadExampleOutline } from './helpers';
 
 test.describe('BASELCAL App Main Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -67,12 +68,11 @@ test.describe('BASELCAL App Main Functionality', () => {
   });
 
   test('should toggle Timetable view', async ({ page }) => {
-    // Look for the "Timetable" button and click it
+    await loadExampleOutline(page);
     const timetableBtn = page.getByRole('button', { name: 'Timetable view' });
     await expect(timetableBtn).toBeVisible();
     await timetableBtn.click();
-    
-    // It should now render days of the week like "Monday"
+
     const mondayColumn = page.getByText('Monday');
     await expect(mondayColumn).toBeVisible();
     await expect(page.getByRole('heading', { name: /Classes, walks & study breaks/i })).toBeVisible();
@@ -80,16 +80,16 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(page.getByText(/University Main Library/i).first()).toBeVisible();
     await expect(page.locator('.leaflet-container')).toBeVisible();
 
-    await expect(page.getByText(/Home at campus is included/i)).toBeVisible();
-    await page.getByRole('button', { name: /Move home pin/i }).click();
+    await expect(page.getByText(/Home is optional/i)).toBeVisible();
+    await page.getByRole('button', { name: /Set home pin/i }).click();
     await page.locator('.leaflet-container').click({ position: { x: 120, y: 120 } });
-    await expect(page.getByText(/custom browser-only home override/i)).toBeVisible();
+    await expect(page.getByText(/custom browser-only home pin/i)).toBeVisible();
     const savedHome = await page.evaluate(() => localStorage.getItem('baselcal-home-v1'));
     expect(savedHome).toMatch(/^\{"lat":-?\d/);
-    expect(savedHome).not.toContain('campus');
   });
 
   test('exports the four-semester timetable with official teaching-period end dates', async ({ page }) => {
+    await loadExampleOutline(page);
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export timetable to calendar (.ics)' }).click();
     const download = await downloadPromise;
@@ -103,6 +103,7 @@ test.describe('BASELCAL App Main Functionality', () => {
   });
 
   test('exports selected cross-list allocations in plan JSON v3', async ({ page }) => {
+    await loadExampleOutline(page);
     const allocation = page.getByRole('combobox', { name: /Credit allocation for Bioinformatics Algorithms/i });
     await allocation.selectOption('Electives in Data Science');
 

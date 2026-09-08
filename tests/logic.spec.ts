@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { clearPlanStorage, loadExampleOutline } from './helpers';
 
 test.describe('Degree accuracy & storage', () => {
-  test('wishlist can exceed 148 but shows overshoot labeling', async ({ page }) => {
+  test('wishlist can exceed the current grand-total target but shows overshoot labeling', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Course Discovery/i }).click();
-    await expect(page.getByText(/exactly 148 CP/i)).toBeVisible();
+    await expect(page.getByText(/Need exactly\s+120 CP/i)).toBeVisible();
 
     const starButtons = page.locator('button[aria-label*="wishlist" i]');
     const count = await starButtons.count();
@@ -18,49 +19,35 @@ test.describe('Degree accuracy & storage', () => {
     const cpMatch = text?.match(/Currently wishlisted:\s*(\d+)\s*CP/i);
     expect(cpMatch).toBeTruthy();
     const totalCp = parseInt(cpMatch![1], 10);
-    if (totalCp > 148) {
+    if (totalCp > 120) {
       await expect(page.getByText(/overshoot/i).first()).toBeVisible();
     }
   });
 
-  test('fresh storage seeds the confirmed Fall 2026 selections', async ({ page }) => {
+  test('fresh storage starts with an empty board', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => {
-      localStorage.removeItem('basel-ds-plan-v5');
-      localStorage.removeItem('basel-ds-plan-v6');
-      localStorage.removeItem('basel-ds-plan-v4');
-      localStorage.removeItem('basel-ds-plan-v3');
-      localStorage.removeItem('basel-ds-plan-v2');
-      localStorage.removeItem('basel-ds-plan');
-    });
+    await clearPlanStorage(page);
     await page.reload();
 
     const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
-    await expect(sem1.getByText(/Applied Mathematics and Informatics in Drug Discovery/i)).toBeVisible();
-    await expect(sem1.getByText(/Applied Programming Projects/i)).toBeVisible();
-    await expect(sem1.getByText(/Bioinformatics Algorithms/i)).toBeVisible();
-    await expect(sem1.getByText(/Planning and Optimization/i)).toHaveCount(0);
-    const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
-    await expect(sem2.getByText(/Machine Learning/i).first()).toBeVisible();
-    await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toBeVisible();
-    await expect(sem2.getByText(/Data Science Project \(12 CP\)/i)).toBeVisible();
-    await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
+    await expect(sem1.getByText(/Drop courses here/i)).toBeVisible();
+    await expect(sem1.getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
+    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('0');
   });
 
-  test('ML/PhD preset meets the approved exact 120/148 totals', async ({ page }) => {
-    page.on('dialog', (d) => d.accept());
+  test('example outline meets official 120 MSc plus typical 28 CP admission', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /Load ML\/PhD Preset/i }).click();
+    await loadExampleOutline(page);
 
     await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
     await expect(page.getByText(/All degree buckets satisfied \(148 CP\)/i)).toBeVisible();
     await expect(page.getByText(/Grand Total: 149\/148/i)).toHaveCount(0);
+    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('28');
   });
 
-  test('ML/PhD preset matches the approved course revision, allocations, and thesis gate', async ({ page }) => {
-    page.on('dialog', (d) => d.accept());
+  test('example outline matches sample courses, allocations, and thesis gate', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /Load ML\/PhD Preset/i }).click();
+    await loadExampleOutline(page);
 
     const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
     await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toBeVisible();
@@ -175,7 +162,7 @@ test.describe('Degree accuracy & storage', () => {
     expect(await page.evaluate(() => localStorage.getItem('basel-ds-plan-v6'))).toContain('ML-45401');
   });
 
-  test('the immediately previous v6 default migrates to the approved exact 148-CP revision', async ({ page }) => {
+  test('saved v6 plans are not rewritten by a public example outline', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => {
       localStorage.setItem('basel-ds-plan-v6', JSON.stringify({
@@ -187,15 +174,12 @@ test.describe('Degree accuracy & storage', () => {
     });
     await page.reload();
     const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
-    await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toBeVisible();
-    await expect(sem2.getByText(/Data Science Project \(12 CP\)/i)).toBeVisible();
-    await expect(sem2.getByText(/Causal Inference/i)).toHaveCount(0);
+    await expect(sem2.getByText(/Causal Inference/i)).toBeVisible();
+    await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toHaveCount(0);
     const sem3 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 3/ }).first();
-    await expect(sem3.getByText(/Modern Reinforcement Learning/i)).toBeVisible();
+    await expect(sem3.getByText(/Inverse Problems/i).first()).toBeVisible();
     const sem4 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 4/ }).first();
-    await expect(sem4.getByText(/Deep Learning for Medical Image Analysis/i)).toBeVisible();
-    await expect(page.getByRole('combobox', { name: /Credit allocation for Mathematical and Computational Biology/i }))
-      .toHaveValue('Machine Learning Foundations');
+    await expect(sem4.getByText(/Algorithms and Data Structures/i).first()).toBeVisible();
   });
 
   test('custom v6 plans are never overwritten by default migration', async ({ page }) => {

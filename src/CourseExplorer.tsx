@@ -24,13 +24,16 @@ type BucketDef = {
   color: string;
 };
 
-const BUCKETS: BucketDef[] = [
+function bucketsFor(admissionTarget: number): BucketDef[] {
+  return [
   {
     module: DEGREE_RULES.admission.module,
     statsKey: 'admission',
     title: 'Conditional Admission',
-    required: true,
-    desc: 'This student’s individualized admission conditions total exactly 28 CP (Analysis 12 + Algorithms 8 + SciComp 8); this is not a universal MSc requirement.',
+    required: admissionTarget > 0,
+    desc: admissionTarget > 0
+      ? `Admission conditions (Auflagen) are student-specific. Current target: exactly ${admissionTarget} CP from your Zulassungsbescheid.`
+      : 'Admission conditions (Auflagen) are student-specific. Set your letter total in the planner header; 0 means no extra CP.',
     color: '#d97706',
   },
   {
@@ -73,21 +76,25 @@ const BUCKETS: BucketDef[] = [
     desc: 'Exactly 20 CP in application domains or Data Science projects.',
     color: '#ec4899',
   },
-];
+  ];
+}
 
 function moduleColor(moduleName: string): string {
-  return BUCKETS.find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
+  return bucketsFor(0).find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
 }
 
 export const CourseExplorer = ({
   shortlist,
   toggleShortlist,
   onClose,
+  admissionTarget,
 }: {
   shortlist: string[];
   toggleShortlist: (id: string) => void;
   onClose: () => void;
+  admissionTarget: number;
 }) => {
+  const BUCKETS = bucketsFor(admissionTarget);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
@@ -103,7 +110,7 @@ export const CourseExplorer = ({
 
   const coursesByBucket = useMemo(() => {
     const grouped: Record<string, Course[]> = {};
-    BUCKETS.forEach((b) => (grouped[b.module] = []));
+    bucketsFor(0).forEach((b) => (grouped[b.module] = []));
     COURSES.forEach((rawCourse) => {
       const course = rawCourse as Course;
       eligibleModulesFor(course).forEach((module) => {
@@ -121,7 +128,10 @@ export const CourseExplorer = ({
     [shortlist],
   );
 
-  const evaluation = useMemo(() => evaluatePlan(shortlistedCourses), [shortlistedCourses]);
+  const evaluation = useMemo(
+    () => evaluatePlan(shortlistedCourses, admissionTarget),
+    [shortlistedCourses, admissionTarget],
+  );
 
   const discrepancy = selectedCourse ? getModuleDiscrepancy(selectedCourse.id) : undefined;
   const stale = selectedCourse ? isStaleWatch(selectedCourse.id) : false;
@@ -195,7 +205,7 @@ export const CourseExplorer = ({
           </h1>
           <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
             <strong>Wishlist only</strong> — starring here does not place courses on the board. Need exactly{' '}
-            <strong>{DEGREE_RULES.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
+            <strong>{evaluation.rules.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
             <strong style={{ color: statusColor(totalStatus, 'var(--accent-primary)') }}>{totalCp} CP</strong>
             {' · '}Foundations sum:{' '}
             <strong style={{ color: statusColor(foundationsStatus, 'var(--accent-primary)') }}>

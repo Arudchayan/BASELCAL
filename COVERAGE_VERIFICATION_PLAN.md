@@ -5,7 +5,7 @@
 
 ## Problem
 
-`npm run validate` proves **148/120 CP math** and now reconciles the complete Fall 2026 module tree against `vv_module_manifest.json`. The current manifest has 32 module entries representing 22 unique courses.
+`npm run validate` proves **official 120 CP MSc math** (plus the public example outline) and reconciles the complete Fall 2026 module tree against `vv_module_manifest.json`. The current manifest has 32 module entries representing 22 unique courses.
 
 ## Phases
 
@@ -53,7 +53,7 @@ Re-run audit: `npm run audit:modules`; apply updates: `npm run refresh:modules`
 ## Remaining work
 
 - [ ] Three agent passes accepted as merge gate
-- [ ] Admission 12+8+8 model confirmed vs your Zulassungsbescheid
+- [ ] Admission (Auflagen) is student-specific — set in UI or `config/student.local.json`
 - [ ] Re-run the manifest and field refresh after Spring 2027 is published on 2026-11-30
 - [ ] Add a separate admission-course audit
 

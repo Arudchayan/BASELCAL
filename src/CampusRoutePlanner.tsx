@@ -5,11 +5,11 @@ import 'leaflet/dist/leaflet.css';
 import { collectDaySessions } from './conflicts';
 import {
   UNIVERSITY_LIBRARIES,
-  HARDCODED_HOME,
   campusPlaceForRoom,
   openStreetMapDirectionsUrl,
   type CampusPlace,
 } from './campusLocations';
+import { configuredHome } from './studentConfig';
 import type { Course } from './types';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -33,13 +33,12 @@ type SavedHome = { lat: number; lng: number };
 function loadHome(): SavedHome | null {
   try {
     const value = JSON.parse(localStorage.getItem(HOME_STORAGE_KEY) ?? 'null') as SavedHome | null;
-    if (!value || !Number.isFinite(value.lat) || !Number.isFinite(value.lng)) {
-      return { lat: HARDCODED_HOME.lat, lng: HARDCODED_HOME.lng };
-    }
-    return value;
+    if (value && Number.isFinite(value.lat) && Number.isFinite(value.lng)) return value;
   } catch {
-    return { lat: HARDCODED_HOME.lat, lng: HARDCODED_HOME.lng };
+    // ignore corrupt storage
   }
+  const fromConfig = configuredHome();
+  return fromConfig ? { lat: fromConfig.lat, lng: fromConfig.lng } : null;
 }
 
 function distanceKm(a: CampusPlace, b: CampusPlace): number {
@@ -124,12 +123,13 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
   });
 
   const suggestionByIndex = new Map(suggestions.map((suggestion) => [suggestion.afterIndex, suggestion]));
-  const isDefaultHome = !!home && home.lat === HARDCODED_HOME.lat && home.lng === HARDCODED_HOME.lng;
+  const configHome = configuredHome();
+  const isConfigHome = !!home && !!configHome && home.lat === configHome.lat && home.lng === configHome.lng;
   const homePlace: CampusPlace | null = home ? {
     id: 'home',
-    name: 'Home',
-    address: isDefaultHome
-      ? HARDCODED_HOME.address
+    name: configHome?.label || 'Home',
+    address: isConfigHome
+      ? (configHome?.address || 'Location from local student config')
       : 'Custom location stored only in this browser',
     lat: home.lat,
     lng: home.lng,
@@ -173,7 +173,7 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
             className={isSettingHome ? 'home-pin-button is-active' : 'home-pin-button'}
             onClick={() => setIsSettingHome((current) => !current)}
           >
-            <MapPin size={14} /> Move home pin
+            <MapPin size={14} /> {homePlace ? 'Move home pin' : 'Set home pin'}
           </button>
         </div>
       </div>
@@ -182,9 +182,11 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
         <Home size={14} />
         {isSettingHome
           ? 'Click your home location on the map. The pin stays only in this browser.'
-          : isDefaultHome
-            ? 'A home pin is included at the start and end of every route. Moving it creates a browser-only override.'
-            : 'A custom browser-only home override is included at the start and end of every route.'}
+          : !homePlace
+            ? 'Home is optional. Set a pin to include walking time at the start and end of each route. Stored only in this browser.'
+            : isConfigHome
+              ? 'A home pin from your local student config is included at the start and end of every route. Moving it creates a browser-only override.'
+              : 'A custom browser-only home pin is included at the start and end of every route.'}
       </div>
 
       <div className="campus-route__days" role="tablist" aria-label="Route day">

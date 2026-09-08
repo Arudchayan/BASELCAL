@@ -9,3 +9,6 @@ test-results/
 shots/
 tmp/
 *.log
+config/student.local.json
+.env
+.env.*

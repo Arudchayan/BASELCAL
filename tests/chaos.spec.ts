@@ -32,7 +32,7 @@ test.describe('Chaos Monkey Tests', () => {
     });
 
     const discoveryBtn = page.getByRole('button', { name: /Course Discovery/i });
-    const loadPresetBtn = page.getByRole('button', { name: /Load ML\/PhD Preset/i });
+    const loadPresetBtn = page.getByRole('button', { name: /Load example outline/i });
 
     await Promise.all([
       loadPresetBtn.click(),
@@ -87,7 +87,7 @@ test.describe('Chaos Monkey Tests', () => {
 
     const searchInput = page.getByRole('textbox', { name: /Search courses/i });
     const shortlistToggle = page.locator('input[type="checkbox"]');
-    const loadPresetBtn = page.getByRole('button', { name: /Load ML\/PhD Preset/i });
+    const loadPresetBtn = page.getByRole('button', { name: /Load example outline/i });
 
     for (let i = 0; i < 15; i++) {
       await searchInput.fill(`search test ${i}`);

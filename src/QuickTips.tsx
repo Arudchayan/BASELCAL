@@ -5,12 +5,18 @@ import { COURSES } from './courses';
 import { DEGREE_RULES } from './degreeRules';
 
 /** Keyword tip helper — not an LLM. Labeled honestly. */
-export function QuickTips() {
+export function QuickTips({
+  admissionTarget,
+  grandTotal,
+}: {
+  admissionTarget: number;
+  grandTotal: number;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ sender: 'bot' | 'user'; text: string }[]>([
     {
       sender: 'bot',
-      text: `Quick tips (keyword matcher, not AI). Ask about ML, Math, admission (${DEGREE_RULES.admission.target} CP), or electives (exactly ${DEGREE_RULES.electives.target} CP).`,
+      text: `Quick tips (keyword matcher, not AI). Ask about ML, Math, admission (${admissionTarget} CP Auflagen), or electives (exactly ${DEGREE_RULES.electives.target} CP).`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -30,13 +36,13 @@ export function QuickTips() {
       const mathCourses = COURSES.filter((c) => c.module.includes('Math')).slice(0, 3);
       response = `Math picks: ${mathCourses.map((c) => c.title).join(', ')}.`;
     } else if (lower.includes('easy') || lower.includes('intro') || lower.includes('admission')) {
-      response = `This plan models student-specific admission conditions as exactly ${DEGREE_RULES.admission.target} CP (Analysis 12 + Algorithms 8 + SciComp 8). They are not a universal MSc requirement; confirm against your Zulassungsbescheid.`;
+      response = `Admission (Auflagen) is student-specific. The current target is ${admissionTarget} CP (0 means none). Confirm against your Zulassungsbescheid.`;
     } else if (lower.includes('elective')) {
       response = `Electives must be exactly ${DEGREE_RULES.electives.target} CP. Overshoot fails validation.`;
     } else if (lower.includes('thesis')) {
       response = `Thesis block is exactly ${DEGREE_RULES.thesis.target} CP (Prep 6 + Thesis 30).`;
     } else if (lower.includes('total') || lower.includes('120') || lower.includes('148')) {
-      response = `MSc total must be exactly ${DEGREE_RULES.mscTotal.target} CP; grand total (with admission) exactly ${DEGREE_RULES.grandTotal.target} CP.`;
+      response = `MSc total must be exactly ${DEGREE_RULES.mscTotal.target} CP; grand total (MSc + admission) is currently ${grandTotal} CP.`;
     }
 
     setMessages((prev) => [...prev, { sender: 'bot', text: response }]);

@@ -2,6 +2,7 @@
  * Official Uni Basel MSc Data Science (2026) requirement targets.
  * Single source of truth for UI, Explorer, and validation.
  * Targets live in degree_rules.json (shared with validate_all.cjs).
+ * Admission (Auflagen) is student-specific and overlaid at runtime.
  */
 import { creditModule, type Course } from './types';
 import rulesJson from '../degree_rules.json';
@@ -10,7 +11,7 @@ export type RuleKind = 'exact' | 'min';
 
 export type BucketStatus = 'empty' | 'short' | 'met' | 'overshoot';
 
-type RuleEntry = { target: number; kind: RuleKind; module?: string };
+type RuleEntry = { target: number; kind: RuleKind; module?: string; configurable?: boolean; derived?: string };
 
 export const DEGREE_RULES = rulesJson as {
   admission: RuleEntry & { module: string };
@@ -46,7 +47,20 @@ export type BucketEvaluation = {
   ok: boolean;
 };
 
+export function withAdmissionTarget(admissionTarget: number) {
+  const admission = Math.max(0, Math.round(admissionTarget));
+  return {
+    ...DEGREE_RULES,
+    admission: { ...DEGREE_RULES.admission, target: admission },
+    grandTotal: {
+      ...DEGREE_RULES.grandTotal,
+      target: DEGREE_RULES.mscTotal.target + admission,
+    },
+  };
+}
+
 export function statusFor(value: number, target: number, kind: RuleKind): BucketStatus {
+  if (kind === 'exact' && target === 0 && value === 0) return 'met';
   if (value === 0) return 'empty';
   if (kind === 'exact') {
     if (value < target) return 'short';
@@ -74,23 +88,25 @@ export function computeStats(courses: Course[]): DegreeStats {
   return { admission, math, ml, systems, foundationsSum, electives, thesis, mscTotal, grandTotal };
 }
 
-export function evaluatePlan(courses: Course[]): {
+export function evaluatePlan(courses: Course[], admissionTarget = DEGREE_RULES.admission.target): {
   stats: DegreeStats;
   buckets: BucketEvaluation[];
   isComplete: boolean;
   issues: string[];
+  rules: ReturnType<typeof withAdmissionTarget>;
 } {
+  const rules = withAdmissionTarget(admissionTarget);
   const stats = computeStats(courses);
   const defs: Array<{ key: keyof DegreeStats; label: string; target: number; kind: RuleKind }> = [
-    { key: 'admission', label: 'Admission Req', target: DEGREE_RULES.admission.target, kind: DEGREE_RULES.admission.kind },
-    { key: 'math', label: 'Math Found.', target: DEGREE_RULES.math.target, kind: DEGREE_RULES.math.kind },
-    { key: 'ml', label: 'ML Found.', target: DEGREE_RULES.ml.target, kind: DEGREE_RULES.ml.kind },
-    { key: 'systems', label: 'Systems Found.', target: DEGREE_RULES.systems.target, kind: DEGREE_RULES.systems.kind },
-    { key: 'foundationsSum', label: 'Foundations Sum', target: DEGREE_RULES.foundationsSum.target, kind: DEGREE_RULES.foundationsSum.kind },
-    { key: 'electives', label: 'Electives', target: DEGREE_RULES.electives.target, kind: DEGREE_RULES.electives.kind },
-    { key: 'thesis', label: 'Thesis block', target: DEGREE_RULES.thesis.target, kind: DEGREE_RULES.thesis.kind },
-    { key: 'mscTotal', label: 'MSc Total', target: DEGREE_RULES.mscTotal.target, kind: DEGREE_RULES.mscTotal.kind },
-    { key: 'grandTotal', label: 'Grand Total', target: DEGREE_RULES.grandTotal.target, kind: DEGREE_RULES.grandTotal.kind },
+    { key: 'admission', label: 'Admission Req', target: rules.admission.target, kind: rules.admission.kind },
+    { key: 'math', label: 'Math Found.', target: rules.math.target, kind: rules.math.kind },
+    { key: 'ml', label: 'ML Found.', target: rules.ml.target, kind: rules.ml.kind },
+    { key: 'systems', label: 'Systems Found.', target: rules.systems.target, kind: rules.systems.kind },
+    { key: 'foundationsSum', label: 'Foundations Sum', target: rules.foundationsSum.target, kind: rules.foundationsSum.kind },
+    { key: 'electives', label: 'Electives', target: rules.electives.target, kind: rules.electives.kind },
+    { key: 'thesis', label: 'Thesis block', target: rules.thesis.target, kind: rules.thesis.kind },
+    { key: 'mscTotal', label: 'MSc Total', target: rules.mscTotal.target, kind: rules.mscTotal.kind },
+    { key: 'grandTotal', label: 'Grand Total', target: rules.grandTotal.target, kind: rules.grandTotal.kind },
   ];
 
   const buckets = defs.map((d) => {
@@ -109,6 +125,7 @@ export function evaluatePlan(courses: Course[]): {
 
   const issues: string[] = [];
   for (const b of buckets) {
+    if (b.key === 'admission' && b.target === 0 && b.value === 0) continue;
     if (b.status === 'short') {
       issues.push(`${b.label}: ${b.value}/${b.target} (need ${b.target - b.value} more)`);
     } else if (b.status === 'overshoot') {
@@ -117,7 +134,7 @@ export function evaluatePlan(courses: Course[]): {
   }
 
   const isComplete = buckets.every((b) => b.ok);
-  return { stats, buckets, isComplete, issues };
+  return { stats, buckets, isComplete, issues, rules };
 }
 
 export function statusColor(status: BucketStatus, accent: string): string {

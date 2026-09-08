@@ -21,7 +21,7 @@ See **`coverage_policy.json`** for objids, synthetic IDs, CP preserve rules, and
 | `vv_scrape_cache.json` | Best VV enrichment (status, vvId, schedule, exam, …). The 8 CP Jahreskurs is credited on Analysis I; Analysis II remains a 0-additional-CP continuation so the annual course is not double-counted. |
 | `vv_msc_ds_official.json` | Live VV audit snapshot (66 detail pages, 2026-07-21). Re-run via `vv_msc_ds_official_scrape.cjs`. |
 | `vv_audit_table.json` | Compact audit table derived from official scrape |
-| `validate_all.cjs` | Official 148/120 arithmetic gate (`npm run validate`) |
+| `validate_all.cjs` | Official 120 CP MSc rules + example-outline arithmetic (`npm run validate`) |
 
 ## Pipeline
 

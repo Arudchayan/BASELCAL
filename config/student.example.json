@@ -1,0 +1,18 @@
+{
+  "admissionTarget": 28,
+  "admissionNote": "Copy your Auflagen total from the Zulassungsbescheid. The numbers below are placeholders.",
+  "home": {
+    "label": "Home",
+    "address": "",
+    "lat": null,
+    "lng": null
+  },
+  "seedPlan": false,
+  "plan": {
+    "s1": [],
+    "s2": [],
+    "s3": [],
+    "s4": []
+  },
+  "allocations": {}
+}

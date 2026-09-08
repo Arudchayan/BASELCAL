@@ -1,7 +1,13 @@
 {
   "name": "baselcal",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Unofficial curriculum planner for the University of Basel MSc Data Science programme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Arudchayan/BASELCAL.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

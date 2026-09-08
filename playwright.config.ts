@@ -23,8 +23,11 @@ export default defineConfig({
   webServer: {
     command: `npm run dev -- --port ${PORT} --strictPort`,
     url: BASE_URL,
-    // Always start BaselCal — do not reuse an unrelated Vite app on another project’s default port
     reuseExistingServer: false,
     timeout: 120 * 1000,
+    env: {
+      ...process.env,
+      BASELCAL_DISABLE_STUDENT_CONFIG: '1',
+    },
   },
 });

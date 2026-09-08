@@ -22,7 +22,8 @@ import { CourseCard } from './CourseCard';
 import { CourseDetailsModal } from './CourseDetailsModal';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
-import { evaluatePlan, DEGREE_RULES } from './degreeRules';
+import { evaluatePlan, DEGREE_RULES, withAdmissionTarget } from './degreeRules';
+import { readAdmissionTarget, writeAdmissionTarget } from './studentConfig';
 import { matchesSemesterFilter, parseOffering } from './offering';
 import { findConflicts } from './conflicts';
 import {
@@ -41,7 +42,9 @@ import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
 import { downloadIcs } from './ics';
 import {
-  ML_PHD_PRESET_IDS,
+  EXAMPLE_PLAN_ADMISSION_TARGET,
+  EXAMPLE_PLAN_IDS,
+  EXAMPLE_PLAN_NAME,
   SEMESTERS,
   SEMESTER_IDS,
   eligibleModulesFor,
@@ -106,6 +109,8 @@ function App() {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [semesterFilter, setSemesterFilter] = useState<SemesterId | ''>('');
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
+  const [admissionTarget, setAdmissionTarget] = useState(() => readAdmissionTarget());
+  const degreeRules = useMemo(() => withAdmissionTarget(admissionTarget), [admissionTarget]);
 
   const reportStorage = (key: keyof typeof storageFlags.current, ok: boolean) => {
     storageFlags.current[key] = ok;
@@ -298,19 +303,18 @@ function App() {
 
   const loadPreset = () => {
     const ok = confirm(
-      'Load ML/PhD Starter Plan? This replaces your current plan.\n\n' +
-        `This approved preset meets the exact ${DEGREE_RULES.grandTotal.target} CP overall / ${DEGREE_RULES.mscTotal.target} MSc targets:\n` +
-        '• Semester 1 is preserved exactly as the confirmed Fall 2026 selection\n' +
-        '• Semester 2 completes the admission conditions and includes the 12 CP Data Science project\n' +
-        '• Semester 3 includes irregular Reinforcement Learning and Randomized Algorithms\n' +
-        '• 79 taught-module CP are complete before Semester 4; the 76 CP thesis-start gate is met\n' +
-        '• Finish the final 5 taught-module CP in Semester 4 before the thesis presentation\n' +
-        '• Spring 2027 and later offerings and timetable slots are provisional and need VV checks\n' +
-        '• Confirm Reinforcement Learning and Randomized Algorithms availability before enrollment\n\n' +
+      `Load ${EXAMPLE_PLAN_NAME}? This replaces your current board.\n\n` +
+        'This is a sample outline, not an official University of Basel recommendation.\n' +
+        `• It is built to meet the official ${DEGREE_RULES.mscTotal.target} CP MSc rules\n` +
+        `• It also demonstrates a typical ${EXAMPLE_PLAN_ADMISSION_TARGET} CP admission (Auflagen) package\n` +
+        `• Loading it sets your admission target to ${EXAMPLE_PLAN_ADMISSION_TARGET} CP — change that later to match your letter\n` +
+        '• Spring 2027 and later offerings are provisional and need a live VV check\n\n' +
         'Continue?',
     );
     if (ok) {
-      updatePlan(() => buildPresetPlan(ML_PHD_PRESET_IDS));
+      setAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
+      writeAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
+      updatePlan(() => buildPresetPlan(EXAMPLE_PLAN_IDS));
     }
   };
 
@@ -353,7 +357,7 @@ function App() {
       if (imported.notes) setPersonalNotes(imported.notes);
       if (imported.shortlist) setShortlist(imported.shortlist);
       const courses = allPlannedCourses(imported.plan);
-      const ev = evaluatePlan(courses);
+      const ev = evaluatePlan(courses, admissionTarget);
       const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
       const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
       const missingSched = courses.filter(
@@ -474,7 +478,7 @@ function App() {
           </div>
           <div className="nav-divider" />
           <button className="btn btn--ghost" onClick={loadPreset}>
-            <Zap size={15} /> Load ML/PhD Preset
+            <Zap size={15} /> Load example outline
           </button>
           <button
             className="icon-btn"
@@ -524,6 +528,23 @@ function App() {
 
       <div className="subbar" style={{ marginTop: 8 }}>
         <span role="note">{PLAN_DISCLAIMER}</span>
+        <label className="admission-control" title="From your Zulassungsbescheid. 0 means no extra admission conditions.">
+          <span>Auflagen</span>
+          <input
+            type="number"
+            min={0}
+            max={80}
+            step={1}
+            value={admissionTarget}
+            aria-label="Admission conditions in CP"
+            onChange={(e) => {
+              const next = Math.max(0, Math.round(Number(e.target.value) || 0));
+              setAdmissionTarget(next);
+              writeAdmissionTarget(next);
+            }}
+          />
+          <span>CP</span>
+        </label>
         <span
           title={COVERAGE_POLICY.lastVerified.moduleManifestComplete
             ? `Fall 2026 VV module tree verified: ${COVERAGE_POLICY.lastVerified.fall2026UniqueCourses ?? 0} unique courses across ${COVERAGE_POLICY.lastVerified.fall2026ModuleEntries ?? 0} module entries`
@@ -637,7 +658,7 @@ function App() {
                 </motion.div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                  <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} />
+                  <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} admissionTarget={admissionTarget} />
 
                   <motion.div
                     initial={{ y: 16, opacity: 0 }}
@@ -678,6 +699,11 @@ function App() {
                                   transition: 'background 0.2s ease',
                                 }}
                               >
+                                {plan[semId].length === 0 && (
+                                  <p style={{ margin: '8px 4px 12px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                                    Drop courses here, or load the example outline.
+                                  </p>
+                                )}
                                 {plan[semId].map((course, index) => (
                                   <CourseCard
                                     key={course.id + '_planned'}
@@ -713,7 +739,7 @@ function App() {
         )}
       </AnimatePresence>
 
-      <QuickTips />
+      <QuickTips admissionTarget={admissionTarget} grandTotal={degreeRules.grandTotal.target} />
 
       {activeCourseDetails && (
         <CourseDetailsModal course={activeCourseDetails} onClose={() => setActiveCourseDetails(null)} />
@@ -726,6 +752,7 @@ function App() {
               shortlist={shortlist}
               toggleShortlist={toggleShortlist}
               onClose={() => setShowExplorer(false)}
+              admissionTarget={admissionTarget}
             />
           </Suspense>
         )}

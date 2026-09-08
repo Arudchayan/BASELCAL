@@ -105,15 +105,6 @@ export const UNIVERSITY_LIBRARIES: CampusPlace[] = [
   },
 ];
 
-export const HARDCODED_HOME: CampusPlace = {
-  id: 'home-local',
-  name: 'Home',
-  address: 'Campus (unpublished)',
-  lat: 47.5582389,
-  lng: 7.582859,
-  kind: 'home',
-};
-
 export function campusPlaceForRoom(room: string): CampusPlace | undefined {
   return CLASS_LOCATIONS.find((place) => place.matches?.some((match) => room.includes(match)));
 }
