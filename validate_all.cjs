@@ -3,9 +3,9 @@
  * Exit 0 = all checks pass. Exit 1 = failures found.
  *
  * Official targets (Uni Basel MSc Data Science 2026):
- *   Admission exact 28, foundations min 18×3 and min 64 sum,
+ *   Admission default 0, foundations min 18×3 and min 64 sum,
  *   electives exact 20, thesis exact 36, MSc exact 120.
- *   Admission (Auflagen) is student-specific; the public example outline uses 28.
+ *   Admission (Auflagen) is student-specific; the public example outline is Master's-only.
  */
 const fs = require('fs');
 
@@ -169,18 +169,18 @@ const retainedExcluded = excludedFromExample.filter((id) => presetIds.includes(i
 if (retainedExcluded.length) fail(`Example outline retains excluded course(s): ${retainedExcluded.join(', ')}`);
 else pass('Example outline excludes Inverse Problems, Networks, Continuous Optimization, Machine Intelligence, ML Project, Medical Imaging, Causal Inference, and Applied Statistics Using R');
 
-const allocated60876 = PRESET_ALLOCATIONS['ML-60876'];
-const eligible60876 = courses.find((c) => c.id === 'ML-60876')?.eligibleModules || [];
-if (allocated60876 !== OFFICIAL.modules.ml || !eligible60876.includes(allocated60876)) {
-  fail('ML-60876 must be validly allocated to Machine Learning Foundations in the preset');
-} else pass('ML-60876 preset allocation credits its 2 CP to Machine Learning Foundations');
-
-const allocated53822 = PRESET_ALLOCATIONS['E-53822'];
-const course53822 = courses.find((c) => c.id === 'E-53822');
-const eligible53822 = course53822?.eligibleModules || [course53822?.module];
-if (allocated53822 !== OFFICIAL.modules.electives || !eligible53822.includes(allocated53822)) {
-  fail('E-53822 must be validly allocated to Electives in the preset');
-} else pass('E-53822 preset allocation credits its 3 CP to Electives');
+for (const [id, module] of Object.entries(PRESET_ALLOCATIONS)) {
+  const course = courses.find((c) => c.id === id);
+  const eligible = course?.eligibleModules || [course?.module];
+  if (!presetIds.includes(id)) {
+    fail(`Preset allocation for ${id} is unused`);
+  } else if (!eligible.includes(module)) {
+    fail(`${id} preset allocation ${module} is not an eligible module`);
+  } else {
+    pass(`${id} preset allocation credits CP to ${module}`);
+  }
+}
+if (!Object.keys(PRESET_ALLOCATIONS).length) pass('Example outline needs no cross-list allocations');
 
 const taughtCp = (idsList) => idsList
   .map((id) => courses.find((c) => c.id === id))
@@ -188,19 +188,24 @@ const taughtCp = (idsList) => idsList
   .reduce((sum, c) => sum + c.cp, 0);
 const taughtBeforeS4 = taughtCp([...PRESET.s1, ...PRESET.s2, ...PRESET.s3]);
 const remainingTaughtInS4 = taughtCp(PRESET.s4);
-if (taughtBeforeS4 !== 79 || taughtBeforeS4 < 76) {
-  fail(`Thesis start gate has ${taughtBeforeS4} taught-module CP before S4; expected 79 and at least 76`);
-} else pass('Thesis start gate cleared: 79 taught-module CP before S4 (minimum 76)');
-if (remainingTaughtInS4 !== 5 || taughtBeforeS4 + remainingTaughtInS4 !== 84) {
-  fail(`Thesis presentation path is ${taughtBeforeS4}+${remainingTaughtInS4}; expected 79+5=84 taught-module CP`);
-} else pass('Remaining 5 taught-module CP complete during S4 before presentation, reaching 84');
+if (taughtBeforeS4 < 76) {
+  fail(`Thesis start gate has ${taughtBeforeS4} taught-module CP before S4; expected at least 76`);
+} else pass(`Thesis start gate cleared: ${taughtBeforeS4} taught-module CP before S4 (minimum 76)`);
+if (taughtBeforeS4 + remainingTaughtInS4 !== 84) {
+  fail(`Thesis presentation path is ${taughtBeforeS4}+${remainingTaughtInS4}; expected 84 taught-module CP`);
+} else pass(`Taught-module CP ${taughtBeforeS4}+${remainingTaughtInS4}=84 before presentation`);
+
+const admissionInExample = preset.filter((c) => c && c.type === 'Admission');
+if (admissionInExample.length) {
+  fail(`Public example outline includes admission/Auflagen course(s): ${admissionInExample.map((c) => c.id).join(', ')}`);
+} else pass('Example outline is Master’s courses only (no Auflagen)');
 
 const exampleS1Cp = PRESET.s1.reduce(
   (sum, id) => sum + (courses.find((course) => course.id === id)?.cp || 0),
   0,
 );
-if (PRESET.s1.length !== 9 || exampleS1Cp !== 37) fail(`Example S1 has ${PRESET.s1.length} courses / ${exampleS1Cp} CP; expected 9 / 37`);
-else pass('Example S1 is a complete 9-course / 37 CP fall semester');
+if (exampleS1Cp > 37) fail(`Example S1 load ${exampleS1Cp} CP exceeds 37`);
+else pass(`Example S1 is a schedulable ${PRESET.s1.length}-course / ${exampleS1Cp} CP fall semester`);
 
 console.log('\nCHECK 4: Truth layer present');
 if (!degreeRules.includes('DEGREE_RULES') || !degreeRules.includes('evaluatePlan')) fail('degreeRules.ts missing DEGREE_RULES/evaluatePlan');

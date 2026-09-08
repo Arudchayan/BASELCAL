@@ -317,12 +317,15 @@ function App() {
   };
 
   const loadPreset = () => {
+    const admissionLine = EXAMPLE_PLAN_ADMISSION_TARGET > 0
+      ? `• It also demonstrates a typical ${EXAMPLE_PLAN_ADMISSION_TARGET} CP admission (Auflagen) package\n` +
+        `• Loading it sets your admission target to ${EXAMPLE_PLAN_ADMISSION_TARGET} CP — change that later to match your letter\n`
+      : '• Master’s courses only — no admission (Auflagen) package. Set your own target from your letter.\n';
     const ok = confirm(
       `Load ${EXAMPLE_PLAN_NAME}? This replaces your current board.\n\n` +
         'This is a sample outline, not an official University of Basel recommendation.\n' +
         `• It is built to meet the official ${DEGREE_RULES.mscTotal.target} CP MSc rules\n` +
-        `• It also demonstrates a typical ${EXAMPLE_PLAN_ADMISSION_TARGET} CP admission (Auflagen) package\n` +
-        `• Loading it sets your admission target to ${EXAMPLE_PLAN_ADMISSION_TARGET} CP — change that later to match your letter\n` +
+        admissionLine +
         '• Spring 2027 and later offerings are provisional and need a live VV check\n\n' +
         'Continue?',
     );

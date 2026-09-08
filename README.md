@@ -33,7 +33,7 @@ npm run dev
 
 Dev server: `http://localhost:5179`
 
-The board starts empty. Drag courses from the catalog, or click **Load example outline** for a sample 120 CP MSc plan plus a typical 28 CP admission package.
+The board starts empty. Drag courses from the catalog, or click **Load example outline** for a sample 120 CP Master’s plan (no admission / Auflagen courses).
 
 ## Your personal details stay local
 

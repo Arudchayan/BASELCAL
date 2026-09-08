@@ -19,5 +19,6 @@ export async function clearPlanStorage(page: Page) {
     ]) {
       localStorage.removeItem(key);
     }
+    sessionStorage.removeItem('basel-ds-unlock-v1');
   });
 }

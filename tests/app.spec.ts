@@ -76,11 +76,11 @@ test.describe('BASELCAL App Main Functionality', () => {
     const mondayColumn = page.getByText('Monday');
     await expect(mondayColumn).toBeVisible();
     await expect(page.getByRole('heading', { name: /Classes, walks & study breaks/i })).toBeVisible();
-    await expect(page.getByText('37 CP').first()).toBeVisible();
-    await expect(page.getByText(/University Main Library/i).first()).toBeVisible();
+    await expect(page.getByText('36 CP').first()).toBeVisible();
     await expect(page.locator('.leaflet-container')).toBeVisible();
 
     await expect(page.getByText(/Home is optional/i)).toBeVisible();
+    await expect(page.getByText(/from your local student config/i)).toHaveCount(0);
     await page.getByRole('button', { name: /Set home pin/i }).click();
     await page.locator('.leaflet-container').click({ position: { x: 120, y: 120 } });
     await expect(page.getByText(/custom browser-only home pin/i)).toBeVisible();
@@ -104,7 +104,7 @@ test.describe('BASELCAL App Main Functionality', () => {
 
   test('exports selected cross-list allocations in plan JSON v3', async ({ page }) => {
     await loadExampleOutline(page);
-    const allocation = page.getByRole('combobox', { name: /Credit allocation for Bioinformatics Algorithms/i });
+    const allocation = page.getByRole('combobox', { name: /Credit allocation for Numerical Methods for Partial Differential Equations/i });
     await allocation.selectOption('Electives in Data Science');
 
     const downloadPromise = page.waitForEvent('download');
@@ -114,7 +114,7 @@ test.describe('BASELCAL App Main Functionality', () => {
     const exported = JSON.parse(await readFile(path!, 'utf8'));
     expect(exported.version).toBe(3);
     expect(exported.plan.s1).toContainEqual({
-      id: 'ML-45401',
+      id: 'M-12246',
       allocatedModule: 'Electives in Data Science',
     });
   });

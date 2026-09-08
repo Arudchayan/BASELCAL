@@ -47,6 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
                       (k) => k.startsWith('basel-ds-') || k.startsWith('baselcal-'),
                     );
                     for (const k of keys) localStorage.removeItem(k);
+                    sessionStorage.removeItem('basel-ds-unlock-v1');
                   } catch {
                     /* ignore */
                   }

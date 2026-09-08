@@ -26,11 +26,11 @@ Admission courses in the catalog (Analysis, Algorithms & Data Structures, Scient
 
 `src/examplePlan.json` is a **sample** four-semester outline used by **Load example outline**. It is not a personal enrollment and not an official recommendation.
 
-Hands-on / PhD-oriented mix with schedulability gates (`npm run validate` CHECK 6):
+Master’s-only mix (no AD-* Auflagen courses) with schedulability gates (`npm run validate` CHECK 6):
 
-- Sci Comp practical (`AD-62060`) and Distributed Systems (`S-45402`) are never co-scheduled (both Fri 10–12).
-- Math of DS is in **S3** so it does not clash with Analysis I (Thu 08–10).
-- Spring/Fall 2027 and later remain provisional. Reinforcement Learning (`ML-78174`) and Randomized Algorithms (`M-77777`) are irregular and must be confirmed in the live VV.
+- Public sample is **not** a personal enrollment. Admission target is **0**.
+- Math of DS (`M-66096`) sits in **S3**. Fall S1 uses PDE numerics, concentration, generative modeling, and privacy-preserving systems.
+- Spring/Fall 2027 and later remain provisional. Irregular offerings in the sample must be confirmed in the live VV.
 
 ## Domain rules
 

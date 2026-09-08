@@ -35,45 +35,46 @@ test.describe('Degree accuracy & storage', () => {
     await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('0');
   });
 
-  test('example outline meets official 120 MSc plus typical 28 CP admission', async ({ page }) => {
+  test('example outline meets official 120 MSc with no admission package', async ({ page }) => {
     await page.goto('/');
     await loadExampleOutline(page);
 
     await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
-    await expect(page.getByText(/All degree buckets satisfied \(148 CP\)/i)).toBeVisible();
-    await expect(page.getByText(/Grand Total: 149\/148/i)).toHaveCount(0);
-    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('28');
+    await expect(page.getByText(/All degree buckets satisfied \(120 CP\)/i)).toBeVisible();
+    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('0');
+    const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
+    await expect(sem1.getByText('Numerical Methods for Partial Differential Equations')).toBeVisible();
+    await expect(sem1.getByText('Analysis I', { exact: true })).toHaveCount(0);
   });
 
   test('example outline matches sample courses, allocations, and thesis gate', async ({ page }) => {
     await page.goto('/');
     await loadExampleOutline(page);
 
+    const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
+    await expect(sem1.getByText(/Numerical Methods for Partial Differential Equations/i)).toBeVisible();
+    await expect(sem1.getByText(/Analysis I/i)).toHaveCount(0);
     const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
-    await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toBeVisible();
-    await expect(sem2.getByText(/Data Science Project \(12 CP\)/i)).toBeVisible();
+    await expect(sem2.getByText(/Machine Learning Project \(12 CP\)/i)).toBeVisible();
+    await expect(sem2.getByText(/High Performance Computing/i)).toBeVisible();
+    await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toHaveCount(0);
+    await expect(sem2.getByText(/Data Science Project \(12 CP\)/i)).toHaveCount(0);
     await expect(sem2.getByText(/Computer Networks/i)).toHaveCount(0);
     await expect(sem2.getByText(/Applied Statistics Using R/i)).toHaveCount(0);
     await expect(sem2.getByText(/Machine Intelligence/i)).toHaveCount(0);
     await expect(sem2.getByText(/Principles of Medical Imaging/i)).toHaveCount(0);
     await expect(sem2.getByText(/Causal Inference/i)).toHaveCount(0);
     const sem3 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 3/ }).first();
-    await expect(sem3.getByText(/Modern Reinforcement Learning|From Agents to LLMs/i)).toBeVisible();
-    await expect(sem3.getByText(/Randomized Algorithms/i)).toBeVisible();
+    await expect(sem3.getByText(/Mathematics of Data Science/i)).toBeVisible();
+    await expect(sem3.getByText(/Foundations of Deep Learning/i)).toBeVisible();
+    await expect(sem3.getByText(/Modern Reinforcement Learning|From Agents to LLMs/i)).toHaveCount(0);
+    await expect(sem3.getByText(/Randomized Algorithms/i)).toHaveCount(0);
     await expect(sem3.getByText(/Inverse Problems/i)).toHaveCount(0);
     await expect(sem3.getByText(/Machine Learning Project \(6 CP\)/i)).toHaveCount(0);
     const sem4 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 4/ }).first();
     await expect(sem4.getByText(/Master’s thesis/i)).toBeVisible();
-    await expect(page.getByRole('combobox', { name: /Credit allocation for Mathematical and Computational Biology/i }))
-      .toHaveValue('Machine Learning Foundations');
-    await expect.poll(async () => page.evaluate(() => {
-      const stored = JSON.parse(localStorage.getItem('basel-ds-plan-v6') || '{}');
-      return stored.s4.find((ref: string | { id: string }) => typeof ref !== 'string' && ref.id === 'E-53822')?.allocatedModule;
-    })).toBe('Electives in Data Science');
-    await expect(page.getByText(/79 taught-module CP are complete before Semester 4/i)).toBeVisible();
-    await expect(page.getByText(/remaining 5 taught-module CP/i)).toBeVisible();
-    await expect(page.getByText(/Reinforcement Learning is irregular and must be confirmed/i)).toBeVisible();
-    await expect(page.getByText(/Randomized Algorithms is irregular and must be confirmed/i)).toBeVisible();
+    await expect(page.getByText(/80 taught-module CP are complete before Semester 4/i)).toBeVisible();
+    await expect(page.getByText(/remaining 4 taught-module CP/i)).toBeVisible();
   });
 
   test('spring-only course in Fall shows offering mismatch', async ({ page }) => {

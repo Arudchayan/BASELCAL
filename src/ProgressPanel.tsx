@@ -138,8 +138,9 @@ export function ProgressPanel({
         <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'var(--accent-glow)', color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
           <strong style={{ color: 'var(--accent-primary)' }}>Thesis gate:</strong>{' '}
           {taughtBeforeS4} taught-module CP are complete before Semester 4 (76 CP required to start).
-          {' '}Semester 4 contains the remaining {remainingTaughtInS4} taught-module CP; complete them before the
-          thesis presentation, reaching {taughtBeforeS4 + remainingTaughtInS4} CP.
+          {remainingTaughtInS4 > 0
+            ? ` Semester 4 contains the remaining ${remainingTaughtInS4} taught-module CP; complete them before the thesis presentation, reaching ${taughtBeforeS4 + remainingTaughtInS4} CP.`
+            : ' All taught-module CP are placed before the thesis semester.'}
         </div>
       )}
 

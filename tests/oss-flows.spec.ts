@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { clearPlanStorage, loadExampleOutline } from './helpers';
 
 test.describe('OSS flows', () => {
-  test('empty board, then example outline, then admission 0 overshoots', async ({ page }) => {
+  test('empty board, then example outline stays Master’s-only at 120 CP', async ({ page }) => {
     await page.goto('/');
     await clearPlanStorage(page);
     await page.reload();
@@ -12,14 +12,12 @@ test.describe('OSS flows', () => {
     await expect(page.getByText(/All degree buckets satisfied/i)).toHaveCount(0);
 
     await loadExampleOutline(page);
-    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('28');
-    await expect(page.getByText(/All degree buckets satisfied \(148 CP\)/i)).toBeVisible();
-    await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
-
-    await page.getByLabel('Admission conditions in CP').fill('0');
     await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('0');
-    await expect(page.getByText(/Admission overshoot/i)).toBeVisible();
-    await expect(page.getByText(/All degree buckets satisfied \(148 CP\)/i)).toHaveCount(0);
+    await expect(page.getByText(/All degree buckets satisfied \(120 CP\)/i)).toBeVisible();
+    await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
+    const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
+    await expect(sem1.getByText('Numerical Methods for Partial Differential Equations')).toBeVisible();
+    await expect(sem1.getByText('Analysis I', { exact: true })).toHaveCount(0);
   });
 
   test('empty timetable still renders', async ({ page }) => {

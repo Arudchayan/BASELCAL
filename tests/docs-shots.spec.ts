@@ -14,12 +14,15 @@ test('write README screenshots', async ({ page }) => {
   await page.getByRole('button', { name: 'Close login' }).click();
 
   await loadExampleOutline(page);
+  await page.getByText(/All degree buckets satisfied \(120 CP\)/i).waitFor();
   await page.screenshot({ path: 'docs/screenshots/board-example.png', fullPage: true });
 
   await page.getByRole('button', { name: 'Timetable view' }).click();
+  await page.getByRole('heading', { name: /Weekly Timetable Preview/i }).waitFor();
   await page.screenshot({ path: 'docs/screenshots/timetable.png', fullPage: true });
 
   await page.getByRole('button', { name: 'Board view' }).click();
   await page.getByRole('button', { name: /Course Discovery/i }).click();
-  await page.screenshot({ path: 'docs/screenshots/explorer.png', fullPage: true });
+  await page.getByText(/Currently wishlisted:/i).waitFor();
+  await page.screenshot({ path: 'docs/screenshots/explorer.png' });
 });
