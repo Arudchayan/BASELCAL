@@ -2,8 +2,8 @@
   "version": 1,
   "period": "2026004",
   "periodLabel": "HS 2026",
-  "fetchedAt": "2026-09-03T05:46:44.203Z",
-  "siteUpdated": "03.09.2026 05:04 V3",
+  "fetchedAt": "2026-09-08T17:55:25.940Z",
+  "siteUpdated": "08.09.2026 13:34 V3",
   "source": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=303302",
   "modules": {
     "Mathematical Foundations": [
@@ -535,7 +535,7 @@
     },
     "302621": {
       "frequency": "Every fall sem.",
-      "lecturers": "Pierre Fromholz (pierre.fromholz@unibas.ch)\nZoé McIntyre (zoe.mcintyre@unibas.ch)\nAbhikbrata Sarkar (abhikbrata.sarkar@unibas.ch)\nJames Wootton (james.wootton@unibas.ch, Assessor)",
+      "lecturers": "Pierre Fromholz (pierre.fromholz@unibas.ch)\nJames Wootton (james.wootton@unibas.ch, Assessor)",
       "description": null,
       "prerequisites": null,
       "language": "English",

@@ -19,7 +19,7 @@
   "preserveCpIds": ["AD-10489-1", "AD-10489-2"],
   "syntheticIds": ["T-PREP", "T-THESIS", "E-PROJ6", "E-PROJ12", "ML-PROJ6", "ML-PROJ12", "S-PROJ6", "S-PROJ12"],
   "lastVerified": {
-    "date": "2026-09-03",
+    "date": "2026-09-08",
     "method": "scrape_module_manifest.cjs live Fall 2026 semester-program audit",
     "catalogCoursesWithVvDetail": 69,
     "moduleManifestComplete": true,
