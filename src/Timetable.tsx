@@ -50,13 +50,6 @@ export function Timetable({
   const contactHours = Math.round(rawHours * 2) / 2;
 
   const formatTime = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
-  const getUKTime = (hour: number) => `${(hour - 1).toString().padStart(2, '0')}:00`;
-  const getSLTime = (hour: number) => {
-    let h = hour + 4;
-    const m = 30;
-    if (h >= 24) h -= 24;
-    return `${h.toString().padStart(2, '0')}:${m}`;
-  };
 
   return (
     <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
@@ -82,6 +75,12 @@ export function Timetable({
           </div>
         </div>
       </div>
+
+      {plannedCourses.length === 0 && (
+        <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          No courses in this semester. Switch to Board to add some, or load the example outline.
+        </p>
+      )}
 
       {conflicts.length > 0 && (
         <div
@@ -168,7 +167,6 @@ export function Timetable({
             <div
               key={h}
               className="tt-hour"
-              title={`UK: ${getUKTime(h)} | SL: ${getSLTime(h)}`}
               style={{ top: i * HOUR_HEIGHT }}
             >
               {formatTime(h)}

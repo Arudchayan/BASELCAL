@@ -146,12 +146,13 @@ export const CourseExplorer = ({
         )
     : [];
 
+  const rules = evaluation.rules;
   const totalCp = evaluation.stats.grandTotal;
-  const totalStatus = statusFor(totalCp, DEGREE_RULES.grandTotal.target, DEGREE_RULES.grandTotal.kind);
+  const totalStatus = statusFor(totalCp, rules.grandTotal.target, rules.grandTotal.kind);
   const foundationsStatus = statusFor(
     evaluation.stats.foundationsSum,
-    DEGREE_RULES.foundationsSum.target,
-    DEGREE_RULES.foundationsSum.kind,
+    rules.foundationsSum.target,
+    rules.foundationsSum.kind,
   );
 
   return (
@@ -205,11 +206,11 @@ export const CourseExplorer = ({
           </h1>
           <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
             <strong>Wishlist only</strong> — starring here does not place courses on the board. Need exactly{' '}
-            <strong>{evaluation.rules.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
+            <strong>{rules.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
             <strong style={{ color: statusColor(totalStatus, 'var(--accent-primary)') }}>{totalCp} CP</strong>
             {' · '}Foundations sum:{' '}
             <strong style={{ color: statusColor(foundationsStatus, 'var(--accent-primary)') }}>
-              {evaluation.stats.foundationsSum}/{DEGREE_RULES.foundationsSum.target}
+              {evaluation.stats.foundationsSum}/{rules.foundationsSum.target}
             </strong>
             {totalStatus === 'overshoot' && (
               <span style={{ color: 'var(--bad)', marginLeft: 8 }}>(overshoot)</span>
@@ -228,10 +229,12 @@ export const CourseExplorer = ({
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-primary)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '48px' }}>
           {BUCKETS.map((bucket) => {
-            const rule = DEGREE_RULES[bucket.statsKey];
+            const rule = rules[bucket.statsKey];
             const currentCp = evaluation.stats[bucket.statsKey];
             const status = statusFor(currentCp, rule.target, rule.kind);
-            const progressPercent = Math.min(100, (currentCp / rule.target) * 100);
+            const progressPercent = rule.target > 0
+              ? Math.min(100, (currentCp / rule.target) * 100)
+              : 100;
             const color = bucket.color;
             const barColor = statusColor(status, color);
 

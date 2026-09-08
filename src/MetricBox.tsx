@@ -16,7 +16,7 @@ export function MetricBox({
   status: BucketStatus;
 }) {
   const kindHint = kind === 'exact' ? 'exact' : 'min';
-  const pct = Math.min(100, (value / target) * 100);
+  const pct = target > 0 ? Math.min(100, (value / target) * 100) : 100;
 
   const valueColor =
     status === 'met'

@@ -21,7 +21,7 @@ export const ADMISSION_STORAGE_KEY = 'basel-ds-admission-target';
 
 export function clampAdmission(value: number): number {
   if (!Number.isFinite(value) || value < 0) return 0;
-  return Math.round(value);
+  return Math.min(80, Math.round(value));
 }
 
 export function configuredAdmissionTarget(): number {

@@ -8,7 +8,7 @@ export type TimedSession = ScheduleSession & {
 
 export function parseTimeRange(timeStr: string): { start: number; end: number } | null {
   if (!timeStr) return null;
-  const parts = timeStr.split(/[\-\u2013\u2014]/).map((p) => p.trim());
+  const parts = timeStr.split(/[-\u2013\u2014]/).map((p) => p.trim());
   if (parts.length !== 2) return null;
   const startParts = parts[0].split(':');
   const endParts = parts[1].split(':');

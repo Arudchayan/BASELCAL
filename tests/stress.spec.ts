@@ -77,11 +77,9 @@ test.describe('BASELCAL App Stress Tests', () => {
         'ML-45366',
       ];
       localStorage.setItem(
-        'basel-ds-plan-v5',
+        'basel-ds-plan-v6',
         JSON.stringify({ s1: ids, s2: [], s3: [], s4: [] }),
       );
-      localStorage.removeItem('basel-ds-plan-v2');
-      localStorage.removeItem('basel-ds-plan');
     });
 
     await page.reload();

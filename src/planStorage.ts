@@ -30,6 +30,7 @@ export type PlanExport = {
   plan: SerializedPlan;
   notes?: Record<string, string>;
   shortlist?: string[];
+  admissionTarget?: number;
 };
 
 export type SerializedCourseRef = string | { id: string; allocatedModule?: CourseModule };
@@ -195,6 +196,7 @@ export function planToIds(plan: PlanState): Record<SemesterId, string[]> {
 function migrateLegacyPlan(raw: unknown): RehydrateResult | null {
   if (!raw || typeof raw !== 'object') return null;
   const obj = raw as Record<string, unknown>;
+  if (!SEMESTER_IDS.some((sem) => Array.isArray(obj[sem]))) return null;
   const idMap: Record<string, unknown> = {};
 
   for (const sem of SEMESTER_IDS) {
@@ -268,6 +270,7 @@ export function exportPlanPayload(
   plan: PlanState,
   notes: Record<string, string>,
   shortlist: string[],
+  admissionTarget?: number,
 ): PlanExport {
   return {
     version: 3,
@@ -276,6 +279,7 @@ export function exportPlanPayload(
     plan: planToRefs(plan),
     notes,
     shortlist,
+    admissionTarget,
   };
 }
 
@@ -285,18 +289,23 @@ export function importPlanPayload(data: unknown): {
   shortlist?: string[];
   droppedIds: string[];
   duplicateIds: string[];
+  admissionTarget?: number;
 } | null {
   if (!data || typeof data !== 'object') return null;
   const obj = data as Record<string, unknown>;
+  const admissionTarget = typeof obj.admissionTarget === 'number' && Number.isFinite(obj.admissionTarget)
+    ? obj.admissionTarget
+    : undefined;
 
   if ((obj.version === 3 || obj.version === 2) && obj.plan && typeof obj.plan === 'object') {
     const { plan, droppedIds, duplicateIds } = rehydratePlanDetailed(obj.plan as Record<string, unknown>);
     return {
       plan,
-      notes: (obj.notes as Record<string, string>) || undefined,
+      notes: obj.notes && typeof obj.notes === 'object' ? obj.notes as Record<string, string> : undefined,
       shortlist: Array.isArray(obj.shortlist) ? (obj.shortlist as string[]) : undefined,
       droppedIds,
       duplicateIds,
+      admissionTarget,
     };
   }
 
@@ -307,6 +316,7 @@ export function importPlanPayload(data: unknown): {
       plan: migrated.plan,
       droppedIds: migrated.droppedIds,
       duplicateIds: migrated.duplicateIds,
+      admissionTarget,
     };
   }
   return null;

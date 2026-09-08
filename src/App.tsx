@@ -23,7 +23,7 @@ import { CourseDetailsModal } from './CourseDetailsModal';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
 import { evaluatePlan, DEGREE_RULES, withAdmissionTarget } from './degreeRules';
-import { readAdmissionTarget, writeAdmissionTarget } from './studentConfig';
+import { clampAdmission, readAdmissionTarget, writeAdmissionTarget } from './studentConfig';
 import { matchesSemesterFilter, parseOffering } from './offering';
 import { findConflicts } from './conflicts';
 import {
@@ -66,10 +66,10 @@ const boot = loadPlanFromStorageDetailed();
 const sharedBoot = (() => {
   const shared = readSharedPlanFromHash();
   if (!shared) return null;
-  clearShareHash();
   const ok = window.confirm(
-    'Load the shared plan from this link?\n\nIt replaces your current board plan (your saved plan is overwritten on the next change).',
+    'Load the shared plan from this link?\n\nIt replaces the plan saved in this browser.',
   );
+  if (ok) clearShareHash();
   return ok ? shared : null;
 })();
 
@@ -93,7 +93,7 @@ function App() {
   const [startupDupes] = useState<string[]>(() => boot.duplicateIds);
   const [sharedLoaded] = useState<boolean>(() => !!sharedBoot);
   const [storageOk, setStorageOk] = useState(true);
-  const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true });
+  const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true, admission: true });
   const [undoStack, setUndoStack] = useState<PlanState[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | null>(null);
@@ -319,7 +319,7 @@ function App() {
   };
 
   const handleExport = () => {
-    const payload = exportPlanPayload(plan, personalNotes, shortlist);
+    const payload = exportPlanPayload(plan, personalNotes, shortlist, admissionTarget);
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -330,6 +330,10 @@ function App() {
   };
 
   const handleShare = async () => {
+    if (allPlannedCourses(plan).length === 0) {
+      showToast('Nothing to share — add courses or load the example outline');
+      return;
+    }
     const url = buildShareUrl(plan);
     try {
       await navigator.clipboard.writeText(url);
@@ -340,6 +344,13 @@ function App() {
   };
 
   const handleIcs = () => {
+    const hasSlots = SEMESTER_IDS.some((sem) =>
+      plan[sem].some((course) => (course.schedule?.length ?? 0) > 0),
+    );
+    if (!hasSlots) {
+      showToast('No weekly slots to export — add scheduled courses or load the example outline');
+      return;
+    }
     downloadIcs(plan, PLAN_DISCLAIMER);
     showToast('Calendar file downloaded — weekly slots included');
   };
@@ -353,11 +364,19 @@ function App() {
         alert('Unrecognized plan file format.');
         return;
       }
+      const ok = window.confirm('Import this plan file? It replaces your current board.');
+      if (!ok) return;
+      const nextAdmission =
+        typeof imported.admissionTarget === 'number' ? imported.admissionTarget : admissionTarget;
+      if (nextAdmission !== admissionTarget) {
+        setAdmissionTarget(nextAdmission);
+        reportStorage('admission', writeAdmissionTarget(nextAdmission));
+      }
       updatePlan(() => imported.plan);
-      if (imported.notes) setPersonalNotes(imported.notes);
+      if (imported.notes && typeof imported.notes === 'object') setPersonalNotes(imported.notes);
       if (imported.shortlist) setShortlist(imported.shortlist);
       const courses = allPlannedCourses(imported.plan);
-      const ev = evaluatePlan(courses, admissionTarget);
+      const ev = evaluatePlan(courses, nextAdmission);
       const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
       const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
       const missingSched = courses.filter(
@@ -387,7 +406,7 @@ function App() {
           ? ` Skipped duplicate placements: ${imported.duplicateIds.slice(0, 6).join(', ')}.`
           : '';
       alert(
-        `Imported plan. MSc ${ev.stats.mscTotal}/${DEGREE_RULES.mscTotal.target}, grand ${ev.stats.grandTotal}/${DEGREE_RULES.grandTotal.target}. ${status}${dropped}${dups}`,
+        `Imported plan. MSc ${ev.stats.mscTotal}/${ev.rules.mscTotal.target}, grand ${ev.stats.grandTotal}/${ev.rules.grandTotal.target}. ${status}${dropped}${dups}`,
       );
     } catch {
       alert('Failed to import plan JSON.');
@@ -414,8 +433,7 @@ function App() {
         >
           {sharedLoaded && (
             <p style={{ margin: '0 0 6px' }}>
-              Loaded a shared plan from the link. It replaces your saved plan on the next change — use Export for a
-              backup first if needed.
+              Loaded a shared plan from this link. It is now the saved plan in this browser.
             </p>
           )}
           {!storageOk && (
@@ -538,9 +556,9 @@ function App() {
             value={admissionTarget}
             aria-label="Admission conditions in CP"
             onChange={(e) => {
-              const next = Math.max(0, Math.round(Number(e.target.value) || 0));
+              const next = clampAdmission(Number(e.target.value) || 0);
               setAdmissionTarget(next);
-              writeAdmissionTarget(next);
+              reportStorage('admission', writeAdmissionTarget(next));
             }}
           />
           <span>CP</span>
