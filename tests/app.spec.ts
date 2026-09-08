@@ -35,7 +35,7 @@ test.describe('BASELCAL App Main Functionality', () => {
 
     await explorerDialog.getByRole('button', { name: 'Return to Planner' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'MSc Data Science Curriculum Architect' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'UniBasel DS Planner' })).toBeVisible();
   });
 
   test('Course Explorer uses the shared details modal for wishlist actions', async ({ page }) => {

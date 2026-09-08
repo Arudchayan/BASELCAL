@@ -465,10 +465,10 @@ function App() {
         className="glass-panel topnav"
       >
         <div className="brand">
-          <div className="brand-mark">BC</div>
+          <div className="brand-mark">DS</div>
           <div style={{ minWidth: 0 }}>
-            <h1>MSc Data Science Curriculum Architect</h1>
-            <div className="brand-sub">University of Basel · validated against 2026 program rules</div>
+            <h1>UniBasel DS Planner</h1>
+            <div className="brand-sub">University of Basel · MSc Data Science · unofficial</div>
           </div>
         </div>
         <div className="topnav-actions no-print">

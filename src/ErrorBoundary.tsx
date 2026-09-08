@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 type="button"
                 onClick={() => {
                   const ok = window.confirm(
-                    'Clear ALL BaselCal data (plan, notes, shortlist, theme) and reload? This cannot be undone.',
+                    'Clear ALL UniBasel DS Planner data (plan, notes, shortlist, theme) and reload? This cannot be undone.',
                   );
                   if (!ok) return;
                   try {
@@ -62,7 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   cursor: 'pointer',
                 }}
               >
-                Clear all BaselCal data & reload
+                Clear all planner data & reload
               </button>
               <button
                 type="button"

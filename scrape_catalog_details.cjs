@@ -124,7 +124,7 @@ function applyDetails(courses, detailsById) {
   let ok = 0;
   let failed = 0;
 
-  for (const { course, vvId } of targets) {
+  for (const { vvId } of targets) {
     try {
       detailsById[vvId] = await fetchCourseDetail(page, vvId);
       ok += 1;

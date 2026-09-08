@@ -67,9 +67,9 @@ export function buildIcs(plan: PlanState, disclaimer: string): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//BaselCal//Curriculum Planner//EN',
+    'PRODID:-//UniBasel DS Planner//Curriculum Planner//EN',
     'CALSCALE:GREGORIAN',
-    `X-WR-CALNAME:BaselCal — MSc Data Science`,
+    `X-WR-CALNAME:UniBasel DS Planner`,
     `X-WR-TIMEZONE:Europe/Zurich`,
   ];
   let uidCounter = 0;

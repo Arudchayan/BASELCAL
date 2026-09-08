@@ -1,9 +1,22 @@
 {
-  "name": "baselcal",
+  "name": "unibas-ds-planner",
   "private": true,
   "version": "0.1.0",
   "license": "MIT",
-  "description": "Unofficial curriculum planner for the University of Basel MSc Data Science programme",
+  "description": "Unofficial University of Basel MSc Data Science curriculum planner (ECTS, timetable, Vorlesungsverzeichnis)",
+  "homepage": "https://baselcal.vercel.app",
+  "bugs": {
+    "url": "https://github.com/Arudchayan/BASELCAL/issues"
+  },
+  "keywords": [
+    "university-of-basel",
+    "unibas",
+    "msc-data-science",
+    "curriculum-planner",
+    "ects",
+    "vorlesungsverzeichnis",
+    "timetable"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Arudchayan/BASELCAL.git"
