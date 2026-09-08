@@ -55,7 +55,8 @@ See [DATA.md](DATA.md). Fall 2026 module tree is reconciled; Spring 2027 is not 
 
 - `npm run dev` — local UI
 - `npm run build` — typecheck + production build
-- `npm run validate` — catalog + official 120 CP rules + example outline
+- `npm run validate` — catalog + official 120 CP rules + example outline + time/room snapshot
+- `npm run validate:details:live` — scrape live VV for title/CP/times/rooms
 - `npm run audit:modules` / `npm run refresh:modules`
 - `npm test` — Playwright suite (generic config)
 

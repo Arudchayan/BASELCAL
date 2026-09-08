@@ -42,8 +42,11 @@ You can also change **Auflagen CP** in the header at any time; that value is sto
 ## Accuracy checks
 
 ```bash
-npm run validate   # catalog + official 120 CP MSc rules + example outline
-npm run audit:modules
+npm run validate            # catalog CP rules + example outline + time/room vs VV snapshot
+npm run validate:details    # title, CP, times, rooms vs vv_module_manifest.json
+npm run validate:details:live  # same checks against live Vorlesungsverzeichnis
+npm run validate:details:plan  # only example outline + local student plan
+npm run audit:modules       # refresh the Fall 2026 module snapshot
 npm test
 npm run build
 ```

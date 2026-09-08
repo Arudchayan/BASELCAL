@@ -13,10 +13,13 @@ Do not put personal plans, home addresses, or admission letters in `src/`. Use `
 
 ```bash
 npm run validate
+npm run validate:details
 npm run lint
 npm run build
 npm test
 ```
+
+`npm run validate` already includes the time/room snapshot check. Use `npm run validate:details:live` when you want to scrape live VV pages.
 
 `npm test` starts Vite with `BASELCAL_DISABLE_STUDENT_CONFIG=1` so CI matches a generic checkout.
 
