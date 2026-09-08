@@ -177,6 +177,11 @@ async function fetchLiveDetails(vvIds) {
   }
 
   const manifest = JSON.parse(fs.readFileSync('vv_module_manifest.json', 'utf8'));
+  if (fs.existsSync('vv_catalog_details.json')) {
+    const catalogSnap = JSON.parse(fs.readFileSync('vv_catalog_details.json', 'utf8'));
+    manifest.details = { ...(catalogSnap.details || {}), ...(manifest.details || {}) };
+    pass(`Catalog detail snapshot ${String(catalogSnap.fetchedAt || '').slice(0, 10)} (${catalogSnap.ok || 0} pages)`);
+  }
   const courses = loadCourses();
   const planIds = PLAN_ONLY ? loadPlanIds() : null;
   const targets = courses.filter((course) => {

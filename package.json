@@ -21,6 +21,8 @@
     "audit:vv": "node vv_msc_ds_official_scrape.cjs",
     "audit:modules": "node scrape_module_manifest.cjs",
     "refresh:modules": "node scrape_module_manifest.cjs --apply",
+    "audit:catalog": "node scrape_catalog_details.cjs",
+    "refresh:catalog": "node scrape_catalog_details.cjs --apply",
     "test": "playwright test",
     "test:ui": "playwright test --ui"
   },

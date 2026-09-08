@@ -34,7 +34,9 @@ scrape_and_apply_vv.cjs  ←  vv_scrape_cache.json
   npm run validate
 ```
 
-Run `npm run audit:modules` to regenerate the current module manifest, or `npm run refresh:modules` to also apply live title, CP, lecturer, exam, and schedule fields to matching catalog courses. Spring 2027 is scheduled for publication on 2026-11-30 and cannot yet be audited.
+Run `npm run audit:modules` to regenerate the Fall 2026 module-tree snapshot, or `npm run refresh:modules` to also apply those fields to matching catalog courses.
+
+Run `npm run audit:catalog` / `npm run refresh:catalog` to scrape **every** catalog course that has a VV id (admission, spring, irregular). Selected practical groups are kept when they still exist on VV. Spring 2027 is scheduled for publication on 2026-11-30; those pages may still show an older semester.
 
 ## Freshness notes
 

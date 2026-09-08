@@ -77,7 +77,7 @@ export const COURSES = [
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=302775",
     "description": "s. Vorlesung Analysis I",
     "prerequisites": "keine",
-    "exam": "continuous assessment — Die Kreditpunkte werden durch aktive Teilnahme an den Übungen, sinnvolle Bearbeitung 3/4 der Übungsserien sowie Bestehen der Klausur erworben.",
+    "exam": "continuous assessment — Die Kreditpunkte werden ausschliesslich durch das Bestehen der Klausur am Ende des Semesters erworben. Während des Semesters werden Übungsserien sowie Tutorien angeboten. Die Teilnahme an den Übungsserien und Tutorien ist freiwillig, wird jedoch zur Unterstützung des Lernprozesses empfohlen.",
     "lecturer": "Gianluca Crippa",
     "syllabus": [
       "Deepen lecture topics by solving exercises."
@@ -86,7 +86,7 @@ export const COURSES = [
       {
         "day": "Tuesday",
         "time": "14:15 - 16:00",
-        "room": "Spiegelgasse 1, Seminarraum 00.003"
+        "room": "Spiegelgasse 1, Seminarraum  00.003"
       }
     ]
   },
@@ -131,7 +131,7 @@ export const COURSES = [
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=301984",
     "description": "This course provides an overview of scientific computing, with special emphasis on optimization, modeling and signal processing.",
     "prerequisites": "You should have successfully completed introductory math courses like \"Mathematische Methoden I + II\"  and programming courses like the \"Programmier-Projekt\".",
-    "exam": "exam — Written exam. Please see: https://philnat.unibas.ch/de/examenWorking on the exercises and coming to the regular group sessions is not mandatory, but warmly recommended to all students who want to prepare themselves well for the exam.Expected date: Thursday, January 14, 2027, 8-10 a.m.",
+    "exam": "exam — Written exam. Please see: https://philnat.unibas.ch/de/examenWorking on the exercises and coming to the regular group sessions is not mandatory, but warmly recommended to all students who want to prepare themselves well for the exam.Exam date: Thursday, January 14, 2027, 8-10 a.m., Biozentrum, M.E. Müller Saal U1.111 & U1.141.",
     "lecturer": "Volker Roth",
     "syllabus": [
       "Understand and implement core algorithms.",
@@ -249,7 +249,10 @@ export const COURSES = [
     "title": "Numerical Methods for Partial Differential Equations",
     "cp": 8,
     "module": "Mathematical Foundations",
-    "eligibleModules": ["Mathematical Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Mathematical Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Every fall sem.",
     "lang": "German",
     "priority": "Medium",
@@ -274,11 +277,6 @@ export const COURSES = [
       {
         "day": "Thursday",
         "time": "10:15 - 12:00",
-        "room": "Spiegelgasse 5, Seminarraum  05.001"
-      },
-      {
-        "day": "Thursday",
-        "time": "14:15 - 16:00",
         "room": "Spiegelgasse 5, Seminarraum  05.001"
       }
     ]
@@ -327,7 +325,7 @@ export const COURSES = [
     "lang": "English",
     "priority": "Medium",
     "type": "Foundation",
-    "note": "Small project option.",
+    "note": "Small project option. VV lists irregular individual dates, not a weekly slot.",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=298379",
     "description": "The project gives every student the opportunity to realize a larger programming project\nrelated to the Master's course. Both the theory and the numerical\nexperiments are summarized in a short (max. 5 pages) report in LaTeX.",
     "prerequisites": "The project can only be attended in parallel to the Master's course in Numerical Methods for Wave Propagation, which builds upon the first part \"Numerical Methods for PDE's\" from HS25. Hence, to attend the lecture it is strongly recommended to have attended the first part, too.",
@@ -338,13 +336,7 @@ export const COURSES = [
       "Formulate a novel research question or engineering goal.",
       "Present findings in a structured scientific report."
     ],
-    "schedule": [
-      {
-        "day": "Thursday",
-        "time": "10:15 - 12:00",
-        "room": "Kollegienhaus, Seminarraum 211"
-      }
-    ]
+    "schedule": []
   },
   {
     "id": "M-19300",
@@ -352,7 +344,10 @@ export const COURSES = [
     "title": "Random processes: Theory and applications from physics to finance",
     "cp": 4,
     "module": "Mathematical Foundations",
-    "eligibleModules": ["Mathematical Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Mathematical Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Every fall sem.",
     "lang": "English",
     "priority": "High",
@@ -703,11 +698,6 @@ export const COURSES = [
         "day": "Wednesday",
         "time": "14:15 - 16:00",
         "room": "Alte Universität, Seminarraum -201"
-      },
-      {
-        "day": "Monday",
-        "time": "14:15 - 16:00",
-        "room": "Kollegienhaus, Seminarraum 212"
       }
     ]
   },
@@ -717,7 +707,10 @@ export const COURSES = [
     "title": "Randomized Algorithms",
     "cp": 6,
     "module": "Mathematical Foundations",
-    "eligibleModules": ["Mathematical Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Mathematical Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Irregular",
     "lang": "English",
     "priority": "High",
@@ -887,7 +880,10 @@ export const COURSES = [
     "title": "Bioinformatics Algorithms",
     "cp": 4,
     "module": "Machine Learning Foundations",
-    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Machine Learning Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Every fall sem.",
     "lang": "English",
     "priority": "Medium",
@@ -957,7 +953,10 @@ export const COURSES = [
     "title": "Mathematical and Computational Biology in Drug Discovery",
     "cp": 2,
     "module": "Machine Learning Foundations",
-    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Machine Learning Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Every spring sem.",
     "lang": "English",
     "priority": "Medium",
@@ -987,7 +986,10 @@ export const COURSES = [
     "title": "Foundations of Deep Learning",
     "cp": 6,
     "module": "Machine Learning Foundations",
-    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Machine Learning Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Irregular",
     "lang": "English",
     "priority": "Very high",
@@ -1024,7 +1026,10 @@ export const COURSES = [
     "title": "Inverse Problems: Computational Aspects and Machine Learning",
     "cp": 3,
     "module": "Machine Learning Foundations",
-    "eligibleModules": ["Machine Learning Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Machine Learning Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Irregular",
     "lang": "German",
     "priority": "High",
@@ -1194,7 +1199,10 @@ export const COURSES = [
     "title": "Multimedia Retrieval",
     "cp": 6,
     "module": "Systems Foundations",
-    "eligibleModules": ["Systems Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Systems Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Every fall sem.",
     "lang": "English",
     "priority": "High",
@@ -1282,11 +1290,6 @@ export const COURSES = [
         "day": "Friday",
         "time": "10:15 - 12:00",
         "room": "Spiegelgasse 5, Seminarraum  05.002"
-      },
-      {
-        "day": "Tuesday",
-        "time": "10:15 - 12:00",
-        "room": "Pharmazentrum, Seminarraum U1075"
       }
     ]
   },
@@ -1327,7 +1330,10 @@ export const COURSES = [
     "title": "Privacy-Preserving Methods for Data Science and Distributed Systems",
     "cp": 6,
     "module": "Systems Foundations",
-    "eligibleModules": ["Systems Foundations", "Electives in Data Science"],
+    "eligibleModules": [
+      "Systems Foundations",
+      "Electives in Data Science"
+    ],
     "when": "Irregular",
     "lang": "English",
     "priority": "High",
@@ -1645,11 +1651,6 @@ export const COURSES = [
       {
         "day": "Wednesday",
         "time": "14:15 - 16:00",
-        "room": "Spiegelgasse 1, Seminarraum  00.003"
-      },
-      {
-        "day": "Wednesday",
-        "time": "16:15 - 18:00",
         "room": "Spiegelgasse 1, Seminarraum  00.003"
       }
     ]

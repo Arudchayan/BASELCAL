@@ -46,7 +46,9 @@ npm run validate            # catalog CP rules + example outline + time/room vs 
 npm run validate:details    # title, CP, times, rooms vs vv_module_manifest.json
 npm run validate:details:live  # same checks against live Vorlesungsverzeichnis
 npm run validate:details:plan  # only example outline + local student plan
-npm run audit:modules       # refresh the Fall 2026 module snapshot
+npm run audit:modules       # refresh the Fall 2026 module-tree snapshot
+npm run refresh:catalog     # scrape every catalog VV page and apply times/rooms
+npm run audit:catalog       # scrape every catalog VV page, snapshot only
 npm test
 npm run build
 ```
