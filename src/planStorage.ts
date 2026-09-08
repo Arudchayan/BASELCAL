@@ -1,5 +1,5 @@
 import { COURSES } from './courses';
-import { STUDENT_CONFIG } from './studentConfig';
+import { STUDENT_CONFIG, type StudentConfig } from './studentConfig';
 import {
   EXAMPLE_PLAN_ALLOCATIONS,
   SEMESTER_IDS,
@@ -134,15 +134,15 @@ function emptyPlanRefs(): SerializedPlan {
   return { s1: [], s2: [], s3: [], s4: [] };
 }
 
-function studentSeedRefs(): SerializedPlan | null {
-  if (!STUDENT_CONFIG?.seedPlan || !STUDENT_CONFIG.plan || typeof STUDENT_CONFIG.plan !== 'object') {
+function overlayPlanRefs(config: StudentConfig | null): SerializedPlan | null {
+  if (!config?.seedPlan || !config.plan || typeof config.plan !== 'object') {
     return null;
   }
   const allocations = {
     ...EXAMPLE_PLAN_ALLOCATIONS,
-    ...(STUDENT_CONFIG.allocations as Partial<Record<string, CourseModule>> | undefined),
+    ...(config.allocations as Partial<Record<string, CourseModule>> | undefined),
   };
-  const plan = STUDENT_CONFIG.plan as Record<string, unknown>;
+  const plan = config.plan as Record<string, unknown>;
   const asIds = (value: unknown): string[] => {
     if (!Array.isArray(value)) return [];
     return value.flatMap((item) => {
@@ -170,6 +170,14 @@ function studentSeedRefs(): SerializedPlan | null {
     }).filter(Boolean);
   }
   return refs;
+}
+
+function studentSeedRefs(): SerializedPlan | null {
+  return overlayPlanRefs(STUDENT_CONFIG);
+}
+
+export function buildPlanFromStudentConfig(config: StudentConfig): RehydrateResult {
+  return rehydratePlanDetailed(overlayPlanRefs(config) ?? emptyPlanRefs());
 }
 
 export function planToRefs(plan: PlanState): SerializedPlan {

@@ -16,6 +16,8 @@ import {
   Undo2,
   Link2,
   Printer,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { COURSES } from './courses';
 import { CourseCard } from './CourseCard';
@@ -23,7 +25,17 @@ import { CourseDetailsModal } from './CourseDetailsModal';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
 import { evaluatePlan, DEGREE_RULES, withAdmissionTarget } from './degreeRules';
-import { clampAdmission, readAdmissionTarget, writeAdmissionTarget } from './studentConfig';
+import {
+  ADMISSION_STORAGE_KEY,
+  clampAdmission,
+  clearUnlockedConfig,
+  isOwnerSession,
+  readAdmissionTarget,
+  writeAdmissionTarget,
+  writeUnlockedConfig,
+  type StudentConfig,
+} from './studentConfig';
+import { LoginModal } from './LoginModal';
 import { matchesSemesterFilter, parseOffering } from './offering';
 import { findConflicts } from './conflicts';
 import {
@@ -35,6 +47,7 @@ import {
   exportPlanPayload,
   importPlanPayload,
   buildPresetPlan,
+  buildPlanFromStudentConfig,
   allPlannedCourses,
   PLAN_DISCLAIMER,
 } from './planStorage';
@@ -109,6 +122,8 @@ function App() {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [semesterFilter, setSemesterFilter] = useState<SemesterId | ''>('');
   const [showShortlistOnly, setShowShortlistOnly] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [ownerSession, setOwnerSession] = useState(() => isOwnerSession());
   const [admissionTarget, setAdmissionTarget] = useState(() => readAdmissionTarget());
   const degreeRules = useMemo(() => withAdmissionTarget(admissionTarget), [admissionTarget]);
 
@@ -318,6 +333,30 @@ function App() {
     }
   };
 
+  const applyOwnerConfig = (raw: unknown) => {
+    const overlay = raw && typeof raw === 'object' ? raw as StudentConfig : {};
+    writeUnlockedConfig(overlay);
+    setOwnerSession(true);
+    if (typeof overlay.admissionTarget === 'number') {
+      const next = clampAdmission(overlay.admissionTarget);
+      setAdmissionTarget(next);
+      writeAdmissionTarget(next);
+    }
+    const next = buildPlanFromStudentConfig(overlay);
+    setPlan(next.plan);
+    savePlanToStorage(next.plan);
+    setShowLogin(false);
+    showToast(overlay.seedPlan ? 'Owner overlay unlocked' : 'Signed in');
+  };
+
+  const logoutOwner = () => {
+    clearUnlockedConfig();
+    localStorage.removeItem(STORAGE_KEYS.plan);
+    localStorage.removeItem(ADMISSION_STORAGE_KEY);
+    localStorage.removeItem('baselcal-home-v1');
+    window.location.reload();
+  };
+
   const handleExport = () => {
     const payload = exportPlanPayload(plan, personalNotes, shortlist, admissionTarget);
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -498,6 +537,15 @@ function App() {
           <button className="btn btn--ghost" onClick={loadPreset}>
             <Zap size={15} /> Load example outline
           </button>
+          {ownerSession ? (
+            <button className="btn btn--ghost" onClick={logoutOwner} aria-label="Sign out">
+              <LogOut size={15} /> Sign out
+            </button>
+          ) : (
+            <button className="btn btn--ghost" onClick={() => setShowLogin(true)} aria-label="Owner login">
+              <LogIn size={15} /> Sign in
+            </button>
+          )}
           <button
             className="icon-btn"
             onClick={undo}
@@ -762,6 +810,12 @@ function App() {
       {activeCourseDetails && (
         <CourseDetailsModal course={activeCourseDetails} onClose={() => setActiveCourseDetails(null)} />
       )}
+
+      <AnimatePresence>
+        {showLogin && (
+          <LoginModal onClose={() => setShowLogin(false)} onUnlocked={applyOwnerConfig} />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showExplorer && (

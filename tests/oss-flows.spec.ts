@@ -42,6 +42,18 @@ test.describe('OSS flows', () => {
     await expect(page.getByRole('button', { name: /Close course details/i })).toHaveCount(0);
   });
 
+  test('owner login dialog opens without creating an account', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Owner login' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Owner login' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/create account/i)).toHaveCount(0);
+    await dialog.getByLabel('Username').fill('demo');
+    await dialog.getByLabel('Password').fill('demo');
+    await dialog.getByRole('button', { name: 'Sign in' }).click();
+    await expect(dialog.getByText(/Owner login is only available|Invalid login|Could not reach/i)).toBeVisible();
+  });
+
   test('empty board share explains that the link would not load', async ({ page }) => {
     await page.goto('/');
     await clearPlanStorage(page);

@@ -8,6 +8,22 @@ Plan four semesters, check official 2026 credit rules, spot timetable clashes, a
 
 Live demo: [baselcal.vercel.app](https://baselcal.vercel.app)
 
+The public demo is a **sandbox**. Anyone can drag courses, load the example outline, and export a plan. Owner login (no signup) unlocks a private overlay stored in Vercel env vars — that JSON is **not** shipped in the client bundle.
+
+<p align="center">
+  <img src="docs/screenshots/board-empty.png" alt="Empty planner board" width="900" />
+</p>
+
+| Board with example outline | Timetable |
+|---|---|
+| ![Example outline](docs/screenshots/board-example.png) | ![Timetable](docs/screenshots/timetable.png) |
+
+| Course discovery | Owner login |
+|---|---|
+| ![Explorer](docs/screenshots/explorer.png) | ![Login](docs/screenshots/login.png) |
+
+Refresh screenshots with `DOCS_SHOTS=1 npx playwright test tests/docs-shots.spec.ts`.
+
 ## Quick start
 
 ```bash
@@ -37,7 +53,7 @@ Admission conditions (Auflagen), your real plan, and an optional home pin are **
 
 3. Restart `npm run dev`. The file is gitignored.
 
-On Vercel, paste the same JSON as the `STUDENT_CONFIG` environment variable (one line). Do not commit it.
+On Vercel, keep `STUDENT_CONFIG` as a **server** env var (used only by `/api/unlock`). Also set `PLANNER_USER` and `PLANNER_PASSWORD`. Do not commit them. Public builds never bake that JSON into JavaScript.
 
 You can also change **Auflagen CP** in the header at any time; that value is stored only in this browser.
 
