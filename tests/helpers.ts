@@ -7,8 +7,7 @@ export async function loadExampleOutline(page: Page) {
 
 export async function clearPlanStorage(page: Page) {
   await page.evaluate(() => {
-    for (const key of [
-      'basel-plan-v7:data-science',
+    const exactKeys = [
       'basel-ds-plan-v6',
       'basel-ds-plan-v5',
       'basel-ds-plan-v4',
@@ -17,8 +16,17 @@ export async function clearPlanStorage(page: Page) {
       'basel-ds-plan',
       'basel-ds-admission-target',
       'baselcal-home-v1',
-    ]) {
-      localStorage.removeItem(key);
+      'basel-active-programme-v1',
+    ];
+    for (const key of Object.keys(localStorage)) {
+      if (
+        exactKeys.includes(key) ||
+        key.startsWith('basel-plan-v7:') ||
+        key.startsWith('basel-notes-v7:') ||
+        key.startsWith('basel-shortlist-v7:')
+      ) {
+        localStorage.removeItem(key);
+      }
     }
     sessionStorage.removeItem('basel-ds-unlock-v1');
   });

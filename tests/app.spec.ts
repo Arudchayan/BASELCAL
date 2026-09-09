@@ -7,6 +7,19 @@ test.describe('BASELCAL App Main Functionality', () => {
     await page.goto('/');
   });
 
+  test('programme switcher shows DS selected and stubs disabled', async ({ page }) => {
+    const switcher = page.getByRole('combobox', { name: /programme|degree/i });
+    await expect(switcher).toBeVisible();
+    await expect(switcher).toHaveValue('data-science');
+
+    const computerScience = switcher.locator('option[value="computer-science"]');
+    const mathematics = switcher.locator('option[value="mathematics"]');
+    await expect(computerScience).toBeDisabled();
+    await expect(computerScience).toHaveAttribute('title', 'Coming soon');
+    await expect(mathematics).toBeDisabled();
+    await expect(mathematics).toHaveAttribute('title', 'Coming soon');
+  });
+
   test('should open the Course Explorer', async ({ page }) => {
     // Look for the "Course Discovery" button and click it
     const discoveryBtn = page.getByRole('button', { name: /Course Discovery/i });
