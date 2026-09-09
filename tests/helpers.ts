@@ -8,6 +8,7 @@ export async function loadExampleOutline(page: Page) {
 export async function clearPlanStorage(page: Page) {
   await page.evaluate(() => {
     for (const key of [
+      'basel-plan-v7:data-science',
       'basel-ds-plan-v6',
       'basel-ds-plan-v5',
       'basel-ds-plan-v4',

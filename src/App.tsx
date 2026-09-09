@@ -40,8 +40,13 @@ import { matchesSemesterFilter, parseOffering } from './offering';
 import { findConflicts } from './conflicts';
 import {
   STORAGE_KEYS,
-  loadPlanFromStorageDetailed,
-  savePlanToStorage,
+  ensurePlanMigrated,
+  loadActiveProgrammeId,
+  loadPlanForProgrammeDetailed,
+  savePlanForProgramme,
+  planStorageKey,
+  notesStorageKey,
+  shortlistStorageKey,
   loadJson,
   saveJson,
   exportPlanPayload,
@@ -74,7 +79,11 @@ const CourseExplorer = lazy(() =>
 );
 const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Timetable })));
 
-const boot = loadPlanFromStorageDetailed();
+ensurePlanMigrated();
+const activeProgrammeId = loadActiveProgrammeId();
+const boot = loadPlanForProgrammeDetailed(activeProgrammeId);
+const activeNotesKey = notesStorageKey(activeProgrammeId);
+const activeShortlistKey = shortlistStorageKey(activeProgrammeId);
 
 const sharedBoot = (() => {
   const shared = readSharedPlanFromHash();
@@ -113,9 +122,9 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [personalNotes, setPersonalNotes] = useState<Record<string, string>>(() =>
-    loadJson(STORAGE_KEYS.notes, {}),
+    loadJson(activeNotesKey, {}),
   );
-  const [shortlist, setShortlist] = useState<string[]>(() => loadJson(STORAGE_KEYS.shortlist, []));
+  const [shortlist, setShortlist] = useState<string[]>(() => loadJson(activeShortlistKey, []));
   const [search, setSearch] = useState('');
   const [searchLower, setSearchLower] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
@@ -146,18 +155,18 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    reportStorage('plan', savePlanToStorage(plan));
+    reportStorage('plan', savePlanForProgramme(activeProgrammeId, plan));
   }, [plan]);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
-      reportStorage('notes', saveJson(STORAGE_KEYS.notes, personalNotes));
+      reportStorage('notes', saveJson(activeNotesKey, personalNotes));
     }, 300);
     return () => window.clearTimeout(t);
   }, [personalNotes]);
 
   useEffect(() => {
-    reportStorage('shortlist', saveJson(STORAGE_KEYS.shortlist, shortlist));
+    reportStorage('shortlist', saveJson(activeShortlistKey, shortlist));
   }, [shortlist]);
 
   useEffect(() => {
@@ -347,14 +356,14 @@ function App() {
     }
     const next = buildPlanFromStudentConfig(overlay);
     setPlan(next.plan);
-    savePlanToStorage(next.plan);
+    savePlanForProgramme(activeProgrammeId, next.plan);
     setShowLogin(false);
     showToast(overlay.seedPlan ? 'Owner overlay unlocked' : 'Signed in');
   };
 
   const logoutOwner = () => {
     clearUnlockedConfig();
-    localStorage.removeItem(STORAGE_KEYS.plan);
+    localStorage.removeItem(planStorageKey(activeProgrammeId));
     localStorage.removeItem(ADMISSION_STORAGE_KEY);
     localStorage.removeItem('baselcal-home-v1');
     window.location.reload();

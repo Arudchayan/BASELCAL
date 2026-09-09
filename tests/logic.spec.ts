@@ -2,6 +2,57 @@ import { test, expect } from '@playwright/test';
 import { clearPlanStorage, loadExampleOutline } from './helpers';
 
 test.describe('Degree accuracy & storage', () => {
+  test('migrates v6 Data Science storage into programme-scoped v7 keys', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'basel-ds-plan-v6',
+        JSON.stringify({ s1: ['ML-45401'], s2: [], s3: [], s4: [] }),
+      );
+      localStorage.setItem('basel-ds-notes', JSON.stringify({ 'ML-45401': 'Keep' }));
+      localStorage.setItem('basel-ds-shortlist', JSON.stringify(['E-58920']));
+    });
+    await page.goto('/');
+
+    const storage = await page.evaluate(() => ({
+      plan: localStorage.getItem('basel-plan-v7:data-science'),
+      notes: localStorage.getItem('basel-notes-v7:data-science'),
+      shortlist: localStorage.getItem('basel-shortlist-v7:data-science'),
+      activeProgramme: localStorage.getItem('basel-active-programme-v1'),
+      legacyPlan: localStorage.getItem('basel-ds-plan-v6'),
+      legacyNotes: localStorage.getItem('basel-ds-notes'),
+      legacyShortlist: localStorage.getItem('basel-ds-shortlist'),
+    }));
+
+    expect(storage.plan).toContain('ML-45401');
+    expect(storage.notes).toContain('Keep');
+    expect(storage.shortlist).toContain('E-58920');
+    expect(storage.activeProgramme).toBe('data-science');
+    expect(storage.legacyPlan).toBeNull();
+    expect(storage.legacyNotes).toBeNull();
+    expect(storage.legacyShortlist).toBeNull();
+  });
+
+  test('exposes programme-scoped storage helpers without cross-programme leakage', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const storage = await import('/src/planStorage.ts');
+      const empty = { s1: [], s2: [], s3: [], s4: [] };
+      storage.savePlanForProgramme('computer-science', empty);
+      storage.saveActiveProgrammeId('mathematics');
+      return {
+        dsKey: storage.planStorageKey('data-science'),
+        csKey: storage.planStorageKey('computer-science'),
+        csPlan: localStorage.getItem('basel-plan-v7:computer-science'),
+        activeProgramme: storage.loadActiveProgrammeId(),
+      };
+    });
+
+    expect(result.dsKey).toBe('basel-plan-v7:data-science');
+    expect(result.csKey).toBe('basel-plan-v7:computer-science');
+    expect(result.csPlan).toBe(JSON.stringify({ s1: [], s2: [], s3: [], s4: [] }));
+    expect(result.activeProgramme).toBe('mathematics');
+  });
+
   test('wishlist can exceed the current grand-total target but shows overshoot labeling', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Course Discovery/i }).click();
@@ -152,7 +203,7 @@ test.describe('Degree accuracy & storage', () => {
       .toHaveValue('Machine Learning Foundations');
   });
 
-  test('legacy v5 ID plans migrate safely to v6', async ({ page }) => {
+  test('legacy v5 ID plans migrate safely to programme-scoped v7', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => {
       localStorage.removeItem('basel-ds-plan-v6');
@@ -160,7 +211,8 @@ test.describe('Degree accuracy & storage', () => {
     });
     await page.reload();
     await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
-    expect(await page.evaluate(() => localStorage.getItem('basel-ds-plan-v6'))).toContain('ML-45401');
+    expect(await page.evaluate(() => localStorage.getItem('basel-plan-v7:data-science'))).toContain('ML-45401');
+    expect(await page.evaluate(() => localStorage.getItem('basel-ds-plan-v5'))).toBeNull();
   });
 
   test('saved v6 plans are not rewritten by a public example outline', async ({ page }) => {
