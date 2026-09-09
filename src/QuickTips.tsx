@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Send, X } from 'lucide-react';
 import { COURSES } from './courses';
-import { DEGREE_RULES } from './degreeRules';
+import { getPackRules } from './degrees/registry';
+import { useProgramme } from './programmeContext';
 
 /** Keyword tip helper — not an LLM. Labeled honestly. */
 export function QuickTips({
@@ -12,11 +13,13 @@ export function QuickTips({
   admissionTarget: number;
   grandTotal: number;
 }) {
+  const { programmeId } = useProgramme();
+  const packRules = getPackRules(programmeId);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ sender: 'bot' | 'user'; text: string }[]>([
     {
       sender: 'bot',
-      text: `Quick tips (keyword matcher, not AI). Ask about ML, Math, admission (${admissionTarget} CP Auflagen), or electives (exactly ${DEGREE_RULES.electives.target} CP).`,
+      text: `Quick tips (keyword matcher, not AI). Ask about ML, Math, admission (${admissionTarget} CP Auflagen), or electives (exactly ${packRules.electives.target} CP).`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -31,18 +34,18 @@ export function QuickTips({
     let response = 'Try keywords: ML, math, admission, electives, thesis.';
     if (lower.includes('machine learning') || lower.includes('ml') || lower.includes('ai')) {
       const mlCourses = COURSES.filter((c) => c.module.includes('Machine Learning')).slice(0, 3);
-      response = `ML foundation picks: ${mlCourses.map((c) => c.title).join(', ')}. Min ${DEGREE_RULES.ml.target} CP in ML; foundations sum min ${DEGREE_RULES.foundationsSum.target}.`;
+      response = `ML foundation picks: ${mlCourses.map((c) => c.title).join(', ')}. Min ${packRules.ml.target} CP in ML; foundations sum min ${packRules.foundationsSum.target}.`;
     } else if (lower.includes('math') || lower.includes('theory')) {
       const mathCourses = COURSES.filter((c) => c.module.includes('Math')).slice(0, 3);
       response = `Math picks: ${mathCourses.map((c) => c.title).join(', ')}.`;
     } else if (lower.includes('easy') || lower.includes('intro') || lower.includes('admission')) {
       response = `Admission (Auflagen) is student-specific. The current target is ${admissionTarget} CP (0 means none). Confirm against your Zulassungsbescheid.`;
     } else if (lower.includes('elective')) {
-      response = `Electives must be exactly ${DEGREE_RULES.electives.target} CP. Overshoot fails validation.`;
+      response = `Electives must be exactly ${packRules.electives.target} CP. Overshoot fails validation.`;
     } else if (lower.includes('thesis')) {
-      response = `Thesis block is exactly ${DEGREE_RULES.thesis.target} CP (Prep 6 + Thesis 30).`;
+      response = `Thesis block is exactly ${packRules.thesis.target} CP (Prep 6 + Thesis 30).`;
     } else if (lower.includes('total') || lower.includes('120') || lower.includes('148')) {
-      response = `MSc total must be exactly ${DEGREE_RULES.mscTotal.target} CP; grand total (MSc + admission) is currently ${grandTotal} CP.`;
+      response = `MSc total must be exactly ${packRules.mscTotal.target} CP; grand total (MSc + admission) is currently ${grandTotal} CP.`;
     }
 
     setMessages((prev) => [...prev, { sender: 'bot', text: response }]);

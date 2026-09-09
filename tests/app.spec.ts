@@ -22,6 +22,13 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(stored).toBe('data-science');
   });
 
+  test('active DS pack still shows 120 CP rules in progress UI', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.brand-sub')).toContainText('MSc Data Science');
+    await expect(page.getByText('Curriculum Progress')).toBeVisible();
+    await expect(page.getByText(/MSc ECTS:/i)).toContainText('120');
+  });
+
   test('programme switcher shows DS selected and stubs disabled', async ({ page }) => {
     const switcher = page.getByRole('combobox', { name: /programme|degree/i });
     await expect(switcher).toBeVisible();

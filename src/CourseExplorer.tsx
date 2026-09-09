@@ -2,85 +2,97 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Calendar, Star, ShieldAlert, X, ChevronRight, Info, Target, GraduationCap } from 'lucide-react';
 import { COURSES } from './courses';
-import {
-  DEGREE_RULES,
-  evaluatePlan,
-  statusColor,
-  statusFor,
-  type DegreeStats,
-} from './degreeRules';
+import { statusColor, statusFor } from './degreeRules';
+import { evaluatePack, type PackRules } from './degrees/ruleEngine';
+import { getPackRules } from './degrees/registry';
+import { useProgramme } from './programmeContext';
 import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { isStaleWatch } from './coveragePolicy';
 import { getPlacementWarnings } from './offering';
 import { eligibleModulesFor, type Course } from './types';
 
+type ExplorerBucketKey = 'admission' | 'thesis' | 'ml' | 'systems' | 'math' | 'electives';
+
+const EXPLORER_BUCKET_ORDER: ExplorerBucketKey[] = [
+  'admission',
+  'thesis',
+  'ml',
+  'systems',
+  'math',
+  'electives',
+];
+
 type BucketDef = {
   /** Exact catalog module string — must match Course.module */
   module: string;
-  statsKey: keyof DegreeStats;
+  statsKey: ExplorerBucketKey;
   title: string;
   required: boolean;
   desc: string;
   color: string;
 };
 
-function bucketsFor(admissionTarget: number): BucketDef[] {
-  return [
-  {
-    module: DEGREE_RULES.admission.module,
-    statsKey: 'admission',
-    title: 'Conditional Admission',
-    required: admissionTarget > 0,
-    desc: admissionTarget > 0
-      ? `Admission conditions (Auflagen) are student-specific. Current target: exactly ${admissionTarget} CP from your Zulassungsbescheid.`
-      : 'Admission conditions (Auflagen) are student-specific. Set your letter total in the planner header; 0 means no extra CP.',
-    color: '#d97706',
-  },
-  {
-    module: DEGREE_RULES.thesis.module,
-    statsKey: 'thesis',
-    title: 'Master Thesis Block',
-    required: true,
-    desc: 'Exactly 36 CP: Preparation (6) + Master Thesis (30).',
-    color: '#f43f5e',
-  },
-  {
-    module: DEGREE_RULES.ml.module,
-    statsKey: 'ml',
-    title: 'Machine Learning Foundations',
-    required: false,
-    desc: 'Minimum 18 CP in core ML/AI.',
-    color: '#10b981',
-  },
-  {
-    module: DEGREE_RULES.systems.module,
-    statsKey: 'systems',
-    title: 'Systems Foundations',
-    required: false,
-    desc: 'Minimum 18 CP in scalable systems & computing.',
-    color: '#8b5cf6',
-  },
-  {
-    module: DEGREE_RULES.math.module,
-    statsKey: 'math',
-    title: 'Mathematical Foundations',
-    required: false,
-    desc: 'Minimum 18 CP in advanced mathematics.',
-    color: '#2563eb',
-  },
-  {
-    module: DEGREE_RULES.electives.module,
-    statsKey: 'electives',
-    title: 'Electives in Data Science',
-    required: false,
-    desc: 'Exactly 20 CP in application domains or Data Science projects.',
-    color: '#ec4899',
-  },
-  ];
+function bucketsFor(admissionTarget: number, packRules: PackRules): BucketDef[] {
+  const meta: Record<
+    ExplorerBucketKey,
+    { title: string; required: boolean; desc: string; color: string }
+  > = {
+    admission: {
+      title: 'Conditional Admission',
+      required: admissionTarget > 0,
+      desc: admissionTarget > 0
+        ? `Admission conditions (Auflagen) are student-specific. Current target: exactly ${admissionTarget} CP from your Zulassungsbescheid.`
+        : 'Admission conditions (Auflagen) are student-specific. Set your letter total in the planner header; 0 means no extra CP.',
+      color: '#d97706',
+    },
+    thesis: {
+      title: 'Master Thesis Block',
+      required: true,
+      desc: `Exactly ${packRules.thesis.target} CP: Preparation (6) + Master Thesis (30).`,
+      color: '#f43f5e',
+    },
+    ml: {
+      title: 'Machine Learning Foundations',
+      required: false,
+      desc: `Minimum ${packRules.ml.target} CP in core ML/AI.`,
+      color: '#10b981',
+    },
+    systems: {
+      title: 'Systems Foundations',
+      required: false,
+      desc: `Minimum ${packRules.systems.target} CP in scalable systems & computing.`,
+      color: '#8b5cf6',
+    },
+    math: {
+      title: 'Mathematical Foundations',
+      required: false,
+      desc: `Minimum ${packRules.math.target} CP in advanced mathematics.`,
+      color: '#2563eb',
+    },
+    electives: {
+      title: packRules.electives.module ?? 'Electives',
+      required: false,
+      desc: `Exactly ${packRules.electives.target} CP in application domains or Data Science projects.`,
+      color: '#ec4899',
+    },
+  };
+
+  return EXPLORER_BUCKET_ORDER.map((key) => {
+    const rule = packRules[key];
+    const bucketMeta = meta[key];
+    return {
+      module: rule.module ?? key,
+      statsKey: key,
+      title: key === 'electives' ? (rule.module ?? bucketMeta.title) : bucketMeta.title,
+      required: bucketMeta.required,
+      desc: bucketMeta.desc,
+      color: bucketMeta.color,
+    };
+  });
 }
 
-function moduleColor(moduleName: string): string {
-  return bucketsFor(0).find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
+function moduleColor(moduleName: string, packRules: PackRules): string {
+  return bucketsFor(0, packRules).find((b) => b.module === moduleName)?.color ?? 'var(--text-secondary)';
 }
 
 export const CourseExplorer = ({
@@ -94,7 +106,9 @@ export const CourseExplorer = ({
   onClose: () => void;
   admissionTarget: number;
 }) => {
-  const BUCKETS = bucketsFor(admissionTarget);
+  const { programmeId } = useProgramme();
+  const packRules = getPackRules(programmeId);
+  const BUCKETS = bucketsFor(admissionTarget, packRules);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
@@ -110,7 +124,7 @@ export const CourseExplorer = ({
 
   const coursesByBucket = useMemo(() => {
     const grouped: Record<string, Course[]> = {};
-    bucketsFor(0).forEach((b) => (grouped[b.module] = []));
+    bucketsFor(0, packRules).forEach((b) => (grouped[b.module] = []));
     COURSES.forEach((rawCourse) => {
       const course = rawCourse as Course;
       eligibleModulesFor(course).forEach((module) => {
@@ -118,7 +132,7 @@ export const CourseExplorer = ({
       });
     });
     return grouped;
-  }, []);
+  }, [packRules]);
 
   const shortlistedCourses = useMemo(
     () =>
@@ -129,8 +143,8 @@ export const CourseExplorer = ({
   );
 
   const evaluation = useMemo(
-    () => evaluatePlan(shortlistedCourses, admissionTarget),
-    [shortlistedCourses, admissionTarget],
+    () => evaluatePack(shortlistedCourses, packRules, admissionTarget),
+    [shortlistedCourses, admissionTarget, packRules],
   );
 
   const discrepancy = selectedCourse ? getModuleDiscrepancy(selectedCourse.id) : undefined;
@@ -490,7 +504,7 @@ export const CourseExplorer = ({
                     <span
                       className="micro-label"
                       style={{
-                        color: moduleColor(selectedCourse.module),
+                        color: moduleColor(selectedCourse.module, packRules),
                       }}
                     >
                       {selectedCourse.module}

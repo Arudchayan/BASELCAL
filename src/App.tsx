@@ -24,8 +24,8 @@ import { CourseCard } from './CourseCard';
 import { CourseDetailsModal } from './CourseDetailsModal';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
-import { evaluatePlan, DEGREE_RULES, withAdmissionTarget } from './degreeRules';
-import { listProgrammes } from './degrees/registry';
+import { evaluatePack, withAdmissionTarget } from './degrees/ruleEngine';
+import { getPackRules, listProgrammes } from './degrees/registry';
 import type { ProgrammeId } from './degrees/types';
 import {
   ADMISSION_STORAGE_KEY,
@@ -137,7 +137,11 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [ownerSession, setOwnerSession] = useState(() => isOwnerSession());
   const [admissionTarget, setAdmissionTarget] = useState(() => readAdmissionTarget());
-  const degreeRules = useMemo(() => withAdmissionTarget(admissionTarget), [admissionTarget]);
+  const packRules = useMemo(() => getPackRules(programmeId), [programmeId]);
+  const degreeRules = useMemo(
+    () => withAdmissionTarget(packRules, admissionTarget),
+    [packRules, admissionTarget],
+  );
   const enabledProgrammeIds = useMemo(
     () => new Set(enabledProgrammes.map((programme) => programme.id)),
     [enabledProgrammes],
@@ -355,7 +359,7 @@ function App() {
     const ok = confirm(
       `Load ${EXAMPLE_PLAN_NAME}? This replaces your current board.\n\n` +
         'This is a sample outline, not an official University of Basel recommendation.\n' +
-        `• It is built to meet the official ${DEGREE_RULES.mscTotal.target} CP MSc rules\n` +
+        `• It is built to meet the official ${manifest.totalCp} CP MSc rules\n` +
         admissionLine +
         '• Spring 2027 and later offerings are provisional and need a live VV check\n\n' +
         'Continue?',
@@ -449,7 +453,7 @@ function App() {
       if (imported.notes && typeof imported.notes === 'object') setPersonalNotes(imported.notes);
       if (imported.shortlist) setShortlist(imported.shortlist);
       const courses = allPlannedCourses(imported.plan);
-      const ev = evaluatePlan(courses, nextAdmission);
+      const ev = evaluatePack(courses, packRules, nextAdmission);
       const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
       const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
       const missingSched = courses.filter(
