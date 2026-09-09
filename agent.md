@@ -2,9 +2,18 @@
 
 Last verified: 2026-09-08
 
-BaselCal is a React + Vite + TypeScript app for planning and **validating** a University of Basel **MSc Data Science** curriculum against official 2026 credit rules.
+BaselCal is a React + Vite + TypeScript app for planning and **validating** University of Basel MSc curricula against official credit rules. **Phase 1** adds a multi-degree pack foundation; only **Data Science** is fully enabled. The header switcher lists Computer Science and Mathematics as **Coming soon**.
 
-## Degree rules (`degree_rules.json` → `src/degreeRules.ts`)
+## Degree packs (Phase 1)
+
+- Packs live in `degrees/<programmeId>/` (`manifest.json`, `rules.json`).
+- `src/degrees/registry.ts` — programme list, enabled flags, `getPackRules()`.
+- Plans keyed per programme: `basel-plan-v7:<id>`; active programme in `basel-active-programme-v1`.
+- CS/Math manifests exist with `enabled: false`; enabling them is Phase 2/3 work.
+
+## Degree rules (`degrees/data-science/rules.json` → `src/degreeRules.ts`)
+
+Pack rules are canonical. `degree_rules.json` mirrors DS **targets** for `validate_all.cjs` only — keep in sync when targets change (`npm run validate` CHECK 4).
 
 | Bucket | Rule |
 |--------|------|

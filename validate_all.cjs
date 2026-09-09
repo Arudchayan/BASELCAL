@@ -6,6 +6,9 @@
  *   Admission default 0, foundations min 18×3 and min 64 sum,
  *   electives exact 20, thesis exact 36, MSc exact 120.
  *   Admission (Auflagen) is student-specific; the public example outline is Master's-only.
+ *
+ * Rules mirror: source of truth is degrees/data-science/rules.json (pack + UI labels).
+ * degree_rules.json mirrors pack targets for this Node script; keep targets in sync.
  */
 const fs = require('fs');
 
@@ -22,6 +25,7 @@ const typesTs = fs.readFileSync('src/types.ts', 'utf8');
 const degreeRules = fs.readFileSync('src/degreeRules.ts', 'utf8');
 const agentMd = fs.readFileSync('agent.md', 'utf8');
 const degreeRulesJson = JSON.parse(fs.readFileSync('degree_rules.json', 'utf8'));
+const packRulesJson = JSON.parse(fs.readFileSync('degrees/data-science/rules.json', 'utf8'));
 const coveragePolicy = JSON.parse(fs.readFileSync('coverage_policy.json', 'utf8'));
 const examplePlan = JSON.parse(fs.readFileSync('src/examplePlan.json', 'utf8'));
 
@@ -212,6 +216,16 @@ if (!degreeRules.includes('DEGREE_RULES') || !degreeRules.includes('evaluatePlan
 else pass('degreeRules.ts exports DEGREE_RULES + evaluatePlan');
 if (!degreeRules.includes('degree_rules.json')) fail('degreeRules.ts must import degree_rules.json');
 else pass('degreeRules.ts loads degree_rules.json');
+for (const [key, packRule] of Object.entries(packRulesJson)) {
+  const mirrorTarget = degreeRulesJson[key]?.target;
+  if (mirrorTarget === undefined) fail(`degree_rules.json missing mirror key "${key}" from degrees/data-science/rules.json`);
+  else if (mirrorTarget !== packRule.target) {
+    fail(`degree_rules.json target for "${key}" (${mirrorTarget}) ≠ pack (${packRule.target})`);
+  }
+}
+if (!issues.some((msg) => msg.includes('degree_rules.json'))) {
+  pass('degree_rules.json targets mirror degrees/data-science/rules.json');
+}
 if (!appTsx.includes('ProgressPanel') && !appTsx.includes('evaluatePlan')) fail('App does not use evaluation layer');
 else pass('App wired to ProgressPanel / evaluation');
 if (appTsx.includes('AI Curriculum Advisor') || appTsx.includes('AI Summary')) fail('Fake AI branding still present in App.tsx');
