@@ -217,14 +217,22 @@ else pass('degreeRules.ts exports DEGREE_RULES + evaluatePlan');
 if (!degreeRules.includes('degree_rules.json')) fail('degreeRules.ts must import degree_rules.json');
 else pass('degreeRules.ts loads degree_rules.json');
 for (const [key, packRule] of Object.entries(packRulesJson)) {
-  const mirrorTarget = degreeRulesJson[key]?.target;
-  if (mirrorTarget === undefined) fail(`degree_rules.json missing mirror key "${key}" from degrees/data-science/rules.json`);
-  else if (mirrorTarget !== packRule.target) {
-    fail(`degree_rules.json target for "${key}" (${mirrorTarget}) ≠ pack (${packRule.target})`);
+  const mirrorRule = degreeRulesJson[key];
+  if (!mirrorRule) fail(`degree_rules.json missing mirror key "${key}" from degrees/data-science/rules.json`);
+  else {
+    if (mirrorRule.target !== packRule.target) {
+      fail(`degree_rules.json target for "${key}" (${mirrorRule.target}) ≠ pack (${packRule.target})`);
+    }
+    if (mirrorRule.kind !== packRule.kind) {
+      fail(`degree_rules.json kind for "${key}" (${mirrorRule.kind}) ≠ pack (${packRule.kind})`);
+    }
+    if (packRule.module !== undefined && mirrorRule.module !== packRule.module) {
+      fail(`degree_rules.json module for "${key}" (${mirrorRule.module}) ≠ pack (${packRule.module})`);
+    }
   }
 }
 if (!issues.some((msg) => msg.includes('degree_rules.json'))) {
-  pass('degree_rules.json targets mirror degrees/data-science/rules.json');
+  pass('degree_rules.json target/kind/module mirror degrees/data-science/rules.json');
 }
 if (!appTsx.includes('ProgressPanel') && !appTsx.includes('evaluatePlan')) fail('App does not use evaluation layer');
 else pass('App wired to ProgressPanel / evaluation');

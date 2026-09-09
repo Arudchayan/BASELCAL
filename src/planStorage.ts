@@ -268,7 +268,7 @@ function storedPlanIsEmpty(raw: string | null): boolean {
       (semesterId) => Array.isArray(parsed[semesterId]) && parsed[semesterId].length === 0,
     );
   } catch {
-    return false;
+    return true;
   }
 }
 

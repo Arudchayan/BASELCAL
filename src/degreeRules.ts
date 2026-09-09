@@ -14,9 +14,11 @@ export type { BucketStatus, RuleKind };
 export { statusFor, sumModule };
 
 const legacyRules = legacyRulesJson as Record<string, { target: number }>;
-for (const [key, rule] of Object.entries(DS_RULES)) {
-  if (legacyRules[key]?.target !== rule.target) {
-    throw new Error(`degree_rules.json target is out of sync for "${key}"`);
+if (import.meta.env.DEV) {
+  for (const [key, rule] of Object.entries(DS_RULES)) {
+    if (legacyRules[key]?.target !== rule.target) {
+      throw new Error(`degree_rules.json target is out of sync for "${key}"`);
+    }
   }
 }
 
