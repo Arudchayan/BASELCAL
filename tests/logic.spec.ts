@@ -213,6 +213,26 @@ test.describe('Degree accuracy & storage', () => {
     await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toHaveCount(0);
   });
 
+  test('degree registry lists DS enabled and stubs disabled', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const mod = await import('/src/degrees/registry.ts');
+      const list = mod.listProgrammes();
+      return {
+        ids: list.map((p: { id: string }) => p.id),
+        ds: list.find((p: { id: string }) => p.id === 'data-science')?.enabled,
+        cs: list.find((p: { id: string }) => p.id === 'computer-science')?.enabled,
+        math: list.find((p: { id: string }) => p.id === 'mathematics')?.enabled,
+        defaultId: mod.DEFAULT_PROGRAMME_ID,
+      };
+    });
+    expect(result.ids).toEqual(['data-science', 'computer-science', 'mathematics']);
+    expect(result.ds).toBe(true);
+    expect(result.cs).toBe(false);
+    expect(result.math).toBe(false);
+    expect(result.defaultId).toBe('data-science');
+  });
+
   test('project CP variants cannot be double-counted on rehydrate', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => {

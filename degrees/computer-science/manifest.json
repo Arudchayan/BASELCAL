@@ -1,0 +1,13 @@
+{
+  "id": "computer-science",
+  "displayName": "Computer Science",
+  "shortName": "CS",
+  "degreeTitle": "MSc Computer Science",
+  "totalCp": 90,
+  "enabled": false,
+  "brandSubtitle": "University of Basel · MSc Computer Science · unofficial",
+  "sources": {
+    "rules": "Official MSc Computer Science 2026 programme rules",
+    "vvProgrammeLabel": "Master's Studies: Computer Science"
+  }
+}
