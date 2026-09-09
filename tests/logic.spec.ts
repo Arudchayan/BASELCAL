@@ -233,6 +233,33 @@ test.describe('Degree accuracy & storage', () => {
     expect(result.defaultId).toBe('data-science');
   });
 
+  test('rule engine matches DS facade on empty admission example shape', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const { evaluatePlan } = await import('/src/degreeRules.ts');
+      const { evaluatePack } = await import('/src/degrees/ruleEngine.ts');
+      const { DS_RULES } = await import('/src/degrees/dataSciencePack.ts');
+      const { COURSES } = await import('/src/courses.ts');
+      const example = await import('/src/examplePlan.json');
+      const ids = Object.values(example.plan).flat() as string[];
+      const courses = ids.map((id) => COURSES.find((c) => c.id === id)).filter(Boolean);
+      const facade = evaluatePlan(courses as never[], 0);
+      const engine = evaluatePack(courses as never[], DS_RULES, 0);
+      return {
+        facadeComplete: facade.isComplete,
+        engineComplete: engine.isComplete,
+        facadeMsc: facade.stats.mscTotal,
+        engineMsc: engine.stats.mscTotal,
+        sameIssues: JSON.stringify(facade.issues) === JSON.stringify(engine.issues),
+      };
+    });
+    expect(result.facadeComplete).toBe(true);
+    expect(result.engineComplete).toBe(true);
+    expect(result.facadeMsc).toBe(120);
+    expect(result.engineMsc).toBe(120);
+    expect(result.sameIssues).toBe(true);
+  });
+
   test('project CP variants cannot be double-counted on rehydrate', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => {
