@@ -7,6 +7,21 @@ test.describe('BASELCAL App Main Functionality', () => {
     await page.goto('/');
   });
 
+  test('clamps stale disabled programme id from localStorage on boot', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('basel-active-programme-v1', 'computer-science');
+    });
+    await page.goto('/');
+
+    const switcher = page.getByRole('combobox', { name: /programme|degree/i });
+    await expect(switcher).toHaveValue('data-science');
+
+    const stored = await page.evaluate(() =>
+      localStorage.getItem('basel-active-programme-v1'),
+    );
+    expect(stored).toBe('data-science');
+  });
+
   test('programme switcher shows DS selected and stubs disabled', async ({ page }) => {
     const switcher = page.getByRole('combobox', { name: /programme|degree/i });
     await expect(switcher).toBeVisible();

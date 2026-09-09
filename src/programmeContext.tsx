@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  DEFAULT_PROGRAMME_ID,
   getManifest,
   listEnabledProgrammes,
 } from './degrees/registry';
@@ -25,9 +26,20 @@ type ProgrammeContextValue = {
 
 const ProgrammeContext = createContext<ProgrammeContextValue | null>(null);
 
+function resolveInitialProgrammeId(): ProgrammeId {
+  const stored = loadActiveProgrammeId();
+  const enabled = listEnabledProgrammes();
+  const isEnabled = enabled.some((programme) => programme.id === stored);
+  if (isEnabled) return stored;
+
+  const fallback = enabled[0]?.id ?? DEFAULT_PROGRAMME_ID;
+  saveActiveProgrammeId(fallback);
+  return fallback;
+}
+
 export function ProgrammeProvider({ children }: { children: ReactNode }) {
-  const [programmeId, setProgrammeIdState] = useState<ProgrammeId>(() =>
-    loadActiveProgrammeId(),
+  const [programmeId, setProgrammeIdState] = useState<ProgrammeId>(
+    resolveInitialProgrammeId,
   );
   const enabledProgrammes = useMemo(() => listEnabledProgrammes(), []);
 
