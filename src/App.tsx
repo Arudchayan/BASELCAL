@@ -24,11 +24,11 @@ import { CourseCard } from './CourseCard';
 import { CourseDetailsModal } from './CourseDetailsModal';
 import { ProgressPanel } from './ProgressPanel';
 import { QuickTips } from './QuickTips';
-import { evaluatePlan, DEGREE_RULES, withAdmissionTarget } from './degreeRules';
+import { evaluatePack, withAdmissionTarget } from './degrees/ruleEngine';
+import { getPackRules, listProgrammes } from './degrees/registry';
+import type { ProgrammeId } from './degrees/types';
 import {
-  ADMISSION_STORAGE_KEY,
   clampAdmission,
-  clearUnlockedConfig,
   isOwnerSession,
   readAdmissionTarget,
   writeAdmissionTarget,
@@ -40,8 +40,11 @@ import { matchesSemesterFilter, parseOffering } from './offering';
 import { findConflicts } from './conflicts';
 import {
   STORAGE_KEYS,
-  loadPlanFromStorageDetailed,
-  savePlanToStorage,
+  ensurePlanMigrated,
+  loadPlanForProgrammeDetailed,
+  savePlanForProgramme,
+  notesStorageKey,
+  shortlistStorageKey,
   loadJson,
   saveJson,
   exportPlanPayload,
@@ -50,6 +53,7 @@ import {
   buildPlanFromStudentConfig,
   allPlannedCourses,
   PLAN_DISCLAIMER,
+  clearOwnerBrowserData,
 } from './planStorage';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
@@ -67,6 +71,7 @@ import {
   type PlanState,
   type SemesterId,
 } from './types';
+import { useProgramme } from './programmeContext';
 import './index.css';
 
 const CourseExplorer = lazy(() =>
@@ -74,7 +79,8 @@ const CourseExplorer = lazy(() =>
 );
 const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Timetable })));
 
-const boot = loadPlanFromStorageDetailed();
+ensurePlanMigrated();
+const PROGRAMMES = listProgrammes();
 
 const sharedBoot = (() => {
   const shared = readSharedPlanFromHash();
@@ -94,6 +100,8 @@ const daysSince = (iso: string): number | null => {
 const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
 
 function App() {
+  const { programmeId, setProgrammeId, manifest, enabledProgrammes } = useProgramme();
+  const [initialBoot] = useState(() => loadPlanForProgrammeDetailed(programmeId));
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
     loadJson<'dark' | 'light'>(STORAGE_KEYS.theme, 'light'),
   );
@@ -101,9 +109,9 @@ function App() {
   const [activeSem, setActiveSem] = useState<SemesterId>('s1');
   const [showExplorer, setShowExplorer] = useState(false);
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
-  const [plan, setPlan] = useState<PlanState>(() => sharedBoot ?? boot.plan);
-  const [startupDrops] = useState<string[]>(() => boot.droppedIds);
-  const [startupDupes] = useState<string[]>(() => boot.duplicateIds);
+  const [plan, setPlan] = useState<PlanState>(() => sharedBoot ?? initialBoot.plan);
+  const [startupDrops] = useState<string[]>(() => initialBoot.droppedIds);
+  const [startupDupes] = useState<string[]>(() => initialBoot.duplicateIds);
   const [sharedLoaded] = useState<boolean>(() => !!sharedBoot);
   const [storageOk, setStorageOk] = useState(true);
   const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true, admission: true });
@@ -113,9 +121,11 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [personalNotes, setPersonalNotes] = useState<Record<string, string>>(() =>
-    loadJson(STORAGE_KEYS.notes, {}),
+    loadJson(notesStorageKey(programmeId), {}),
   );
-  const [shortlist, setShortlist] = useState<string[]>(() => loadJson(STORAGE_KEYS.shortlist, []));
+  const [shortlist, setShortlist] = useState<string[]>(() =>
+    loadJson(shortlistStorageKey(programmeId), []),
+  );
   const [search, setSearch] = useState('');
   const [searchLower, setSearchLower] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
@@ -125,7 +135,15 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [ownerSession, setOwnerSession] = useState(() => isOwnerSession());
   const [admissionTarget, setAdmissionTarget] = useState(() => readAdmissionTarget());
-  const degreeRules = useMemo(() => withAdmissionTarget(admissionTarget), [admissionTarget]);
+  const packRules = useMemo(() => getPackRules(programmeId), [programmeId]);
+  const degreeRules = useMemo(
+    () => withAdmissionTarget(packRules, admissionTarget),
+    [packRules, admissionTarget],
+  );
+  const enabledProgrammeIds = useMemo(
+    () => new Set(enabledProgrammes.map((programme) => programme.id)),
+    [enabledProgrammes],
+  );
 
   const reportStorage = (key: keyof typeof storageFlags.current, ok: boolean) => {
     storageFlags.current[key] = ok;
@@ -146,19 +164,19 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    reportStorage('plan', savePlanToStorage(plan));
-  }, [plan]);
+    reportStorage('plan', savePlanForProgramme(programmeId, plan));
+  }, [plan, programmeId]);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
-      reportStorage('notes', saveJson(STORAGE_KEYS.notes, personalNotes));
+      reportStorage('notes', saveJson(notesStorageKey(programmeId), personalNotes));
     }, 300);
     return () => window.clearTimeout(t);
-  }, [personalNotes]);
+  }, [personalNotes, programmeId]);
 
   useEffect(() => {
-    reportStorage('shortlist', saveJson(STORAGE_KEYS.shortlist, shortlist));
-  }, [shortlist]);
+    reportStorage('shortlist', saveJson(shortlistStorageKey(programmeId), shortlist));
+  }, [shortlist, programmeId]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setSearchLower(search.toLowerCase()), 150);
@@ -167,6 +185,21 @@ function App() {
 
   const pushUndo = (prev: PlanState) => {
     setUndoStack((stack) => [...stack.slice(-19), prev]);
+  };
+
+  const changeProgramme = (nextProgrammeId: ProgrammeId) => {
+    if (nextProgrammeId === programmeId || !enabledProgrammeIds.has(nextProgrammeId)) return;
+
+    reportStorage('plan', savePlanForProgramme(programmeId, plan));
+    reportStorage('notes', saveJson(notesStorageKey(programmeId), personalNotes));
+    reportStorage('shortlist', saveJson(shortlistStorageKey(programmeId), shortlist));
+
+    setProgrammeId(nextProgrammeId);
+    const nextBoot = loadPlanForProgrammeDetailed(nextProgrammeId);
+    setPlan(nextBoot.plan);
+    setPersonalNotes(loadJson(notesStorageKey(nextProgrammeId), {}));
+    setShortlist(loadJson(shortlistStorageKey(nextProgrammeId), []));
+    setUndoStack([]);
   };
 
   const updatePlan = (updater: (prev: PlanState) => PlanState) => {
@@ -324,7 +357,7 @@ function App() {
     const ok = confirm(
       `Load ${EXAMPLE_PLAN_NAME}? This replaces your current board.\n\n` +
         'This is a sample outline, not an official University of Basel recommendation.\n' +
-        `• It is built to meet the official ${DEGREE_RULES.mscTotal.target} CP MSc rules\n` +
+        `• It is built to meet the official ${manifest.totalCp} CP MSc rules\n` +
         admissionLine +
         '• Spring 2027 and later offerings are provisional and need a live VV check\n\n' +
         'Continue?',
@@ -347,16 +380,13 @@ function App() {
     }
     const next = buildPlanFromStudentConfig(overlay);
     setPlan(next.plan);
-    savePlanToStorage(next.plan);
+    savePlanForProgramme(programmeId, next.plan);
     setShowLogin(false);
     showToast(overlay.seedPlan ? 'Owner overlay unlocked' : 'Signed in');
   };
 
   const logoutOwner = () => {
-    clearUnlockedConfig();
-    localStorage.removeItem(STORAGE_KEYS.plan);
-    localStorage.removeItem(ADMISSION_STORAGE_KEY);
-    localStorage.removeItem('baselcal-home-v1');
+    clearOwnerBrowserData();
     window.location.reload();
   };
 
@@ -418,7 +448,7 @@ function App() {
       if (imported.notes && typeof imported.notes === 'object') setPersonalNotes(imported.notes);
       if (imported.shortlist) setShortlist(imported.shortlist);
       const courses = allPlannedCourses(imported.plan);
-      const ev = evaluatePlan(courses, nextAdmission);
+      const ev = evaluatePack(courses, packRules, nextAdmission);
       const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
       const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
       const missingSched = courses.filter(
@@ -507,11 +537,32 @@ function App() {
         className="glass-panel topnav"
       >
         <div className="brand">
-          <div className="brand-mark">DS</div>
+          <div className="brand-mark">{manifest.shortName}</div>
           <div style={{ minWidth: 0 }}>
-            <h1>UniBasel DS Planner</h1>
-            <div className="brand-sub">University of Basel · MSc Data Science · unofficial</div>
+            <h1>UniBasel {manifest.shortName} Planner</h1>
+            <div className="brand-sub">{manifest.brandSubtitle}</div>
           </div>
+          <select
+            aria-label="Programme"
+            value={programmeId}
+            onChange={(event) => changeProgramme(event.target.value as ProgrammeId)}
+            title="Degree programme"
+            style={{ padding: '7px 9px', minWidth: 150 }}
+          >
+            {PROGRAMMES.map((programme) => {
+              const enabled = enabledProgrammeIds.has(programme.id);
+              return (
+                <option
+                  key={programme.id}
+                  value={programme.id}
+                  disabled={!enabled}
+                  title={enabled ? undefined : 'Coming soon'}
+                >
+                  {programme.displayName}{enabled ? '' : ' — Coming soon'}
+                </option>
+              );
+            })}
+          </select>
         </div>
         <div className="topnav-actions no-print">
           <button

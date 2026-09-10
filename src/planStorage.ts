@@ -1,5 +1,12 @@
 import { COURSES } from './courses';
-import { STUDENT_CONFIG, type StudentConfig } from './studentConfig';
+import { DEFAULT_PROGRAMME_ID } from './degrees/registry';
+import type { ProgrammeId } from './degrees/types';
+import {
+  ADMISSION_STORAGE_KEY,
+  STUDENT_CONFIG,
+  clearUnlockedConfig,
+  type StudentConfig,
+} from './studentConfig';
 import {
   EXAMPLE_PLAN_ALLOCATIONS,
   SEMESTER_IDS,
@@ -22,6 +29,77 @@ export const STORAGE_KEYS = {
   shortlist: 'basel-ds-shortlist',
   theme: 'basel-ds-theme',
 } as const;
+
+export const PLAN_STORAGE_VERSION = 7;
+export const ACTIVE_PROGRAMME_STORAGE_KEY = 'basel-active-programme-v1';
+
+export function planStorageKey(programmeId: ProgrammeId): string {
+  return `basel-plan-v${PLAN_STORAGE_VERSION}:${programmeId}`;
+}
+
+export function notesStorageKey(programmeId: ProgrammeId): string {
+  return `basel-notes-v${PLAN_STORAGE_VERSION}:${programmeId}`;
+}
+
+export function shortlistStorageKey(programmeId: ProgrammeId): string {
+  return `basel-shortlist-v${PLAN_STORAGE_VERSION}:${programmeId}`;
+}
+
+/** Home pin set in the campus map (also may come from owner overlay). */
+export const HOME_STORAGE_KEY = 'baselcal-home-v1';
+
+const ALL_PROGRAMME_IDS: ProgrammeId[] = ['data-science', 'computer-science', 'mathematics'];
+
+/**
+ * Wipe owner overlay + personal browser data after Sign out.
+ * Covers every programme key so notes/shortlist cannot linger after logout.
+ */
+export function clearOwnerBrowserData(): void {
+  clearUnlockedConfig();
+  try {
+    for (const programmeId of ALL_PROGRAMME_IDS) {
+      localStorage.removeItem(planStorageKey(programmeId));
+      localStorage.removeItem(notesStorageKey(programmeId));
+      localStorage.removeItem(shortlistStorageKey(programmeId));
+    }
+    localStorage.removeItem(ADMISSION_STORAGE_KEY);
+    localStorage.removeItem(HOME_STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEYS.notes);
+    localStorage.removeItem(STORAGE_KEYS.shortlist);
+    localStorage.removeItem(STORAGE_KEYS.plan);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV5);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV4);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV3);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV2);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV1);
+  } catch {
+    // private mode / blocked storage
+  }
+}
+
+function isProgrammeId(value: string): value is ProgrammeId {
+  return value === 'data-science' || value === 'computer-science' || value === 'mathematics';
+}
+
+export function loadActiveProgrammeId(): ProgrammeId {
+  try {
+    const stored = localStorage.getItem(ACTIVE_PROGRAMME_STORAGE_KEY);
+    if (stored && isProgrammeId(stored)) return stored;
+    localStorage.setItem(ACTIVE_PROGRAMME_STORAGE_KEY, DEFAULT_PROGRAMME_ID);
+  } catch {
+    // Storage unavailable — use the public default.
+  }
+  return DEFAULT_PROGRAMME_ID;
+}
+
+export function saveActiveProgrammeId(programmeId: ProgrammeId): boolean {
+  try {
+    localStorage.setItem(ACTIVE_PROGRAMME_STORAGE_KEY, programmeId);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export type PlanExport = {
   version: 3;
@@ -219,40 +297,93 @@ function migrateLegacyPlan(raw: unknown): RehydrateResult | null {
   return rehydratePlanDetailed(idMap);
 }
 
-export function loadPlanFromStorageDetailed(): RehydrateResult {
+function storedPlanIsEmpty(raw: string | null): boolean {
+  if (raw === null) return true;
   try {
-    const current = localStorage.getItem(STORAGE_KEYS.plan);
-    if (current) {
-      return rehydratePlanDetailed(JSON.parse(current) as Record<string, unknown>);
-    }
-    const legacyV5 = localStorage.getItem(STORAGE_KEYS.planLegacyV5);
-    if (legacyV5) {
-      const migrated = migrateLegacyPlan(JSON.parse(legacyV5));
-      if (migrated) {
-        savePlanToStorage(migrated.plan);
-        return migrated;
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return SEMESTER_IDS.every(
+      (semesterId) => Array.isArray(parsed[semesterId]) && parsed[semesterId].length === 0,
+    );
+  } catch {
+    return true;
+  }
+}
+
+export function ensurePlanMigrated(): void {
+  const planKey = planStorageKey(DEFAULT_PROGRAMME_ID);
+  const notesKey = notesStorageKey(DEFAULT_PROGRAMME_ID);
+  const shortlistKey = shortlistStorageKey(DEFAULT_PROGRAMME_ID);
+
+  try {
+    if (storedPlanIsEmpty(localStorage.getItem(planKey))) {
+      const legacyPlanKeys = [STORAGE_KEYS.plan, STORAGE_KEYS.planLegacyV5];
+      const sourceKey = legacyPlanKeys.find((key) => localStorage.getItem(key) !== null);
+      if (sourceKey) {
+        const raw = localStorage.getItem(sourceKey);
+        if (raw !== null) localStorage.setItem(planKey, raw);
       }
     }
+    if (localStorage.getItem(notesKey) === null) {
+      const rawNotes = localStorage.getItem(STORAGE_KEYS.notes);
+      if (rawNotes !== null) localStorage.setItem(notesKey, rawNotes);
+    }
+    if (localStorage.getItem(shortlistKey) === null) {
+      const rawShortlist = localStorage.getItem(STORAGE_KEYS.shortlist);
+      if (rawShortlist !== null) localStorage.setItem(shortlistKey, rawShortlist);
+    }
+
+    localStorage.removeItem(STORAGE_KEYS.plan);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV5);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV4);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV3);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV2);
     localStorage.removeItem(STORAGE_KEYS.planLegacyV1);
+    localStorage.removeItem(STORAGE_KEYS.notes);
+    localStorage.removeItem(STORAGE_KEYS.shortlist);
+  } catch {
+    // Storage unavailable — normal load/save fallbacks handle this.
+  }
+}
+
+export function loadPlanForProgrammeDetailed(programmeId: ProgrammeId): RehydrateResult {
+  if (programmeId === DEFAULT_PROGRAMME_ID) ensurePlanMigrated();
+  try {
+    const current = localStorage.getItem(planStorageKey(programmeId));
+    if (current) {
+      return rehydratePlanDetailed(JSON.parse(current) as Record<string, unknown>);
+    }
   } catch {
     // Corrupt storage — fall through to empty or private seed
   }
-  const seed = studentSeedRefs() ?? emptyPlanRefs();
+  const seed = programmeId === DEFAULT_PROGRAMME_ID
+    ? studentSeedRefs() ?? emptyPlanRefs()
+    : emptyPlanRefs();
   const seeded = rehydratePlanDetailed(seed);
-  savePlanToStorage(seeded.plan);
+  savePlanForProgramme(programmeId, seeded.plan);
   return seeded;
 }
 
-export function savePlanToStorage(plan: PlanState): boolean {
+export function loadPlanForProgramme(programmeId: ProgrammeId): PlanState {
+  return loadPlanForProgrammeDetailed(programmeId).plan;
+}
+
+export function savePlanForProgramme(programmeId: ProgrammeId, plan: PlanState): boolean {
   try {
-    localStorage.setItem(STORAGE_KEYS.plan, JSON.stringify(planToRefs(plan)));
+    localStorage.setItem(planStorageKey(programmeId), JSON.stringify(planToRefs(plan)));
     return true;
   } catch {
     return false;
   }
+}
+
+/** @deprecated Use loadPlanForProgrammeDetailed with an explicit programme. */
+export function loadPlanFromStorageDetailed(): RehydrateResult {
+  return loadPlanForProgrammeDetailed(DEFAULT_PROGRAMME_ID);
+}
+
+/** @deprecated Use savePlanForProgramme with an explicit programme. */
+export function savePlanToStorage(plan: PlanState): boolean {
+  return savePlanForProgramme(DEFAULT_PROGRAMME_ID, plan);
 }
 
 export function loadJson<T>(key: string, fallback: T): T {

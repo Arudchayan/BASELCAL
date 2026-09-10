@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, BookOpen, CheckCircle2, Info } from 'lucide-react';
 import { MetricBox } from './MetricBox';
-import { DEGREE_RULES, evaluatePlan } from './degreeRules';
+import { evaluatePack } from './degrees/ruleEngine';
+import { getPackRules } from './degrees/registry';
+import { useProgramme } from './programmeContext';
 import { findConflicts, isHardClash } from './conflicts';
 import { getPlacementWarnings } from './offering';
 import { allPlannedCourses } from './planStorage';
@@ -33,9 +35,15 @@ export function ProgressPanel({
   courses?: Course[];
   admissionTarget: number;
 }) {
+  const { programmeId, manifest } = useProgramme();
+  const packRules = getPackRules(programmeId);
   const [showAllConflicts, setShowAllConflicts] = useState(false);
   const courses = providedCourses ?? allPlannedCourses(plan);
-  const { stats, buckets, isComplete, issues, rules } = evaluatePlan(courses, admissionTarget);
+  const { stats, buckets, isComplete, issues, rules } = evaluatePack(
+    courses,
+    packRules,
+    admissionTarget,
+  );
   const mscTarget = rules.mscTotal.target;
   const grandTarget = rules.grandTotal.target;
 
@@ -72,7 +80,9 @@ export function ProgressPanel({
   const bucketBreakdown = BREAKDOWN_KEYS.map((key) => ({
     key,
     bucket: buckets.find((b) => b.key === key),
-    courses: courses.filter((course) => creditModule(course) === DEGREE_RULES[key].module),
+    courses: courses.filter(
+      (course) => creditModule(course) === rules[key]?.module,
+    ),
   }));
 
   const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
@@ -119,7 +129,7 @@ export function ProgressPanel({
         Curriculum Progress
       </h2>
       <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-        Degree targets follow the Uni Basel MSc Data Science 2026 programme. Admission (Auflagen) is
+        Degree targets follow the {manifest.sources.rules}. Admission (Auflagen) is
         student-specific — currently {admissionTarget} CP, set from your letter (0 means none). Exact buckets fail
         on overshoot; foundations are minimums. Catalog review:{' '}
         {COVERAGE_POLICY.lastVerified.date}

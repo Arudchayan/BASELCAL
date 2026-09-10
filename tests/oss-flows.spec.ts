@@ -52,6 +52,47 @@ test.describe('OSS flows', () => {
     await expect(dialog.getByText(/Owner login is only available|Invalid login|Could not reach/i)).toBeVisible();
   });
 
+  test('owner sign-out clears notes, shortlist, admission, and home', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      sessionStorage.setItem('basel-ds-unlock-v1', JSON.stringify({ admissionTarget: 12, seedPlan: false }));
+      localStorage.setItem('basel-notes-v7:data-science', JSON.stringify({ 'M-1': 'private note' }));
+      localStorage.setItem('basel-shortlist-v7:data-science', JSON.stringify(['M-1']));
+      localStorage.setItem('basel-notes-v7:computer-science', JSON.stringify({ 'CS-1': 'other' }));
+      localStorage.setItem('basel-ds-admission-target', '12');
+      localStorage.setItem('baselcal-home-v1', JSON.stringify({ lat: 47.5, lng: 7.5, label: 'Home' }));
+      localStorage.setItem(
+        'basel-plan-v7:data-science',
+        JSON.stringify({ s1: ['M-1'], s2: [], s3: [], s4: [] }),
+      );
+    });
+    await page.reload();
+
+    await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+    await page.getByRole('button', { name: 'Sign out' }).click();
+
+    await expect(page.getByRole('button', { name: 'Owner login' })).toBeVisible();
+    // Allow post-reload persist effects to settle (they may rewrite empty notes/shortlist).
+    await page.waitForTimeout(400);
+    const leftover = await page.evaluate(() => ({
+      unlock: sessionStorage.getItem('basel-ds-unlock-v1'),
+      notesDs: localStorage.getItem('basel-notes-v7:data-science'),
+      notesCs: localStorage.getItem('basel-notes-v7:computer-science'),
+      shortlist: localStorage.getItem('basel-shortlist-v7:data-science'),
+      admission: localStorage.getItem('basel-ds-admission-target'),
+      home: localStorage.getItem('baselcal-home-v1'),
+      plan: localStorage.getItem('basel-plan-v7:data-science'),
+    }));
+    expect(leftover.unlock).toBeNull();
+    expect(leftover.admission).toBeNull();
+    expect(leftover.home).toBeNull();
+    expect(leftover.notesCs).toBeNull();
+    expect(JSON.parse(leftover.notesDs || '{}')).toEqual({});
+    expect(JSON.parse(leftover.shortlist || '[]')).toEqual([]);
+    expect(JSON.stringify(leftover)).not.toContain('private note');
+    expect(JSON.stringify(leftover)).not.toContain('M-1');
+  });
+
   test('empty board share explains that the link would not load', async ({ page }) => {
     await page.goto('/');
     await clearPlanStorage(page);

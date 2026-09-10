@@ -8,6 +8,15 @@ Plan four semesters, check official 2026 credit rules, spot timetable clashes, a
 
 Live demo: [baselcal.vercel.app](https://baselcal.vercel.app)
 
+## Scope (Phase 1 — multi-degree foundation)
+
+BaselCal is evolving from a single-programme DS planner into a **degree-pack** architecture. Phase 1 ships the foundation without changing Data Science validation behaviour.
+
+- **Header programme switcher** — pick MSc Data Science, Computer Science, or Mathematics. Only **Data Science** is fully enabled today.
+- **Computer Science & Mathematics** — visible in the switcher as **Coming soon** (pack manifests registered; rules and VV data land in Phase 2/3).
+- **Pack layout** — each programme has `degrees/<id>/manifest.json` and `rules.json`; the app loads packs via `src/degrees/`. Plans are stored per programme (`basel-plan-v7:<id>`).
+- **`degree_rules.json`** — mirrors DS pack CP targets for `npm run validate` (Node). Source of truth: `degrees/data-science/rules.json`.
+
 The public demo is a **sandbox**. Anyone can drag courses, load the example outline, and export a plan. Owner login (no signup) unlocks a private overlay stored in Vercel env vars — that JSON is **not** shipped in the client bundle.
 
 <p align="center">
@@ -73,7 +82,7 @@ npm run build
 
 ## Degree rules
 
-Official MSc Data Science 2026 targets (see `degree_rules.json`):
+Official MSc Data Science 2026 targets (pack: `degrees/data-science/rules.json`; mirrored in `degree_rules.json` for validate):
 
 | Bucket | Rule |
 |--------|------|

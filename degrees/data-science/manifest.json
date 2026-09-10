@@ -1,0 +1,13 @@
+{
+  "id": "data-science",
+  "displayName": "Data Science",
+  "shortName": "DS",
+  "degreeTitle": "MSc Data Science",
+  "totalCp": 120,
+  "enabled": true,
+  "brandSubtitle": "University of Basel · MSc Data Science · unofficial",
+  "sources": {
+    "rules": "Official MSc Data Science 2026 programme rules",
+    "vvProgrammeLabel": "Master's Studies: Data Science"
+  }
+}

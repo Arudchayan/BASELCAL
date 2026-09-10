@@ -2,9 +2,23 @@
 
 Canonical runtime catalog: **`src/courses.ts`**.
 
+## Degree packs (Phase 1)
+
+Each MSc programme is a **degree pack** under `degrees/<id>/`:
+
+| Path | Role |
+|------|------|
+| `degrees/data-science/manifest.json` | Display name, enabled flag, total CP, source labels |
+| `degrees/data-science/rules.json` | **Source of truth** for DS CP targets and UI bucket labels |
+| `degrees/computer-science/`, `degrees/mathematics/` | Registered stubs (`enabled: false`) until Phase 2/3 |
+
+Runtime: `src/degrees/registry.ts` loads manifests; `src/degrees/dataSciencePack.ts` imports pack rules; `src/degreeRules.ts` re-exports DS evaluation for the app.
+
+**`degree_rules.json`** (repo root) mirrors `degrees/data-science/rules.json` **targets only** so `validate_all.cjs` can run without the TS bundler. After editing pack rules, keep targets in sync — `npm run validate` checks parity.
+
 ## Authority ladder (what wins on conflict)
 
-1. **Official program rules** — `src/degreeRules.ts` (2026 MSc DS CP targets)
+1. **Official program rules** — pack `degrees/data-science/rules.json` → `src/degreeRules.ts` (2026 MSc DS CP targets)
 2. **VV live** — `vorlesungsverzeichnis.unibas.ch` (existence, CP, semester, lecturer, exam, schedule, vvId)
 3. **`vv_scrape_cache.json`** — scraped field snapshots
 4. **`src/courses.ts`** — app catalog after validation passes

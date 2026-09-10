@@ -1,0 +1,13 @@
+{
+  "id": "mathematics",
+  "displayName": "Mathematics",
+  "shortName": "Math",
+  "degreeTitle": "MSc Mathematics",
+  "totalCp": 90,
+  "enabled": false,
+  "brandSubtitle": "University of Basel · MSc Mathematics · unofficial",
+  "sources": {
+    "rules": "Official MSc Mathematics 2026 programme rules",
+    "vvProgrammeLabel": "Master's Studies: Mathematics"
+  }
+}

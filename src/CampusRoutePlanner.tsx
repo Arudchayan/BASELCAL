@@ -10,12 +10,12 @@ import {
   type CampusPlace,
 } from './campusLocations';
 import { configuredHome } from './studentConfig';
+import { HOME_STORAGE_KEY } from './planStorage';
 import type { Course } from './types';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const WALKING_KMH = 4.8;
 const STREET_FACTOR = 1.25;
-const HOME_STORAGE_KEY = 'baselcal-home-v1';
 
 type LocatedSession = ReturnType<typeof collectDaySessions>[number] & { place: CampusPlace };
 

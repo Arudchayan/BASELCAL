@@ -25,6 +25,7 @@ tmp/
 output/
 shots/
 .omo/
+.superpowers/
 
 # Editor directories and files
 .vscode/*
