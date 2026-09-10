@@ -28,9 +28,7 @@ import { evaluatePack, withAdmissionTarget } from './degrees/ruleEngine';
 import { getPackRules, listProgrammes } from './degrees/registry';
 import type { ProgrammeId } from './degrees/types';
 import {
-  ADMISSION_STORAGE_KEY,
   clampAdmission,
-  clearUnlockedConfig,
   isOwnerSession,
   readAdmissionTarget,
   writeAdmissionTarget,
@@ -45,7 +43,6 @@ import {
   ensurePlanMigrated,
   loadPlanForProgrammeDetailed,
   savePlanForProgramme,
-  planStorageKey,
   notesStorageKey,
   shortlistStorageKey,
   loadJson,
@@ -56,6 +53,7 @@ import {
   buildPlanFromStudentConfig,
   allPlannedCourses,
   PLAN_DISCLAIMER,
+  clearOwnerBrowserData,
 } from './planStorage';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
@@ -388,10 +386,7 @@ function App() {
   };
 
   const logoutOwner = () => {
-    clearUnlockedConfig();
-    localStorage.removeItem(planStorageKey(programmeId));
-    localStorage.removeItem(ADMISSION_STORAGE_KEY);
-    localStorage.removeItem('baselcal-home-v1');
+    clearOwnerBrowserData();
     window.location.reload();
   };
 

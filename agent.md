@@ -47,8 +47,8 @@ Master’s-only mix (no AD-* Auflagen courses) with schedulability gates (`npm r
 - **Offerings:** `src/offering.ts` parses lowercase `when` strings (fall/spring/biennial/irregular/contract).
 - **Learning contracts:** ML, Systems, and Data Science projects each have mutually exclusive 6/12 CP variants.
 - **Cross-listings:** planned courses persist one `allocatedModule`; CP is counted only in that chosen eligible module.
-- **Persistence:** plan stored as IDs or `{ id, allocatedModule }` (`basel-ds-plan-v6`). Empty storage stays empty unless a private student config sets `seedPlan`.
-- **Private overlay:** `config/student.local.json` or `STUDENT_CONFIG` (build-time). Tests set `BASELCAL_DISABLE_STUDENT_CONFIG=1`.
+- **Persistence:** plan stored as IDs or `{ id, allocatedModule }` per programme (`basel-plan-v7:<id>`). Empty storage stays empty unless a private student config sets `seedPlan`.
+- **Private overlay:** Local: `config/student.local.json` (Vite `define`, never on Vercel/CI). Hosted: server env `STUDENT_CONFIG` returned only by `/api/unlock` after `PLANNER_USER`/`PLANNER_PASSWORD`. Unlock overlay lives in `sessionStorage`. Tests set `BASELCAL_DISABLE_STUDENT_CONFIG=1`.
 
 ## Data pipeline
 

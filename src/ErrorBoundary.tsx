@@ -44,7 +44,13 @@ export class ErrorBoundary extends Component<Props, State> {
                   if (!ok) return;
                   try {
                     const keys = Object.keys(localStorage).filter(
-                      (k) => k.startsWith('basel-ds-') || k.startsWith('baselcal-'),
+                      (k) =>
+                        k.startsWith('basel-ds-')
+                        || k.startsWith('baselcal-')
+                        || k.startsWith('basel-plan-')
+                        || k.startsWith('basel-notes-')
+                        || k.startsWith('basel-shortlist-')
+                        || k === 'basel-active-programme-v1',
                     );
                     for (const k of keys) localStorage.removeItem(k);
                     sessionStorage.removeItem('basel-ds-unlock-v1');

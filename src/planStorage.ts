@@ -1,7 +1,12 @@
 import { COURSES } from './courses';
 import { DEFAULT_PROGRAMME_ID } from './degrees/registry';
 import type { ProgrammeId } from './degrees/types';
-import { STUDENT_CONFIG, type StudentConfig } from './studentConfig';
+import {
+  ADMISSION_STORAGE_KEY,
+  STUDENT_CONFIG,
+  clearUnlockedConfig,
+  type StudentConfig,
+} from './studentConfig';
 import {
   EXAMPLE_PLAN_ALLOCATIONS,
   SEMESTER_IDS,
@@ -38,6 +43,38 @@ export function notesStorageKey(programmeId: ProgrammeId): string {
 
 export function shortlistStorageKey(programmeId: ProgrammeId): string {
   return `basel-shortlist-v${PLAN_STORAGE_VERSION}:${programmeId}`;
+}
+
+/** Home pin set in the campus map (also may come from owner overlay). */
+export const HOME_STORAGE_KEY = 'baselcal-home-v1';
+
+const ALL_PROGRAMME_IDS: ProgrammeId[] = ['data-science', 'computer-science', 'mathematics'];
+
+/**
+ * Wipe owner overlay + personal browser data after Sign out.
+ * Covers every programme key so notes/shortlist cannot linger after logout.
+ */
+export function clearOwnerBrowserData(): void {
+  clearUnlockedConfig();
+  try {
+    for (const programmeId of ALL_PROGRAMME_IDS) {
+      localStorage.removeItem(planStorageKey(programmeId));
+      localStorage.removeItem(notesStorageKey(programmeId));
+      localStorage.removeItem(shortlistStorageKey(programmeId));
+    }
+    localStorage.removeItem(ADMISSION_STORAGE_KEY);
+    localStorage.removeItem(HOME_STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEYS.notes);
+    localStorage.removeItem(STORAGE_KEYS.shortlist);
+    localStorage.removeItem(STORAGE_KEYS.plan);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV5);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV4);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV3);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV2);
+    localStorage.removeItem(STORAGE_KEYS.planLegacyV1);
+  } catch {
+    // private mode / blocked storage
+  }
 }
 
 function isProgrammeId(value: string): value is ProgrammeId {
