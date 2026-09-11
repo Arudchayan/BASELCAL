@@ -123,6 +123,15 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(savedHome).toMatch(/^\{"lat":-?\d/);
   });
 
+  test('quick-add announces the destination semester', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    const quickAdd = page.locator('button.card-quick-add');
+    await expect(quickAdd).toHaveCount(1);
+    await quickAdd.click();
+    await expect(page.getByText(/Added Bioinformatics Algorithms \(45401\) → Sem 1/i)).toBeVisible();
+  });
+
   test('exports the four-semester timetable with official teaching-period end dates', async ({ page }) => {
     await loadExampleOutline(page);
     const downloadPromise = page.waitForEvent('download');

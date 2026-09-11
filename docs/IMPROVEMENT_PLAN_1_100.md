@@ -6,7 +6,7 @@ red-team critique, validation). Red lines respected throughout: 120 CP rule math
 `degree_rules.json` + `validate_all.cjs` CHECK4); Phase-1 stays DS-only (registry throws for
 CS/Math); honesty policy stays (coveragePolicy / offering provisional / timetable banner).
 
-Status legend: [x] done in this PR · [ ] scheduled. Phases are ordered so every phase ends
+Status legend: [x] done in this PR · [~] partially done (remainder noted inline) · [ ] scheduled. Phases are ordered so every phase ends
 with `npm run validate && npm run lint && npm run build && npx playwright test`.
 
 ## Phase A — Course codes everywhere (disambiguation) [x]
@@ -48,7 +48,7 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
     (unsticks the `top:84 / 100vh-140` trap that pushed semesters off-screen on touch).
 18. [x] 44px touch targets under `(pointer:coarse)`: icon-btn, segmented, conflict rows.
 19. [x] Toast `max-width:calc(100vw-32px)` wrap; audit-chip `min-width:0` full-width stack.
-20. [ ] Quick-add 24px button → 44px hit area on touch; label the vague `+` tooltip with
+20. [x] Quick-add 24px button → 44px hit area on touch; label the vague `+` tooltip with
     destination semester (`Add Title (CODE) → S2`).
 21. [ ] Planned-card "Move to S1–S4" menu (touch DnD fallback; hello-pangea has no touch
     sensors — buttons are the path, not a DnD fork).
@@ -81,8 +81,8 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
 
 ## Phase E — Board UX (rejected-drag reasons, undo, empty states)
 
-36. [ ] Rejected-drag toasts (dup / variant-group / self-drop) naming `CODE → S2`.
-37. [ ] Add/remove toasts with Undo button; Ctrl+Z shortcut; Undo(N) label.
+36. [x] Rejected-drag toasts (dup / variant-group / self-drop) naming `CODE → S2`.
+37. [~] Add/remove toasts (done — PR-2) + Undo button in toast; Ctrl+Z shortcut; Undo(N) label (open).
 38. [ ] Catalog zero-result empty state + clear-filters chip + result counts.
 39. [ ] Explorer: `+S1–S4` add menu (currently wishlist star-only dead-end) or merge views.
 40. [ ] Credit-to allocation visible pre-plan (starves-electives context), not only planned.
