@@ -108,12 +108,12 @@ export function buildIcs(plan: PlanState, disclaimer: string): string {
   return lines.join('\r\n');
 }
 
-export function downloadIcs(plan: PlanState, disclaimer: string): void {
+export function downloadIcs(plan: PlanState, disclaimer: string, programmeId = 'plan'): void {
   const blob = new Blob([buildIcs(plan, disclaimer)], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `baselcal-timetable-${new Date().toISOString().slice(0, 10)}.ics`;
+  a.download = `baselcal-${programmeId}-timetable-${new Date().toISOString().slice(0, 10)}.ics`;
   a.click();
   URL.revokeObjectURL(url);
 }
