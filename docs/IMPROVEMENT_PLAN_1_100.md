@@ -75,8 +75,8 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
     admission disclosure, copy + QR, hash stays refs-only (done — PR #7).
 32. [x] Export filename includes programme (`baselcal-data-science-plan-….json`,
     `baselcal-data-science-timetable-….ics`) (done — PR #7).
-33. [ ] ICS: per-semester download + campus LOCATION already; add TZID/VTIMEZONE + VALARM
-    + SEQUENCE + stable UID review (keep skip-and-disclaim for contracts/thesis).
+33. [x] ICS: per-semester download + TZID/VTIMEZONE + VALARM + SEQUENCE + real-UTC
+    DTSTAMP + deterministic UID review (skip-and-disclaim kept) (done — PR #8).
 34. [ ] Import: itemised "kept / dropped unknown / deduped" report instead of alert wall.
 35. [ ] Share length guard + JSON-file fallback for oversized plans.
 
