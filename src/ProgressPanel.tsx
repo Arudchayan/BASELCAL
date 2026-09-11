@@ -207,13 +207,16 @@ export function ProgressPanel({
               </summary>
               <div style={{ marginTop: '8px', color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.5 }}>
                 <strong style={{ color: 'var(--text-primary)' }}>Contributes:</strong>{' '}
-                {bucketCourses.length > 0 ? bucketCourses.map((course) => course.code).join(', ') : 'None planned'}
+                {bucketCourses.length > 0
+                  ? bucketCourses.map((course) => `${course.title} (${course.code})`).join(', ')
+                  : 'None planned'}
               </div>
               {bucketCourses.length > 0 && (
                 <ul style={{ margin: '6px 0 0', paddingLeft: '16px', color: 'var(--text-muted)', fontSize: '11px', lineHeight: 1.5 }}>
                   {bucketCourses.map((course) => (
                     <li key={course.id}>
-                      {course.code} · {course.cp} CP{course.eligibleModules?.length ? ` · allocated to ${creditModule(course)}` : ''}
+                      {course.title} ({course.code}) · {course.cp} CP
+                      {course.eligibleModules?.length ? ` · allocated to ${creditModule(course)}` : ''}
                     </li>
                   ))}
                 </ul>
@@ -375,14 +378,14 @@ export function ProgressPanel({
                 <button
                   type="button"
                   className="conflict-row"
-                  title={`Show conflict details for ${pair.courseA.id} and ${pair.courseB.id}`}
+                  title={`Show conflict details for ${pair.courseA.title} (${pair.courseA.code}) and ${pair.courseB.title} (${pair.courseB.code})`}
                   onClick={() =>
                     window.alert(
-                      `Conflict: ${pair.courseA.id} vs ${pair.courseB.id}\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
+                      `Conflict: ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
                     )
                   }
                 >
-                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} vs ${pair.courseB.title}`}
+                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})`}
                 </button>
               </li>
             ))}
@@ -399,14 +402,14 @@ export function ProgressPanel({
                 <button
                   type="button"
                   className="conflict-row"
-                  title={`Show conflict details for ${pair.courseA.id} and ${pair.courseB.id}`}
+                  title={`Show conflict details for ${pair.courseA.title} (${pair.courseA.code}) and ${pair.courseB.title} (${pair.courseB.code})`}
                   onClick={() =>
                     window.alert(
-                      `Conflict: ${pair.courseA.id} vs ${pair.courseB.id}\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
+                      `Conflict: ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
                     )
                   }
                 >
-                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} vs ${pair.courseB.title}`}
+                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})`}
                 </button>
               </li>
             ))}
@@ -446,7 +449,7 @@ export function ProgressPanel({
             {disputedInPlan.map(({ course, discrepancy }) => (
               <li key={course.id}>
                 <span title={discrepancy.note}>
-                  {course.title} ({course.id})
+                  {course.title} ({course.code})
                 </span>
                 : catalog “{discrepancy.catalogModule}” vs VV “{discrepancy.vvModulesTab}”
               </li>
@@ -465,7 +468,7 @@ export function ProgressPanel({
           <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
             {missingSchedule.map((c) => (
               <li key={c.id}>
-                {c.title} ({c.id})
+                {c.title} ({c.code})
               </li>
             ))}
           </ul>
@@ -483,7 +486,7 @@ export function ProgressPanel({
           <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
             {staleInPlan.map((c) => (
               <li key={c.id}>
-                {c.title} ({c.id})
+                {c.title} ({c.code})
               </li>
             ))}
           </ul>
