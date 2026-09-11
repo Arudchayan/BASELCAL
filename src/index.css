@@ -197,6 +197,7 @@ h1, h2, h3, h4, h5, h6 {
 .btn--quiet:hover:not(:disabled) { background: var(--bg-tertiary); color: var(--text-primary); }
 
 .icon-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -211,6 +212,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 .icon-btn:hover:not(:disabled) { background: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border-strong); }
 .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.icon-btn__count {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--accent-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
 
 /* Segmented control */
 .segmented {
@@ -641,7 +659,21 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   font-size: 13px;
   font-weight: 600;
   box-shadow: 0 8px 32px var(--glass-shadow);
+  display: flex;
+  align-items: center;
 }
+.toast__action {
+  margin-left: 12px;
+  padding: 4px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.toast__action:hover { background: rgba(128, 128, 128, 0.25); }
 
 /* ---------- Custom scrollbar ---------- */
 

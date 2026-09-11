@@ -117,7 +117,7 @@ function App() {
   const [storageOk, setStorageOk] = useState(true);
   const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true, admission: true });
   const [undoStack, setUndoStack] = useState<PlanState[]>([]);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; action?: { label: string; onClick: () => void } } | null>(null);
   const toastTimer = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -152,10 +152,10 @@ function App() {
     setStorageOk(allOk);
   };
 
-  const showToast = (message: string) => {
+  const showToast = (message: string, action?: { label: string; onClick: () => void }) => {
     if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
-    setToast(message);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2400);
+    setToast({ message, action });
+    toastTimer.current = window.setTimeout(() => setToast(null), action ? 6000 : 2400);
   };
 
   useEffect(() => {
@@ -219,6 +219,20 @@ function App() {
       return stack.slice(0, -1);
     });
   };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      if (e.shiftKey || e.key.toLowerCase() !== 'z') return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' || target.isContentEditable)) return;
+      e.preventDefault();
+      undo();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const toggleShortlist = (id: string) => {
     setShortlist((prev) => {
@@ -299,7 +313,7 @@ function App() {
       ...prev,
       [sem]: [...prev[sem], course],
     }));
-    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`);
+    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`, { label: 'Undo', onClick: undo });
   };
 
   const addToPlanSemester = (course: Course, sem: SemesterId) => {
@@ -312,7 +326,7 @@ function App() {
       ...prev,
       [sem]: [...prev[sem], course],
     }));
-    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`);
+    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`, { label: 'Undo', onClick: undo });
   };
 
   const clearCatalogFilters = () => {
@@ -373,7 +387,7 @@ function App() {
         newSourceItems.splice(source.index, 1);
         return { ...prev, [sourceSem]: newSourceItems };
       });
-      if (removedCourse) showToast(`Removed ${courseFullLabel(removedCourse)}`);
+      if (removedCourse) showToast(`Removed ${courseFullLabel(removedCourse)}`, { label: 'Undo', onClick: undo });
       return;
     }
 
@@ -394,6 +408,9 @@ function App() {
       newDestItems.splice(destination.index, 0, movedItem);
       return { ...prev, [sourceSem]: newSourceItems, [destSem]: newDestItems };
     });
+    if (movedCourse && sourceSem !== destSem) {
+      showToast(`Moved ${courseFullLabel(movedCourse)} → ${semShortLabel(destSem)}`, { label: 'Undo', onClick: undo });
+    }
   };
 
   const removeCourse = (semId: SemesterId, index: number) => {
@@ -403,7 +420,7 @@ function App() {
       newItems.splice(index, 1);
       return { ...prev, [semId]: newItems };
     });
-    if (removed) showToast(`Removed ${courseFullLabel(removed)}`);
+    if (removed) showToast(`Removed ${courseFullLabel(removed)}`, { label: 'Undo', onClick: undo });
   };
 
   const loadPreset = () => {
@@ -661,10 +678,13 @@ function App() {
             className="icon-btn"
             onClick={undo}
             disabled={undoStack.length === 0}
-            aria-label="Undo last plan change"
-            title="Undo"
+            aria-label={undoStack.length === 0 ? 'Undo last plan change' : `Undo last plan change (${undoStack.length} available)`}
+            title={undoStack.length === 0 ? 'Undo (Ctrl+Z)' : `Undo (${undoStack.length}) (Ctrl+Z)`}
           >
             <Undo2 size={15} />
+            {undoStack.length > 0 && (
+              <span className="icon-btn__count" aria-hidden="true">{undoStack.length}</span>
+            )}
           </button>
           <button className="icon-btn" onClick={handleExport} aria-label="Export plan JSON" title="Export JSON">
             <Download size={15} />
@@ -971,7 +991,19 @@ function App() {
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            {toast}
+            {toast.message}
+            {toast.action && (
+              <button
+                type="button"
+                className="toast__action"
+                onClick={() => {
+                  toast.action?.onClick();
+                  setToast(null);
+                }}
+              >
+                {toast.action.label}
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

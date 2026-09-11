@@ -82,7 +82,7 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
 ## Phase E — Board UX (rejected-drag reasons, undo, empty states)
 
 36. [x] Rejected-drag toasts (dup / variant-group / self-drop) naming `CODE → S2`.
-37. [~] Add/remove toasts (done — PR-2) + Undo button in toast; Ctrl+Z shortcut; Undo(N) label (open).
+37. [x] Add/remove toasts (done — PR-2) + Undo button in toast; Ctrl+Z shortcut; Undo(N) badge (done — PR-4).
 38. [x] Catalog zero-result empty state + clear-filters chip + result counts.
 39. [x] Explorer: `+S1–S4` add menu in detail footer (dup/variant-aware, toast-confirmed).
 40. [ ] Credit-to allocation visible pre-plan (starves-electives context), not only planned.
