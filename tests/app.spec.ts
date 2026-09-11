@@ -155,6 +155,24 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(page.locator('.semester-grid').getByText(title)).toBeVisible();
   });
 
+  test('toast Undo button reverts a quick-add', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    await page.locator('button.card-quick-add[aria-label*="Bioinformatics"]').click();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/)).toHaveCount(0);
+  });
+
+  test('Ctrl+Z reverts the last plan change', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    await page.locator('button.card-quick-add[aria-label*="Bioinformatics"]').click();
+    await expect(page.getByTitle('Undo (1) (Ctrl+Z)')).toBeVisible();
+    await page.locator('.semester-grid').click();
+    await page.keyboard.press('Control+z');
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/)).toHaveCount(0);
+  });
+
   test('exports the four-semester timetable with official teaching-period end dates', async ({ page }) => {
     await loadExampleOutline(page);
     const downloadPromise = page.waitForEvent('download');
