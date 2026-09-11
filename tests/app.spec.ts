@@ -132,6 +132,29 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(page.getByText(/Added Bioinformatics Algorithms \(45401\) → Sem 1/i)).toBeVisible();
   });
 
+  test('catalog shows an empty state with a working clear-filters action', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('zzz-no-such-course');
+    await expect(page.getByText('No courses match your filters')).toBeVisible();
+    await page.getByRole('button', { name: 'Clear search & filters' }).click();
+    await expect(page.getByText('No courses match your filters')).toHaveCount(0);
+    await expect(page.locator('.catalog-panel').getByText(/Bioinformatics Algorithms/)).toBeVisible();
+  });
+
+  test('explorer can add a course straight to a semester', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /Course Discovery/i }).click();
+    await page.getByRole('button', { name: /Read Details/i }).first().click();
+    const courseDialog = page.getByRole('dialog').last();
+    const title = ((await courseDialog.locator('h2').textContent()) ?? '').trim();
+    expect(title.length).toBeGreaterThan(0);
+    await courseDialog.getByRole('button', { name: 'Add to Sem 1' }).click();
+    await expect(page.getByText(/→ Sem 1/)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.semester-grid').getByText(title)).toBeVisible();
+  });
+
   test('exports the four-semester timetable with official teaching-period end dates', async ({ page }) => {
     await loadExampleOutline(page);
     const downloadPromise = page.waitForEvent('download');

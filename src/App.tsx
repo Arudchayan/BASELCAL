@@ -260,6 +260,9 @@ function App() {
     });
   }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, plannedProjectGroups, showShortlistOnly, shortlist]);
 
+  const hasActiveFilters = search !== '' || moduleFilter !== '' || priorityFilter !== '' ||
+    semesterFilter !== '' || showShortlistOnly;
+
   const preferredSemesterFor = (course: Course): SemesterId => {
     const meta = parseOffering(course.when);
     if (meta.season === 'spring') return 's2';
@@ -297,6 +300,28 @@ function App() {
       [sem]: [...prev[sem], course],
     }));
     showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`);
+  };
+
+  const addToPlanSemester = (course: Course, sem: SemesterId) => {
+    const reason = duplicateReason(course);
+    if (reason) {
+      showToast(duplicateToast(course, reason));
+      return;
+    }
+    updatePlan((prev) => ({
+      ...prev,
+      [sem]: [...prev[sem], course],
+    }));
+    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`);
+  };
+
+  const clearCatalogFilters = () => {
+    setSearch('');
+    setSearchLower('');
+    setModuleFilter('');
+    setPriorityFilter('');
+    setSemesterFilter('');
+    setShowShortlistOnly(false);
   };
 
   const allocateCourse = (sem: SemesterId, index: number, module: CourseModule) => {
@@ -721,7 +746,7 @@ function App() {
                   <div style={{ padding: 16, borderBottom: '1px solid var(--border-subtle)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                       <h2 style={{ fontSize: 16 }}>Course Catalog</h2>
-                      <span className="micro-label">{catalogCourses.length} available</span>
+                      <span className="micro-label">{catalogCourses.length} of {COURSES.length} shown</span>
                     </div>
                     <div style={{ position: 'relative', marginBottom: 10 }}>
                       <Search size={16} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -805,6 +830,23 @@ function App() {
                           />
                         ))}
                         {provided.placeholder}
+                        {catalogCourses.length === 0 && (
+                          <div style={{ padding: '20px 8px', textAlign: 'center' }}>
+                            <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                              {hasActiveFilters ? 'No courses match your filters' : 'Everything is planned'}
+                            </p>
+                            <p style={{ margin: '0 0 12px', fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                              {hasActiveFilters
+                                ? 'Try a different search term or clear the filters below.'
+                                : 'Nice — every catalog course is already on your board.'}
+                            </p>
+                            {hasActiveFilters && (
+                              <button type="button" className="btn btn--ghost" onClick={clearCatalogFilters}>
+                                Clear search & filters
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </Droppable>
@@ -912,6 +954,9 @@ function App() {
               toggleShortlist={toggleShortlist}
               onClose={() => setShowExplorer(false)}
               admissionTarget={admissionTarget}
+              onAddToPlan={addToPlanSemester}
+              plannedCourseIds={[...plannedCourseIds]}
+              plannedProjectGroups={[...plannedProjectGroups]}
             />
           </Suspense>
         )}
