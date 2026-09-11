@@ -704,6 +704,34 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   flex-shrink: 0;
 }
 
+/* ---------- Timetable scroll wrapper + agenda (mobile fallback) ---------- */
+
+.timetable-scroll { overflow-x: auto; }
+.timetable-grid { min-width: 640px; }
+.timetable-agenda { display: none; }
+.timetable-agenda__day { margin-top: 14px; }
+.timetable-agenda__heading {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.timetable-agenda__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.timetable-agenda__item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+.timetable-agenda__time { font-size: 11px; color: var(--text-muted); }
+.timetable-agenda__code { font-size: 11px; font-weight: 700; color: var(--accent-primary); font-family: var(--font-mono); }
+.timetable-agenda__title { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.timetable-agenda__room { font-size: 11.5px; color: var(--text-muted); }
+
 /* ---------- Campus route ---------- */
 
 .campus-route {
@@ -982,11 +1010,21 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .brand h1 { white-space: normal; font-size: 16px; }
 }
 
+@media (max-width: 860px) {
+  .board-layout { grid-template-columns: 1fr !important; }
+  .semester-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .explorer-detail-grid { grid-template-columns: 1fr !important; }
+  .campus-route__layout { grid-template-columns: 1fr; }
+  .campus-route__timeline { max-height: none; }
+}
+
 @media (max-width: 720px) {
   .app-shell { padding: 12px !important; }
   .semester-grid { grid-template-columns: 1fr !important; }
   .metrics-grid { grid-template-columns: 1fr 1fr !important; }
-  .timetable-grid { overflow-x: auto; display: block !important; }
+  .timetable-grid { display: none !important; }
+  .timetable-agenda { display: block; }
   .explorer-detail-grid { grid-template-columns: 1fr !important; }
   .tips-panel { right: 8px !important; left: 8px !important; width: auto !important; }
   .topnav { position: static; }
@@ -997,6 +1035,25 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .campus-route__map,
   .campus-route__map .leaflet-container { min-height: 310px; }
   .campus-route__timeline { max-height: none; }
+  .audit-chip { min-width: 0; flex: 1 1 100%; }
+  .toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+  .catalog-panel { position: static !important; max-height: none !important; }
+}
+
+@media (max-width: 480px) {
+  .app-shell { padding: 8px !important; }
+  .metrics-grid { grid-template-columns: 1fr !important; }
+  .topnav { padding: 10px 12px; gap: 10px; }
+  .brand h1 { white-space: normal; font-size: 15px; }
+  .segmented { max-width: 100%; overflow-x: auto; }
+  .segmented button { padding: 8px 10px; font-size: 12px; min-height: 44px; }
+  .timetable-agenda__item { padding: 12px; }
+}
+
+@media (pointer: coarse) {
+  .icon-btn { min-width: 44px; min-height: 44px; }
+  .segmented button { min-height: 44px; }
+  .conflict-row { padding: 10px 8px; }
 }
 
 /* ---------- Print (PDF one-pager) ---------- */

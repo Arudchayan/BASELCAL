@@ -95,7 +95,7 @@ export function buildIcs(plan: PlanState, disclaimer: string): string {
           `DTSTART:${icsDate(first, times.from)}`,
           `DTEND:${icsDate(first, times.to)}`,
           `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${icsDate(until, '23:59')}`,
-          `SUMMARY:${icsEscape(course.title)}`,
+          `SUMMARY:${icsEscape(course.code === 'Learning contract' ? course.title : `${course.code} — ${course.title}`)}`,
           `LOCATION:${icsEscape(session.room || '')}`,
           `DESCRIPTION:${icsEscape(`${course.code} · ${course.cp} CP · ${sem.toUpperCase()} · ${course.module}\n${disclaimer}`)}`,
           'END:VEVENT',
