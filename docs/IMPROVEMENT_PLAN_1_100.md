@@ -26,7 +26,7 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
 8. [x] ICS export `SUMMARY`: `CODE — Title` (contract rows keep title, which holds the
     variant); `DESCRIPTION` already carried code/CP/module.
 9. [ ] CourseCard: add `title` tooltip with full `Title (CODE)` on the card title link.
-10. [ ] Explorer + DetailsModal: audit that code+title+CP appear together in every row
+10. [x] Explorer + DetailsModal: code+title+CP verified together in every row + modal header
     (most already do; close gaps, no renames of VV values).
 11. [ ] Playwright: dup-search test — search `11680` vs `11681` shows two distinct cards;
     timetable shows `Computational Physics (11680)`-style labels; conflict row shows codes.
@@ -83,8 +83,8 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
 
 36. [x] Rejected-drag toasts (dup / variant-group / self-drop) naming `CODE → S2`.
 37. [~] Add/remove toasts (done — PR-2) + Undo button in toast; Ctrl+Z shortcut; Undo(N) label (open).
-38. [ ] Catalog zero-result empty state + clear-filters chip + result counts.
-39. [ ] Explorer: `+S1–S4` add menu (currently wishlist star-only dead-end) or merge views.
+38. [x] Catalog zero-result empty state + clear-filters chip + result counts.
+39. [x] Explorer: `+S1–S4` add menu in detail footer (dup/variant-aware, toast-confirmed).
 40. [ ] Credit-to allocation visible pre-plan (starves-electives context), not only planned.
 
 ## Phase F — Validation that explains (what → how)
