@@ -45,10 +45,12 @@ export function Timetable({
   plan,
   activeSem,
   setActiveSem,
+  onExportSemester,
 }: {
   plan: PlanState;
   activeSem: SemesterId;
   setActiveSem: (sem: SemesterId) => void;
+  onExportSemester: () => void;
 }) {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -96,6 +98,15 @@ export function Timetable({
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={onExportSemester}
+            disabled={plannedCourses.length === 0}
+            title="Download this semester only as a calendar file"
+          >
+            Export Sem {activeSem.slice(1)} (.ics)
+          </button>
         </div>
       </div>
 

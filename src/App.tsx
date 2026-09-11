@@ -497,6 +497,16 @@ function App() {
     showToast('Calendar file downloaded — weekly slots included');
   };
 
+  const handleExportSemester = () => {
+    const hasSlots = plan[activeSem].some((course) => (course.schedule?.length ?? 0) > 0);
+    if (!hasSlots) {
+      showToast('No weekly slots to export — add scheduled courses or load the example outline');
+      return;
+    }
+    downloadIcs(plan, PLAN_DISCLAIMER, programmeId, [activeSem]);
+    showToast(`Semester calendar downloaded — ${semShortLabel(activeSem)} weekly slots included`);
+  };
+
   const handleImportFile = async (file: File) => {
     try {
       const text = await file.text();
@@ -944,7 +954,7 @@ function App() {
         ) : (
           <motion.div key="timetable" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} style={{ minHeight: 600, marginTop: 20 }}>
             <Suspense fallback={<div style={{ padding: 24, color: 'var(--text-muted)' }}>Loading timetable…</div>}>
-              <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} />
+              <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} onExportSemester={handleExportSemester} />
             </Suspense>
           </motion.div>
         )}

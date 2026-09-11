@@ -185,6 +185,29 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).toContain('UNTIL=20270604T235900');
     expect(calendar).toContain('UNTIL=20271223T235900');
     expect(calendar).toContain('UNTIL=20280602T235900');
+    expect(calendar).toContain('BEGIN:VTIMEZONE');
+    expect(calendar).toContain('TZID:Europe/Zurich');
+    expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:');
+    expect(calendar).toContain('BEGIN:VALARM');
+    expect(calendar).toContain('TRIGGER:-PT10M');
+    expect(calendar).toContain('SEQUENCE:0');
+    expect(calendar).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(calendar).toMatch(/UID:baselcal-[A-Za-z0-9-]+-[A-Z]{2}-\d{4}-\d{4}@baselcal\.local/);
+  });
+
+  test('timetable view exports only the active semester', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export Sem 1 (.ics)' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('timetable-s1');
+    const path = await download.path();
+    const calendar = await readFile(path!, 'utf8');
+    expect(calendar).toContain('· S1 ·');
+    expect(calendar).not.toContain('· S2 ·');
+    expect(calendar).not.toContain('· S3 ·');
+    expect(calendar).not.toContain('· S4 ·');
   });
 
   test('exports selected cross-list allocations in plan JSON v3', async ({ page }) => {

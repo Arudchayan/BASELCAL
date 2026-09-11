@@ -13,6 +13,29 @@ const DAY_TO_VEVENT: Record<string, string> = {
 
 type Range = { start: Date; until: Date };
 
+const TZID = 'Europe/Zurich';
+
+/** Europe/Zurich DST rules (CEST last Sun Mar → CET last Sun Oct). */
+const VTIMEZONE = [
+  'BEGIN:VTIMEZONE',
+  `TZID:${TZID}`,
+  'BEGIN:DAYLIGHT',
+  'TZOFFSETFROM:+0100',
+  'TZOFFSETTO:+0200',
+  'TZNAME:CEST',
+  'DTSTART:19700329T020000',
+  'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU',
+  'END:DAYLIGHT',
+  'BEGIN:STANDARD',
+  'TZOFFSETFROM:+0200',
+  'TZOFFSETTO:+0100',
+  'TZNAME:CET',
+  'DTSTART:19701025T020000',
+  'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU',
+  'END:STANDARD',
+  'END:VTIMEZONE',
+];
+
 /** Official University of Basel teaching periods for this Fall 2026 cohort. */
 const SEMESTER_RANGES: Record<SemesterId, Range> = {
   s1: { start: new Date(2026, 8, 14), until: new Date(2026, 11, 18) },
@@ -27,6 +50,10 @@ function semesterRange(sem: SemesterId): Range {
 
 function pad(n: number): string {
   return n.toString().padStart(2, '0');
+}
+
+function icsStampUTC(d: Date): string {
+  return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
 }
 
 function icsDate(d: Date, hhmm: string): string {
@@ -62,7 +89,7 @@ function icsEscape(text: string): string {
   return text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 }
 
-export function buildIcs(plan: PlanState, disclaimer: string): string {
+export function buildIcs(plan: PlanState, disclaimer: string, sems: SemesterId[] = SEMESTER_IDS): string {
   const now = new Date();
   const lines: string[] = [
     'BEGIN:VCALENDAR',
@@ -70,11 +97,12 @@ export function buildIcs(plan: PlanState, disclaimer: string): string {
     'PRODID:-//UniBasel DS Planner//Curriculum Planner//EN',
     'CALSCALE:GREGORIAN',
     `X-WR-CALNAME:UniBasel DS Planner`,
-    `X-WR-TIMEZONE:Europe/Zurich`,
+    `X-WR-TIMEZONE:${TZID}`,
+    ...VTIMEZONE,
   ];
-  let uidCounter = 0;
+  const uidSeen = new Map<string, number>();
 
-  for (const sem of SEMESTER_IDS) {
+  for (const sem of sems) {
     const courses = plan[sem];
     if (courses.length === 0) continue;
     const { start, until } = semesterRange(sem);
@@ -87,17 +115,26 @@ export function buildIcs(plan: PlanState, disclaimer: string): string {
         if (!times || !byDay) continue;
         const first = firstDateOnDay(start, session.day);
         if (!first) continue;
-        uidCounter += 1;
+        const uidKey = `${course.id}-${byDay}-${times.from.replace(':', '')}-${times.to.replace(':', '')}`;
+        const occurrence = (uidSeen.get(uidKey) ?? 0) + 1;
+        uidSeen.set(uidKey, occurrence);
+        const summary = course.code === 'Learning contract' ? course.title : `${course.code} — ${course.title}`;
         lines.push(
           'BEGIN:VEVENT',
-          `UID:baselcal-${course.id}-${uidCounter}@baselcal.local`,
-          `DTSTAMP:${icsDate(now, '12:00')}Z`,
-          `DTSTART:${icsDate(first, times.from)}`,
-          `DTEND:${icsDate(first, times.to)}`,
+          `UID:baselcal-${uidKey}${occurrence > 1 ? `-${occurrence}` : ''}@baselcal.local`,
+          `DTSTAMP:${icsStampUTC(now)}`,
+          `DTSTART;TZID=${TZID}:${icsDate(first, times.from)}`,
+          `DTEND;TZID=${TZID}:${icsDate(first, times.to)}`,
           `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${icsDate(until, '23:59')}`,
-          `SUMMARY:${icsEscape(course.code === 'Learning contract' ? course.title : `${course.code} — ${course.title}`)}`,
+          'SEQUENCE:0',
+          `SUMMARY:${icsEscape(summary)}`,
           `LOCATION:${icsEscape(session.room || '')}`,
           `DESCRIPTION:${icsEscape(`${course.code} · ${course.cp} CP · ${sem.toUpperCase()} · ${course.module}\n${disclaimer}`)}`,
+          'BEGIN:VALARM',
+          'TRIGGER:-PT10M',
+          'ACTION:DISPLAY',
+          `DESCRIPTION:${icsEscape(summary)}`,
+          'END:VALARM',
           'END:VEVENT',
         );
       }
@@ -108,12 +145,13 @@ export function buildIcs(plan: PlanState, disclaimer: string): string {
   return lines.join('\r\n');
 }
 
-export function downloadIcs(plan: PlanState, disclaimer: string, programmeId = 'plan'): void {
-  const blob = new Blob([buildIcs(plan, disclaimer)], { type: 'text/calendar;charset=utf-8' });
+export function downloadIcs(plan: PlanState, disclaimer: string, programmeId = 'plan', sems?: SemesterId[]): void {
+  const blob = new Blob([buildIcs(plan, disclaimer, sems ?? SEMESTER_IDS)], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `baselcal-${programmeId}-timetable-${new Date().toISOString().slice(0, 10)}.ics`;
+  const scope = sems && sems.length === 1 ? `-${sems[0]}` : '';
+  a.download = `baselcal-${programmeId}-timetable${scope}-${new Date().toISOString().slice(0, 10)}.ics`;
   a.click();
   URL.revokeObjectURL(url);
 }
