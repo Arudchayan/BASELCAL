@@ -1054,6 +1054,11 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .icon-btn { min-width: 44px; min-height: 44px; }
   .segmented button { min-height: 44px; }
   .conflict-row { padding: 10px 8px; }
+  .card-quick-add,
+  .card-remove {
+    width: 44px !important;
+    height: 44px !important;
+  }
 }
 
 /* ---------- Print (PDF one-pager) ---------- */

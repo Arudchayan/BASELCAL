@@ -58,6 +58,7 @@ import {
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
 import { downloadIcs } from './ics';
+import { courseFullLabel } from './courseLabel';
 import {
   EXAMPLE_PLAN_ADMISSION_TARGET,
   EXAMPLE_PLAN_IDS,
@@ -270,14 +271,32 @@ function App() {
     return 's1';
   };
 
+  const semShortLabel = (sem: SemesterId): string =>
+    SEMESTERS.find((s) => s.id === sem)?.title.split('·')[0].trim() ?? sem;
+
+  const duplicateReason = (course: Course): 'duplicate' | 'variant' | null => {
+    if (plannedCourseIds.has(course.id)) return 'duplicate';
+    if (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup)) return 'variant';
+    return null;
+  };
+
+  const duplicateToast = (course: Course, reason: 'duplicate' | 'variant'): string =>
+    reason === 'duplicate'
+      ? `Already in plan: ${courseFullLabel(course)}`
+      : `Variant already planned: ${courseFullLabel(course)} — pick one 6/12 CP variant`;
+
   const quickAddCourse = (course: Course) => {
-    if (plannedCourseIds.has(course.id) ||
-      (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
+    const reason = duplicateReason(course);
+    if (reason) {
+      showToast(duplicateToast(course, reason));
+      return;
+    }
     const sem = semesterFilter || preferredSemesterFor(course);
     updatePlan((prev) => ({
       ...prev,
       [sem]: [...prev[sem], course],
     }));
+    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`);
   };
 
   const allocateCourse = (sem: SemesterId, index: number, module: CourseModule) => {
@@ -306,8 +325,12 @@ function App() {
     if (source.droppableId === 'catalog') {
       const courseId = draggableId;
       const course = COURSES.find((c) => c.id === courseId) as Course | undefined;
-      if (!course || plannedCourseIds.has(course.id) ||
-        (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
+      if (!course) return;
+      const reason = duplicateReason(course);
+      if (reason) {
+        showToast(duplicateToast(course, reason));
+        return;
+      }
       const destSem = destination.droppableId as SemesterId;
       updatePlan((prev) => {
         const newDestItems = Array.from(prev[destSem]);
@@ -319,16 +342,23 @@ function App() {
 
     if (destination.droppableId === 'catalog') {
       const sourceSem = source.droppableId as SemesterId;
+      const removedCourse = plan[sourceSem]?.[source.index];
       updatePlan((prev) => {
         const newSourceItems = Array.from(prev[sourceSem]);
         newSourceItems.splice(source.index, 1);
         return { ...prev, [sourceSem]: newSourceItems };
       });
+      if (removedCourse) showToast(`Removed ${courseFullLabel(removedCourse)}`);
       return;
     }
 
     const sourceSem = source.droppableId as SemesterId;
     const destSem = destination.droppableId as SemesterId;
+    const movedCourse = plan[sourceSem]?.[source.index];
+    if (movedCourse && plan[destSem]?.some((c) => c.id === movedCourse.id)) {
+      showToast(`Already in plan: ${courseFullLabel(movedCourse)}`);
+      return;
+    }
     updatePlan((prev) => {
       const newSourceItems = Array.from(prev[sourceSem]);
       const newDestItems = Array.from(prev[destSem]);
@@ -342,11 +372,13 @@ function App() {
   };
 
   const removeCourse = (semId: SemesterId, index: number) => {
+    const removed = plan[semId]?.[index];
     updatePlan((prev) => {
       const newItems = Array.from(prev[semId]);
       newItems.splice(index, 1);
       return { ...prev, [semId]: newItems };
     });
+    if (removed) showToast(`Removed ${courseFullLabel(removed)}`);
   };
 
   const loadPreset = () => {
@@ -769,6 +801,7 @@ function App() {
                             onNoteChange={(text) => updateNote(course.id, text)}
                             onShowDetails={() => setActiveCourseDetails(course)}
                             onQuickAdd={() => quickAddCourse(course)}
+                            quickAddHint={`Add ${courseFullLabel(course)} → ${semShortLabel(semesterFilter || preferredSemesterFor(course))}`}
                           />
                         ))}
                         {provided.placeholder}
