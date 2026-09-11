@@ -56,7 +56,7 @@ import {
   clearOwnerBrowserData,
 } from './planStorage';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
-import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
+import { readSharedPlanFromHash, clearShareHash } from './share';
 import { downloadIcs } from './ics';
 import { courseFullLabel } from './courseLabel';
 import {
@@ -79,6 +79,7 @@ const CourseExplorer = lazy(() =>
   import('./CourseExplorer').then((m) => ({ default: m.CourseExplorer })),
 );
 const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Timetable })));
+const ShareModal = lazy(() => import('./ShareModal').then((m) => ({ default: m.ShareModal })));
 
 ensurePlanMigrated();
 const PROGRAMMES = listProgrammes();
@@ -109,6 +110,7 @@ function App() {
   const [viewMode, setViewMode] = useState<'board' | 'timetable'>('board');
   const [activeSem, setActiveSem] = useState<SemesterId>('s1');
   const [showExplorer, setShowExplorer] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
   const [plan, setPlan] = useState<PlanState>(() => sharedBoot ?? initialBoot.plan);
   const [startupDrops] = useState<string[]>(() => initialBoot.droppedIds);
@@ -470,23 +472,17 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `baselcal-plan-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `baselcal-${programmeId}-plan-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const handleShare = async () => {
+  const openShare = () => {
     if (allPlannedCourses(plan).length === 0) {
       showToast('Nothing to share — add courses or load the example outline');
       return;
     }
-    const url = buildShareUrl(plan);
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast('Share link copied — anyone opening it sees this exact plan');
-    } catch {
-      window.prompt('Copy this share link:', url);
-    }
+    setShowShare(true);
   };
 
   const handleIcs = () => {
@@ -497,7 +493,7 @@ function App() {
       showToast('No weekly slots to export — add scheduled courses or load the example outline');
       return;
     }
-    downloadIcs(plan, PLAN_DISCLAIMER);
+    downloadIcs(plan, PLAN_DISCLAIMER, programmeId);
     showToast('Calendar file downloaded — weekly slots included');
   };
 
@@ -692,7 +688,7 @@ function App() {
           <button className="icon-btn" onClick={() => fileInputRef.current?.click()} aria-label="Import plan JSON" title="Import JSON">
             <Upload size={15} />
           </button>
-          <button className="icon-btn" onClick={() => void handleShare()} aria-label="Copy share link" title="Share plan as link">
+          <button className="icon-btn" onClick={openShare} aria-label="Share plan" title="Share plan as link">
             <Link2 size={15} />
           </button>
           <button className="icon-btn" onClick={handleIcs} aria-label="Export timetable to calendar (.ics)" title="Export .ics calendar">
@@ -977,6 +973,18 @@ function App() {
               onAddToPlan={addToPlanSemester}
               plannedCourseIds={[...plannedCourseIds]}
               plannedProjectGroups={[...plannedProjectGroups]}
+            />
+          </Suspense>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showShare && (
+          <Suspense fallback={null}>
+            <ShareModal
+              plan={plan}
+              onClose={() => setShowShare(false)}
+              onNotify={showToast}
             />
           </Suspense>
         )}

@@ -71,9 +71,10 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
 
 ## Phase D — Share/export lossless + honest
 
-31. [ ] Share modal (replaces blocking confirm): preview refs, toggles for notes/shortlist/
-    admission, copy + QR, keep hash refs-only.
-32. [ ] Export filename includes programme (`baselcal-ds-…`).
+31. [x] Share modal (replaces direct copy): preview refs, honest notes/shortlist/
+    admission disclosure, copy + QR, hash stays refs-only (done — PR #7).
+32. [x] Export filename includes programme (`baselcal-data-science-plan-….json`,
+    `baselcal-data-science-timetable-….ics`) (done — PR #7).
 33. [ ] ICS: per-semester download + campus LOCATION already; add TZID/VTIMEZONE + VALARM
     + SEQUENCE + stable UID review (keep skip-and-disclaim for contracts/thesis).
 34. [ ] Import: itemised "kept / dropped unknown / deduped" report instead of alert wall.
@@ -158,19 +159,19 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
 
 ## PR stack (raised from this plan)
 
-86. PR-1 (this): codes-everywhere + timetable agenda + mobile breakpoints + catalog unstick
+86. [x] PR #3: codes-everywhere + timetable agenda + mobile breakpoints + catalog unstick
     + 44px targets + toast/chip fixes + `courseLabel.ts` + this plan doc.
-87. PR-2: Quick-add destination toast + 44px hit area + rejected-drag reasons.
-88. PR-3: Explorer `+S1–S4` add menu + catalog empty-state + clear-filters.
-89. PR-4: Share modal (preview/toggles/copy/QR) + programme-suffixed export filename.
-90. PR-5: ICS TZID/VTIMEZONE/VALARM review + per-semester download.
-91. PR-6: Import kept/dropped report + share length guard + JSON fallback.
-92. PR-7: Undo Ctrl+Z + Undo(N) + add/remove toasts.
-93. PR-8: `getModuleColor` dedup + topnav/toast leaf extraction (no state moves).
-94. PR-9: `rules.json` ↔ `degree_rules.json` CI parity check + storage version audit doc.
-95. PR-10: Contrast + focus/ARIA pass + DetailsModal provenance line.
-96. PR-11: Owner-vs-sandbox indicator + scoped sign-out + per-programme admission.
-97. PR-12: Suggest-a-semester + clash deep-link/highlight + allocation context.
-98. PR-13: Viewport test suite (360/390/768) + screenshots refresh.
-99. PR-14: `vercel.json` headers + engines pin + bundle budget record.
-100. PR-15+: Phase-J features, one scored bet per PR, each behind the §75–84 gates.
+87. [x] PR #4: Quick-add destination toast + 44px hit area + rejected-drag reasons.
+88. [x] PR #5: Explorer `+S1–S4` add menu + catalog empty-state + clear-filters.
+89. [x] PR #6: Undo in mutation toasts + Ctrl+Z + Undo(N) badge.
+90. PR #7: Share modal (preview/toggles/copy/QR) + programme-suffixed export filename.
+91. PR #8: ICS TZID/VTIMEZONE/VALARM review + per-semester download.
+92. PR #9: Import kept/dropped report + share length guard + JSON fallback.
+93. PR #10: `getModuleColor` dedup + topnav/toast leaf extraction (no state moves).
+94. PR #11: `rules.json` ↔ `degree_rules.json` CI parity check + storage version audit doc.
+95. PR #12: Contrast + focus/ARIA pass + DetailsModal provenance line.
+96. PR #13: Owner-vs-sandbox indicator + scoped sign-out + per-programme admission.
+97. PR #14: Suggest-a-semester + clash deep-link/highlight + allocation context.
+98. PR #15: Viewport test suite (360/390/768) + screenshots refresh.
+99. PR #16: `vercel.json` headers + engines pin + bundle budget record.
+100. PR-17+: Phase-J features, one scored bet per PR, each behind the §75–84 gates.

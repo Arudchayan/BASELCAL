@@ -203,4 +203,24 @@ test.describe('BASELCAL App Main Functionality', () => {
       allocatedModule: 'Electives in Data Science',
     });
   });
+
+  test('export filename carries the programme id', async ({ page }) => {
+    await loadExampleOutline(page);
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export plan JSON' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('data-science');
+  });
+
+  test('share modal previews placements and discloses what the link omits', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Share plan' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/carries .* courses .* with their semester/)).toBeVisible();
+    await expect(dialog.getByText(/notes, wishlist, and admission target stay/)).toBeVisible();
+    await expect(dialog.getByLabel('QR code for the share link')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
 });

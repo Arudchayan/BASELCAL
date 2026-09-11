@@ -147,6 +147,59 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-muted);
 }
 
+.micro {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ---------- Modals ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 10, 8, 0.45);
+}
+
+.share-card {
+  width: min(720px, 100%);
+  max-height: min(84vh, 760px);
+  overflow: auto;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.share-cols {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.share-preview {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.share-side {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 560px) {
+  .share-cols { flex-direction: column; }
+  .share-side { width: 100%; }
+}
+
 /* ---------- Panels ---------- */
 
 .glass-panel {
