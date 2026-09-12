@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BookOpen, Calendar, AlertTriangle } from 'lucide-react';
 import {
   assignColumns,
@@ -7,6 +8,7 @@ import {
 } from './conflicts';
 import type { PlanState, SemesterId } from './types';
 import { creditModule, SEMESTERS } from './types';
+import { courseFullLabel, displayCode } from './courseLabel';
 import { CampusRoutePlanner } from './CampusRoutePlanner';
 
 const getModuleColor = (moduleName: string): string => {
@@ -19,14 +21,36 @@ const getModuleColor = (moduleName: string): string => {
   return 'var(--text-secondary)';
 };
 
+/**
+ * Agenda list is the <720px fallback for the grid. It is only mounted on narrow
+ * viewports (not merely hidden with CSS) so desktop DOM queries never match
+ * duplicate day/course text twice.
+ */
+function useNarrowViewport(query = '(max-width: 719px)'): boolean {
+  const [matches, setMatches] = useState<boolean>(
+    () => typeof window !== 'undefined' && typeof window.matchMedia !== 'undefined' && window.matchMedia(query).matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia === 'undefined') return;
+    const list = window.matchMedia(query);
+    const onChange = (event: MediaQueryListEvent) => setMatches(event.matches);
+    setMatches(list.matches);
+    list.addEventListener('change', onChange);
+    return () => list.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
+
 export function Timetable({
   plan,
   activeSem,
   setActiveSem,
+  onExportSemester,
 }: {
   plan: PlanState;
   activeSem: SemesterId;
   setActiveSem: (sem: SemesterId) => void;
+  onExportSemester: () => void;
 }) {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -34,6 +58,7 @@ export function Timetable({
 
   const plannedCourses = plan[activeSem] || [];
   const conflicts = findConflicts(plannedCourses);
+  const isNarrow = useNarrowViewport();
   const unscheduledCourses = plannedCourses.filter((course) => !course.schedule || course.schedule.length === 0);
 
   const totalCp = plannedCourses.reduce((sum, c) => sum + c.cp, 0);
@@ -73,6 +98,15 @@ export function Timetable({
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={onExportSemester}
+            disabled={plannedCourses.length === 0}
+            title="Download this semester only as a calendar file"
+          >
+            Export Sem {activeSem.slice(1)} (.ics)
+          </button>
         </div>
       </div>
 
@@ -108,7 +142,8 @@ export function Timetable({
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
             {conflicts.map((c, i) => (
               <li key={i}>
-                <strong>{c.day}</strong>: {c.courseA.title} ({c.timeA}) overlaps {c.courseB.title} ({c.timeB})
+                <strong>{c.day}</strong>: {courseFullLabel(c.courseA)} ({c.timeA}) overlaps{' '}
+                {courseFullLabel(c.courseB)} ({c.timeB})
               </li>
             ))}
           </ul>
@@ -154,6 +189,7 @@ export function Timetable({
 
       <CampusRoutePlanner courses={plannedCourses} />
 
+      <div className="timetable-scroll">
       <div className="timetable-grid" style={{ display: 'grid', gridTemplateColumns: '60px repeat(5, 1fr)', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ background: 'var(--bg-secondary)', padding: '12px' }} />
         {days.map((d) => (
@@ -219,7 +255,7 @@ export function Timetable({
                 return (
                   <div
                     key={`${sess.course.id}-${i}`}
-                    title={`${sess.course.title}\n${sess.time}\n${sess.room}\n${mandatory ? 'MANDATORY' : 'FLEXIBLE'}`}
+                    title={`${courseFullLabel(sess.course)}\n${sess.time}\n${sess.room}\n${mandatory ? 'MANDATORY' : 'FLEXIBLE'}`}
                     className={'tt-session' + (isConflict ? ' tt-session--conflict' : '')}
                     style={{
                       top: visualTop + 'px',
@@ -232,20 +268,36 @@ export function Timetable({
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <strong
-                        style={{
-                          display: 'block',
-                          color: 'var(--text-primary)',
-                          marginBottom: '2px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          flex: 1,
-                          fontSize: 11,
-                        }}
-                      >
-                        {sess.course.title}
-                      </strong>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          className="mono"
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: 'var(--accent-primary)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {displayCode(sess.course)}
+                        </div>
+                        <strong
+                          style={{
+                            display: 'block',
+                            color: 'var(--text-primary)',
+                            marginBottom: '2px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            flex: 1,
+                            fontSize: 11,
+                          }}
+                        >
+                          {sess.course.title}
+                        </strong>
+                      </div>
                       {mandatory && (
                         <span
                           className="tt-badge"
@@ -277,6 +329,35 @@ export function Timetable({
           );
         })}
       </div>
+      </div>
+
+      {isNarrow && (
+      <div className="timetable-agenda" aria-label="Day-by-day agenda view">
+        {days.map((d) => {
+          const sessions = collectDaySessions(plannedCourses, d);
+          if (sessions.length === 0) return null;
+          return (
+            <div key={d} className="timetable-agenda__day">
+              <h4 className="timetable-agenda__heading">{d}</h4>
+              <ul className="timetable-agenda__list">
+                {sessions.map((sess, i) => (
+                  <li
+                    key={`${sess.course.id}-${i}`}
+                    className="timetable-agenda__item"
+                    style={{ borderLeftColor: getModuleColor(creditModule(sess.course)) }}
+                  >
+                    <div className="mono timetable-agenda__time">{sess.time}</div>
+                    <div className="timetable-agenda__code">{displayCode(sess.course)}</div>
+                    <div className="timetable-agenda__title">{sess.course.title}</div>
+                    <div className="timetable-agenda__room">{sess.room}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      )}
 
       {(() => {
         if (unscheduledCourses.length === 0) return null;
@@ -319,9 +400,9 @@ export function Timetable({
               >
                 <span className="module-dot" style={{ background: getModuleColor(creditModule(c)) }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{c.title}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{courseFullLabel(c)}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    {c.cp} CP · {creditModule(c)}
+                    {displayCode(c)} · {c.cp} CP · {creditModule(c)}
                   </div>
                 </div>
               </div>

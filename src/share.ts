@@ -1,7 +1,20 @@
 import type { PlanState } from './types';
-import { planToRefs, rehydratePlan } from './planStorage';
+import { planToRefs, rehydratePlanDetailed, type RehydrateResult } from './planStorage';
 
 const HASH_PREFIX = '#p=';
+
+/**
+ * Maximum share-link length we will happily copy/QR-encode. Links beyond this
+ * get truncated by some browsers, chat apps and mail clients, and QR codes
+ * above ~1–2 KB become too dense to scan reliably from a screen — so the share
+ * dialog offers the plan JSON download instead. 2000 keeps every realistic
+ * plan shareable while staying paste-safe everywhere.
+ */
+export const MAX_SHARE_URL_LENGTH = 2000;
+
+export function isShareUrlTooLong(url: string, limit: number = MAX_SHARE_URL_LENGTH): boolean {
+  return url.length > limit;
+}
 
 function toBase64Url(input: string): string {
   const b64 = btoa(unescape(encodeURIComponent(input)));
@@ -29,6 +42,15 @@ export function buildShareUrl(plan: PlanState): string {
  * Consuming code should strip the hash afterwards so edits persist to storage normally.
  */
 export function readSharedPlanFromHash(): PlanState | null {
+  return readSharedPlanDetailedFromHash()?.plan ?? null;
+}
+
+/**
+ * Detailed variant: also reports references the link carries that cannot be
+ * honoured (unknown course IDs, duplicate placements), so callers can tell the
+ * user what was skipped instead of dropping them silently.
+ */
+export function readSharedPlanDetailedFromHash(): RehydrateResult | null {
   try {
     const hash = window.location.hash;
     if (!hash.startsWith(HASH_PREFIX)) return null;
@@ -38,7 +60,7 @@ export function readSharedPlanFromHash(): PlanState | null {
     if ((data.v !== 1 && data.v !== 2) || !data.p || typeof data.p !== 'object') return null;
     const hasAny = Object.values(data.p).some((ids) => Array.isArray(ids) && ids.length > 0);
     if (!hasAny) return null;
-    return rehydratePlan(data.p);
+    return rehydratePlanDetailed(data.p);
   } catch {
     return null;
   }

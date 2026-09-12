@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { loadExampleOutline } from './helpers';
 
 test.describe('BASELCAL App Main Functionality', () => {
@@ -123,6 +123,56 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(savedHome).toMatch(/^\{"lat":-?\d/);
   });
 
+  test('quick-add announces the destination semester', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    const quickAdd = page.locator('button.card-quick-add');
+    await expect(quickAdd).toHaveCount(1);
+    await quickAdd.click();
+    await expect(page.getByText(/Added Bioinformatics Algorithms \(45401\) → Sem 1/i)).toBeVisible();
+  });
+
+  test('catalog shows an empty state with a working clear-filters action', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('zzz-no-such-course');
+    await expect(page.getByText('No courses match your filters')).toBeVisible();
+    await page.getByRole('button', { name: 'Clear search & filters' }).click();
+    await expect(page.getByText('No courses match your filters')).toHaveCount(0);
+    await expect(page.locator('.catalog-panel').getByText(/Bioinformatics Algorithms/)).toBeVisible();
+  });
+
+  test('explorer can add a course straight to a semester', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /Course Discovery/i }).click();
+    await page.getByRole('button', { name: /Read Details/i }).first().click();
+    const courseDialog = page.getByRole('dialog').last();
+    const title = ((await courseDialog.locator('h2').textContent()) ?? '').trim();
+    expect(title.length).toBeGreaterThan(0);
+    await courseDialog.getByRole('button', { name: 'Add to Sem 1' }).click();
+    await expect(page.getByText(/→ Sem 1/)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.semester-grid').getByText(title)).toBeVisible();
+  });
+
+  test('toast Undo button reverts a quick-add', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    await page.locator('button.card-quick-add[aria-label*="Bioinformatics"]').click();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/)).toHaveCount(0);
+  });
+
+  test('Ctrl+Z reverts the last plan change', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    await page.locator('button.card-quick-add[aria-label*="Bioinformatics"]').click();
+    await expect(page.getByTitle('Undo (1) (Ctrl+Z)')).toBeVisible();
+    await page.locator('.semester-grid').click();
+    await page.keyboard.press('Control+z');
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/)).toHaveCount(0);
+  });
+
   test('exports the four-semester timetable with official teaching-period end dates', async ({ page }) => {
     await loadExampleOutline(page);
     const downloadPromise = page.waitForEvent('download');
@@ -135,6 +185,29 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).toContain('UNTIL=20270604T235900');
     expect(calendar).toContain('UNTIL=20271223T235900');
     expect(calendar).toContain('UNTIL=20280602T235900');
+    expect(calendar).toContain('BEGIN:VTIMEZONE');
+    expect(calendar).toContain('TZID:Europe/Zurich');
+    expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:');
+    expect(calendar).toContain('BEGIN:VALARM');
+    expect(calendar).toContain('TRIGGER:-PT10M');
+    expect(calendar).toContain('SEQUENCE:0');
+    expect(calendar).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(calendar).toMatch(/UID:baselcal-[A-Za-z0-9-]+-[A-Z]{2}-\d{4}-\d{4}@baselcal\.local/);
+  });
+
+  test('timetable view exports only the active semester', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export Sem 1 (.ics)' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('timetable-s1');
+    const path = await download.path();
+    const calendar = await readFile(path!, 'utf8');
+    expect(calendar).toContain('· S1 ·');
+    expect(calendar).not.toContain('· S2 ·');
+    expect(calendar).not.toContain('· S3 ·');
+    expect(calendar).not.toContain('· S4 ·');
   });
 
   test('exports selected cross-list allocations in plan JSON v3', async ({ page }) => {
@@ -152,5 +225,64 @@ test.describe('BASELCAL App Main Functionality', () => {
       id: 'M-12246',
       allocatedModule: 'Electives in Data Science',
     });
+  });
+
+  test('export filename carries the programme id', async ({ page }) => {
+    await loadExampleOutline(page);
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export plan JSON' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('data-science');
+  });
+
+  test('share modal previews placements and discloses what the link omits', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Share plan' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/carries .* courses .* with their semester/)).toBeVisible();
+    await expect(dialog.getByText(/notes, wishlist, and admission target stay/)).toBeVisible();
+    await expect(dialog.getByLabel('QR code for the share link')).toBeVisible();
+    await expect(dialog.getByText(/too long for a share link/i)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
+
+  test('import shows an itemised kept/dropped/duplicates report', async ({ page }, testInfo) => {
+    const payload = {
+      version: 3,
+      plan: { s1: ['ML-45401'], s2: ['ML-45401', 'NOPE-99999'], s3: [], s4: [] },
+      notes: {},
+      shortlist: [],
+      admissionTarget: 0,
+    };
+    const filePath = testInfo.outputPath('import-plan.json');
+    await writeFile(filePath, JSON.stringify(payload));
+    page.on('dialog', (dialog) => void dialog.accept());
+    await page.locator('input[type="file"]').setInputFiles(filePath);
+    const report = page.getByRole('dialog', { name: 'Plan imported' });
+    await expect(report).toBeVisible();
+    await expect(report.getByText('Kept — 1 course')).toBeVisible();
+    await expect(report.getByText('Dropped unknown references — 1')).toBeVisible();
+    await expect(report.getByText('Skipped duplicate placements — 1')).toBeVisible();
+    await expect(report.getByText('NOPE-99999')).toBeVisible();
+    await expect(report.getByText(/Bioinformatics Algorithms \(45401\)/)).toHaveCount(2);
+    await report.getByRole('button', { name: 'Close' }).click();
+    await expect(report).toHaveCount(0);
+  });
+
+  test('oversized share links fall back to plan JSON download', async ({ page }) => {
+    await page.goto(`/?${'q'.repeat(2400)}`);
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Share plan' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Share plan' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/too long for a share link/i)).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Copy link' })).toHaveCount(0);
+    await expect(dialog.getByLabel('QR code for the share link')).toHaveCount(0);
+    const downloadPromise = page.waitForEvent('download');
+    await dialog.getByRole('button', { name: 'Download plan JSON' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('data-science');
   });
 });

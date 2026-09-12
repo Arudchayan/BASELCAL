@@ -121,7 +121,7 @@ const COURSE_BY_ID: Map<string, Course> = new Map(
   COURSES.map((c) => [c.id, c as Course]),
 );
 
-function courseById(id: string): Course | undefined {
+export function courseById(id: string): Course | undefined {
   return COURSE_BY_ID.get(id);
 }
 

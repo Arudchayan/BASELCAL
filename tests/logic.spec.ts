@@ -179,7 +179,7 @@ test.describe('Degree accuracy & storage', () => {
     });
     await page.reload();
     await expect(page.getByText(/Disputed module membership/i)).toHaveCount(0);
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
   });
 
   test('cross-listed allocation survives v6 persistence', async ({ page }) => {
@@ -210,7 +210,7 @@ test.describe('Degree accuracy & storage', () => {
       localStorage.setItem('basel-ds-plan-v5', JSON.stringify({ s1: ['ML-45401'], s2: [], s3: [], s4: [] }));
     });
     await page.reload();
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem('basel-plan-v7:data-science'))).toContain('ML-45401');
     expect(await page.evaluate(() => localStorage.getItem('basel-ds-plan-v5'))).toBeNull();
   });
@@ -259,7 +259,7 @@ test.describe('Degree accuracy & storage', () => {
     })));
     await page.reload();
     const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
-    await expect(page.getByText(/Inverse Problems: Computational Aspects and Machine Learning/i).first()).toBeVisible();
+    await expect(page.locator('.semester-grid').getByText(/Inverse Problems: Computational Aspects and Machine Learning/i).first()).toBeVisible();
     await expect(page.getByRole('combobox', { name: /Credit allocation for Inverse Problems/i }))
       .toHaveValue('Electives in Data Science');
     await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toHaveCount(0);

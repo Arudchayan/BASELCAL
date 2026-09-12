@@ -26,6 +26,7 @@ type CourseCardProps = {
   onNoteChange?: (text: string) => void;
   onShowDetails: () => void;
   onQuickAdd?: () => void;
+  quickAddHint?: string;
   onAllocationChange?: (module: CourseModule) => void;
 };
 
@@ -39,6 +40,7 @@ function CourseCardInner({
   onNoteChange,
   onShowDetails,
   onQuickAdd,
+  quickAddHint,
   onAllocationChange,
 }: CourseCardProps) {
   const [copyToast, setCopyToast] = useState<string | null>(null);
@@ -131,7 +133,7 @@ function CourseCardInner({
               onClick={onRemove}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label={`Remove ${course.title}`}
-              className="btn--quiet"
+              className="btn--quiet card-remove"
               style={{
                 position: 'absolute',
                 top: 8,
@@ -158,8 +160,9 @@ function CourseCardInner({
                 onQuickAdd();
               }}
               onPointerDown={(e) => e.stopPropagation()}
-              aria-label={`Add ${course.title} to plan`}
-              title="Add to first matching semester"
+              aria-label={quickAddHint ?? `Add ${course.title} to plan`}
+              title={quickAddHint ?? 'Add to first matching semester'}
+              className="card-quick-add"
               style={{
                 position: 'absolute',
                 top: 8,
