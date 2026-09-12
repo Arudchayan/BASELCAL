@@ -12,6 +12,12 @@
  */
 const fs = require('fs');
 
+// Plan step 52: clash + load-cap logic is imported from src/ — single source,
+// same code the UI runs. Requires Node ≥22.18 (type stripping; both modules
+// have type-only imports which are erased, so no build step is needed).
+const { findConflicts } = require('./src/conflicts.ts');
+const { SEM_LOAD_MAX } = require('./src/offering.ts');
+
 const issues = [];
 const warnings = [];
 const pass = (msg) => console.log(`  ✓ ${msg}`);
@@ -208,7 +214,7 @@ const exampleS1Cp = PRESET.s1.reduce(
   (sum, id) => sum + (courses.find((course) => course.id === id)?.cp || 0),
   0,
 );
-if (exampleS1Cp > 37) fail(`Example S1 load ${exampleS1Cp} CP exceeds 37`);
+if (exampleS1Cp > SEM_LOAD_MAX.s1) fail(`Example S1 load ${exampleS1Cp} CP exceeds ${SEM_LOAD_MAX.s1}`);
 else pass(`Example S1 is a schedulable ${PRESET.s1.length}-course / ${exampleS1Cp} CP fall semester`);
 
 console.log('\nCHECK 4: Truth layer present');
@@ -234,6 +240,13 @@ for (const [key, packRule] of Object.entries(packRulesJson)) {
 if (!issues.some((msg) => msg.includes('degree_rules.json'))) {
   pass('degree_rules.json target/kind/module mirror degrees/data-science/rules.json');
 }
+// Plan step 51: parity must hold in both directions — the mirror must not
+// carry rule keys the pack does not define either.
+for (const key of Object.keys(degreeRulesJson)) {
+  if (!packRulesJson[key]) {
+    fail(`degree_rules.json has extra key "${key}" with no rule in degrees/data-science/rules.json`);
+  }
+}
 if (!appTsx.includes('ProgressPanel') && !appTsx.includes('evaluatePlan')) fail('App does not use evaluation layer');
 else pass('App wired to ProgressPanel / evaluation');
 if (appTsx.includes('AI Curriculum Advisor') || appTsx.includes('AI Summary')) fail('Fake AI branding still present in App.tsx');
@@ -256,13 +269,6 @@ if (typoCourses.length) fail(`Title typo "Typology" still present`);
 else pass('No Typology/Topology title typo');
 
 console.log('\nCHECK 6: Preset timetable + semester load (schedulability)');
-function parseTime(t) {
-  if (!t || !t.includes('-')) return null;
-  const [a, b] = t.split('-').map((s) => s.trim());
-  const ap = a.split(':').map(Number);
-  const bp = b.split(':').map(Number);
-  return { start: ap[0] + ap[1] / 60, end: bp[0] + bp[1] / 60 };
-}
 
 /** Cached historical overlaps in future, unaudited semesters; keep visible as warnings until live VV publication. */
 const ALLOWED_PRESET_CLASHES = new Set([
@@ -271,41 +277,24 @@ const ALLOWED_PRESET_CLASHES = new Set([
   'ML-13548|ML-17165',
 ]);
 
-function clashKey(a, b) {
-  return [a, b].sort().join('|');
-}
-
+// Plan step 52: uses src/conflicts.ts findConflicts (the same implementation
+// the timetable UI runs) instead of a local re-implementation. Results are
+// reduced to one entry per course pair, matching the previous report shape.
 function semesterConflicts(ids) {
-  const sessions = [];
-  ids.forEach((id) => {
-    const c = courses.find((x) => x.id === id);
-    if (!c) return;
-    (c.schedule || []).forEach((s) => {
-      const r = parseTime(s.time);
-      if (r) sessions.push({ id: c.id, title: c.title, day: s.day, ...r, time: s.time });
-    });
-  });
-  const found = [];
-  for (let i = 0; i < sessions.length; i++) {
-    for (let j = i + 1; j < sessions.length; j++) {
-      const a = sessions[i];
-      const b = sessions[j];
-      if (a.id === b.id) continue;
-      if (a.day === b.day && a.start < b.end && a.end > b.start) {
-        found.push({
-          key: clashKey(a.id, b.id),
-          label: `${a.day} ${a.time}: ${a.id} vs ${b.id} (${a.title} / ${b.title})`,
-        });
-      }
-    }
-  }
-  // unique by course pair
+  const idSet = new Set(ids);
+  const semesterCourses = courses.filter((c) => idSet.has(c.id));
   const seen = new Set();
-  return found.filter((c) => {
-    if (seen.has(c.key)) return false;
-    seen.add(c.key);
-    return true;
-  });
+  const found = [];
+  for (const pair of findConflicts(semesterCourses)) {
+    const key = [pair.courseA.id, pair.courseB.id].sort().join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    found.push({
+      key,
+      label: `${pair.day} ${pair.timeA} vs ${pair.timeB}: ${pair.courseA.id} vs ${pair.courseB.id} (${pair.courseA.title} / ${pair.courseB.title})`,
+    });
+  }
+  return found;
 }
 
 function weekdaysUsed(ids) {
@@ -319,12 +308,12 @@ function weekdaysUsed(ids) {
   return days.size;
 }
 
-// Example outline keeps S1 at a schedulable 37 CP fall load.
-const SEM_CP_LIMITS = { s1: 37, s2: 38, s3: 42, s4: 46 };
+// Example outline keeps each semester within the honest load caps —
+// SEM_LOAD_MAX from src/offering.ts (plan step 52), not a local copy.
 let schedFails = 0;
 for (const [sem, ids] of Object.entries(PRESET)) {
   const cp = ids.reduce((s, id) => s + (courses.find((c) => c.id === id)?.cp || 0), 0);
-  const limit = SEM_CP_LIMITS[sem];
+  const limit = SEM_LOAD_MAX[sem];
   if (cp > limit) {
     fail(`${sem.toUpperCase()} load ${cp} CP exceeds soft-schedulable max ${limit}`);
     schedFails++;

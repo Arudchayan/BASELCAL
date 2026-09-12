@@ -68,11 +68,12 @@ export const SEMESTERS = [
 
 /**
  * Single source for honest per-semester load caps (plan step 47).
- * Previously copy-pasted in App and ProgressPanel. Values are caps on
- * planned CP per semester, not degree rules — the 120CP exact math is
- * untouched.
+ * Defined in ./offering (JSON-free, require()-able from the Node validators —
+ * see plan step 52); re-exported here so app code keeps one import site.
+ * Values are caps on planned CP per semester, not degree rules — the 120CP
+ * exact math is untouched.
  */
-export const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
+export { SEM_LOAD_MAX } from './offering';
 
 /** Public sample outline — not a personal enrollment and not an official recommendation. */
 export const EXAMPLE_PLAN_IDS: Record<SemesterId, string[]> = examplePlan.plan as Record<SemesterId, string[]>;

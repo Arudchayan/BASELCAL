@@ -386,14 +386,29 @@ export function savePlanToStorage(plan: PlanState): boolean {
   return savePlanForProgramme(DEFAULT_PROGRAMME_ID, plan);
 }
 
-export function loadJson<T>(key: string, fallback: T): T {
+export function loadJson<T>(key: string, fallback: T, validate?: (value: unknown) => boolean): T {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
-    return JSON.parse(raw) as T;
+    const parsed: unknown = JSON.parse(raw);
+    // Plan step 50: persistence boundary is untrusted (user-editable, importable,
+    // cross-version) — wrong-shaped JSON must fall back, never flow into state.
+    if (validate && !validate(parsed)) return fallback;
+    return parsed as T;
   } catch {
     return fallback;
   }
+}
+
+/** Shape guard for the per-course notes record. */
+export function isNotesRecord(value: unknown): value is Record<string, string> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).every((entry) => typeof entry === 'string');
+}
+
+/** Shape guard for the wishlist id list. */
+export function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
 }
 
 export function saveJson(key: string, value: unknown): boolean {

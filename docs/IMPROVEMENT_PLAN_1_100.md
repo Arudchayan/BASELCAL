@@ -63,7 +63,7 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
     one-liner to ICS DESCRIPTION, already there via disclaimer param — verify).
 26. [ ] Per-course provenance in DetailsModal: lastVerified + semester + cached-pre-11-30
     note for Spring-27 rows.
-27. [ ] `validate_details.cjs --plan` in CI on catalog-affecting PRs (CHECK1/3/4/6/9 gate).
+27. [x] `validate_details.cjs --plan` in CI on catalog-affecting PRs (CHECK1/3/4/6/9 gate).
 28. [ ] Stale-watch copy: keep warnings, never silence (CHECK5/9/11 triage rule).
 29. [ ] Contrast pass: muted `#8f8875/#7d7565` → `#6b6455` or 11px/600 for 10–10.5px text.
 30. [ ] Focus/label pass: note textarea label, timetable session keyboard operability,
@@ -103,11 +103,11 @@ with `npm run validate && npm run lint && npm run build && npx playwright test`.
     `evaluatePack`, `withAdmissionTarget`, `basel-plan-v7:<id>` keys untouched).
 47. [x] Single `SEM_LOAD_MAX`/SEMESTERS source (find 3 copies first, codemod, test).
 48. [x] Consolidate BUCKETS triple palette behind existing CSS vars (no renames).
-49. [ ] Storage version audit: document v7/v6/unversioned/v3/v2; migrate gaps explicitly.
-50. [ ] `loadJson` schema-guard at persistence boundary; TextEncoder base64url fix.
-51. [ ] Build-time mirror check: `rules.json` ↔ `degree_rules.json` parity (dev throw exists —
+49. [x] Storage version audit: document v7/v6/unversioned/v3/v2; migrate gaps explicitly.
+50. [x] `loadJson` schema-guard at persistence boundary; TextEncoder base64url fix.
+51. [x] Build-time mirror check: `rules.json` ↔ `degree_rules.json` parity (dev throw exists —
     promote to CI step).
-52. [ ] Import `src/` conflict/offering logic into CJS validators (dedup, same tests).
+52. [x] Import `src/` conflict/offering logic into CJS validators (dedup, same tests).
 
 ## Phase H — Deploy hardening (static + unlock only)
 

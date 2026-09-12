@@ -34,6 +34,8 @@ import {
   notesStorageKey,
   shortlistStorageKey,
   loadJson,
+  isNotesRecord,
+  isStringArray,
   saveJson,
   exportPlanPayload,
   importPlanPayload,
@@ -124,10 +126,10 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [personalNotes, setPersonalNotes] = useState<Record<string, string>>(() =>
-    loadJson(notesStorageKey(programmeId), {}),
+    loadJson(notesStorageKey(programmeId), {}, isNotesRecord),
   );
   const [shortlist, setShortlist] = useState<string[]>(() =>
-    loadJson(shortlistStorageKey(programmeId), []),
+    loadJson(shortlistStorageKey(programmeId), [], isStringArray),
   );
   const [search, setSearch] = useState('');
   const [searchLower, setSearchLower] = useState('');
@@ -200,8 +202,8 @@ function App() {
     setProgrammeId(nextProgrammeId);
     const nextBoot = loadPlanForProgrammeDetailed(nextProgrammeId);
     setPlan(nextBoot.plan);
-    setPersonalNotes(loadJson(notesStorageKey(nextProgrammeId), {}));
-    setShortlist(loadJson(shortlistStorageKey(nextProgrammeId), []));
+    setPersonalNotes(loadJson(notesStorageKey(nextProgrammeId), {}, isNotesRecord));
+    setShortlist(loadJson(shortlistStorageKey(nextProgrammeId), [], isStringArray));
     setUndoStack([]);
   };
 

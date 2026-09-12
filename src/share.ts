@@ -16,16 +16,26 @@ export function isShareUrlTooLong(url: string, limit: number = MAX_SHARE_URL_LEN
   return url.length > limit;
 }
 
+// Plan step 50: TextEncoder/TextDecoder instead of the deprecated
+// escape()/unescape() UTF-8 hack. Byte-identical output for every input
+// (UTF-8 both ways), so all previously generated share links still decode.
 function toBase64Url(input: string): string {
-  const b64 = btoa(unescape(encodeURIComponent(input)));
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const bytes = new TextEncoder().encode(input);
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function fromBase64Url(input: string): string | null {
   try {
     let b64 = input.replace(/-/g, '+').replace(/_/g, '/');
     while (b64.length % 4 !== 0) b64 += '=';
-    return decodeURIComponent(escape(atob(b64)));
+    const binary = atob(b64);
+    const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
   } catch {
     return null;
   }

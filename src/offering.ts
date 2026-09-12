@@ -16,6 +16,17 @@ export const SEMESTER_SEASONS: Record<SemesterId, 'fall' | 'spring'> = {
   s4: 'spring',
 };
 
+/**
+ * Single source for honest per-semester load caps (plan steps 47/52).
+ * Defined here — not in types.ts — so the Node validators can require()
+ * this module directly: types.ts pulls in examplePlan.json, which Node ESM
+ * cannot import without attributes, while this file has type-only imports
+ * (erased by Node type stripping). Re-exported from types.ts for app code.
+ * Values are caps on planned CP per semester, not degree rules — the 120CP
+ * exact math is untouched.
+ */
+export const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
+
 export function parseOffering(when: string | undefined): OfferingMeta {
   const raw = when || '';
   const lower = raw.toLowerCase();
