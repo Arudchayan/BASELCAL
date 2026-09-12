@@ -3,22 +3,10 @@ import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
-  BookOpen,
-  Zap,
-  Sun,
-  Moon,
-  LayoutGrid,
-  Calendar,
-  CalendarPlus,
   Star,
-  Download,
-  Upload,
-  Undo2,
-  Link2,
-  Printer,
-  LogIn,
-  LogOut,
 } from 'lucide-react';
+import { TopNav } from './TopNav';
+import { Toast, type ToastData } from './Toast';
 import { COURSES } from './courses';
 import { CourseCard } from './CourseCard';
 import { CourseDetailsModal } from './CourseDetailsModal';
@@ -56,14 +44,16 @@ import {
   clearOwnerBrowserData,
 } from './planStorage';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
-import { buildShareUrl, readSharedPlanFromHash, clearShareHash } from './share';
+import { readSharedPlanDetailedFromHash, clearShareHash } from './share';
 import { downloadIcs } from './ics';
+import { courseFullLabel } from './courseLabel';
 import {
   EXAMPLE_PLAN_ADMISSION_TARGET,
   EXAMPLE_PLAN_IDS,
   EXAMPLE_PLAN_NAME,
   SEMESTERS,
   SEMESTER_IDS,
+  SEM_LOAD_MAX,
   eligibleModulesFor,
   withCourseAllocation,
   type Course,
@@ -78,26 +68,36 @@ const CourseExplorer = lazy(() =>
   import('./CourseExplorer').then((m) => ({ default: m.CourseExplorer })),
 );
 const Timetable = lazy(() => import('./Timetable').then((m) => ({ default: m.Timetable })));
+const ShareModal = lazy(() => import('./ShareModal').then((m) => ({ default: m.ShareModal })));
+const ImportReportModal = lazy(() => import('./ImportReportModal').then((m) => ({ default: m.ImportReportModal })));
 
 ensurePlanMigrated();
 const PROGRAMMES = listProgrammes();
 
 const sharedBoot = (() => {
-  const shared = readSharedPlanFromHash();
+  const shared = readSharedPlanDetailedFromHash();
   if (!shared) return null;
+  const skipped: string[] = [];
+  if (shared.droppedIds.length > 0) {
+    skipped.push(
+      `${shared.droppedIds.length} unknown reference(s) will be skipped: ${shared.droppedIds.slice(0, 6).join(', ')}${shared.droppedIds.length > 6 ? '…' : ''}`,
+    );
+  }
+  if (shared.duplicateIds.length > 0) {
+    skipped.push(`${shared.duplicateIds.length} duplicate placement(s) will be skipped.`);
+  }
   const ok = window.confirm(
-    'Load the shared plan from this link?\n\nIt replaces the plan saved in this browser.',
+    'Load the shared plan from this link?\n\nIt replaces the plan saved in this browser.' +
+      (skipped.length > 0 ? `\n\n${skipped.join('\n')}` : ''),
   );
   if (ok) clearShareHash();
-  return ok ? shared : null;
+  return ok ? shared.plan : null;
 })();
 
 const daysSince = (iso: string): number | null => {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   return Number.isNaN(days) ? null : days;
 };
-
-const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
 
 function App() {
   const { programmeId, setProgrammeId, manifest, enabledProgrammes } = useProgramme();
@@ -108,6 +108,9 @@ function App() {
   const [viewMode, setViewMode] = useState<'board' | 'timetable'>('board');
   const [activeSem, setActiveSem] = useState<SemesterId>('s1');
   const [showExplorer, setShowExplorer] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [importReport, setImportReport] =
+    useState<import('./ImportReportModal').ImportReportData | null>(null);
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
   const [plan, setPlan] = useState<PlanState>(() => sharedBoot ?? initialBoot.plan);
   const [startupDrops] = useState<string[]>(() => initialBoot.droppedIds);
@@ -116,7 +119,7 @@ function App() {
   const [storageOk, setStorageOk] = useState(true);
   const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true, admission: true });
   const [undoStack, setUndoStack] = useState<PlanState[]>([]);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastData | null>(null);
   const toastTimer = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,10 +154,10 @@ function App() {
     setStorageOk(allOk);
   };
 
-  const showToast = (message: string) => {
+  const showToast = (message: string, action?: ToastData['action']) => {
     if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
-    setToast(message);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2400);
+    setToast({ message, action });
+    toastTimer.current = window.setTimeout(() => setToast(null), action ? 6000 : 2400);
   };
 
   useEffect(() => {
@@ -219,6 +222,20 @@ function App() {
     });
   };
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      if (e.shiftKey || e.key.toLowerCase() !== 'z') return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' || target.isContentEditable)) return;
+      e.preventDefault();
+      undo();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   const toggleShortlist = (id: string) => {
     setShortlist((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
@@ -259,6 +276,9 @@ function App() {
     });
   }, [searchLower, moduleFilter, priorityFilter, semesterFilter, plannedCourseIds, plannedProjectGroups, showShortlistOnly, shortlist]);
 
+  const hasActiveFilters = search !== '' || moduleFilter !== '' || priorityFilter !== '' ||
+    semesterFilter !== '' || showShortlistOnly;
+
   const preferredSemesterFor = (course: Course): SemesterId => {
     const meta = parseOffering(course.when);
     if (meta.season === 'spring') return 's2';
@@ -270,14 +290,54 @@ function App() {
     return 's1';
   };
 
+  const semShortLabel = (sem: SemesterId): string =>
+    SEMESTERS.find((s) => s.id === sem)?.title.split('·')[0].trim() ?? sem;
+
+  const duplicateReason = (course: Course): 'duplicate' | 'variant' | null => {
+    if (plannedCourseIds.has(course.id)) return 'duplicate';
+    if (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup)) return 'variant';
+    return null;
+  };
+
+  const duplicateToast = (course: Course, reason: 'duplicate' | 'variant'): string =>
+    reason === 'duplicate'
+      ? `Already in plan: ${courseFullLabel(course)}`
+      : `Variant already planned: ${courseFullLabel(course)} — pick one 6/12 CP variant`;
+
   const quickAddCourse = (course: Course) => {
-    if (plannedCourseIds.has(course.id) ||
-      (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
+    const reason = duplicateReason(course);
+    if (reason) {
+      showToast(duplicateToast(course, reason));
+      return;
+    }
     const sem = semesterFilter || preferredSemesterFor(course);
     updatePlan((prev) => ({
       ...prev,
       [sem]: [...prev[sem], course],
     }));
+    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`, { label: 'Undo', onClick: undo });
+  };
+
+  const addToPlanSemester = (course: Course, sem: SemesterId) => {
+    const reason = duplicateReason(course);
+    if (reason) {
+      showToast(duplicateToast(course, reason));
+      return;
+    }
+    updatePlan((prev) => ({
+      ...prev,
+      [sem]: [...prev[sem], course],
+    }));
+    showToast(`Added ${courseFullLabel(course)} → ${semShortLabel(sem)}`, { label: 'Undo', onClick: undo });
+  };
+
+  const clearCatalogFilters = () => {
+    setSearch('');
+    setSearchLower('');
+    setModuleFilter('');
+    setPriorityFilter('');
+    setSemesterFilter('');
+    setShowShortlistOnly(false);
   };
 
   const allocateCourse = (sem: SemesterId, index: number, module: CourseModule) => {
@@ -306,8 +366,12 @@ function App() {
     if (source.droppableId === 'catalog') {
       const courseId = draggableId;
       const course = COURSES.find((c) => c.id === courseId) as Course | undefined;
-      if (!course || plannedCourseIds.has(course.id) ||
-        (course.projectVariantGroup && plannedProjectGroups.has(course.projectVariantGroup))) return;
+      if (!course) return;
+      const reason = duplicateReason(course);
+      if (reason) {
+        showToast(duplicateToast(course, reason));
+        return;
+      }
       const destSem = destination.droppableId as SemesterId;
       updatePlan((prev) => {
         const newDestItems = Array.from(prev[destSem]);
@@ -319,16 +383,23 @@ function App() {
 
     if (destination.droppableId === 'catalog') {
       const sourceSem = source.droppableId as SemesterId;
+      const removedCourse = plan[sourceSem]?.[source.index];
       updatePlan((prev) => {
         const newSourceItems = Array.from(prev[sourceSem]);
         newSourceItems.splice(source.index, 1);
         return { ...prev, [sourceSem]: newSourceItems };
       });
+      if (removedCourse) showToast(`Removed ${courseFullLabel(removedCourse)}`, { label: 'Undo', onClick: undo });
       return;
     }
 
     const sourceSem = source.droppableId as SemesterId;
     const destSem = destination.droppableId as SemesterId;
+    const movedCourse = plan[sourceSem]?.[source.index];
+    if (movedCourse && plan[destSem]?.some((c) => c.id === movedCourse.id)) {
+      showToast(`Already in plan: ${courseFullLabel(movedCourse)}`);
+      return;
+    }
     updatePlan((prev) => {
       const newSourceItems = Array.from(prev[sourceSem]);
       const newDestItems = Array.from(prev[destSem]);
@@ -339,14 +410,19 @@ function App() {
       newDestItems.splice(destination.index, 0, movedItem);
       return { ...prev, [sourceSem]: newSourceItems, [destSem]: newDestItems };
     });
+    if (movedCourse && sourceSem !== destSem) {
+      showToast(`Moved ${courseFullLabel(movedCourse)} → ${semShortLabel(destSem)}`, { label: 'Undo', onClick: undo });
+    }
   };
 
   const removeCourse = (semId: SemesterId, index: number) => {
+    const removed = plan[semId]?.[index];
     updatePlan((prev) => {
       const newItems = Array.from(prev[semId]);
       newItems.splice(index, 1);
       return { ...prev, [semId]: newItems };
     });
+    if (removed) showToast(`Removed ${courseFullLabel(removed)}`, { label: 'Undo', onClick: undo });
   };
 
   const loadPreset = () => {
@@ -396,23 +472,23 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `baselcal-plan-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `baselcal-${programmeId}-plan-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast('Plan JSON downloaded — full backup with notes, wishlist and admission target');
   };
 
-  const handleShare = async () => {
+  const openShare = () => {
     if (allPlannedCourses(plan).length === 0) {
       showToast('Nothing to share — add courses or load the example outline');
       return;
     }
-    const url = buildShareUrl(plan);
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast('Share link copied — anyone opening it sees this exact plan');
-    } catch {
-      window.prompt('Copy this share link:', url);
-    }
+    setShowShare(true);
+  };
+
+  const handleShareJsonFallback = () => {
+    handleExport();
+    setShowShare(false);
   };
 
   const handleIcs = () => {
@@ -423,8 +499,18 @@ function App() {
       showToast('No weekly slots to export — add scheduled courses or load the example outline');
       return;
     }
-    downloadIcs(plan, PLAN_DISCLAIMER);
+    downloadIcs(plan, PLAN_DISCLAIMER, programmeId);
     showToast('Calendar file downloaded — weekly slots included');
+  };
+
+  const handleExportSemester = () => {
+    const hasSlots = plan[activeSem].some((course) => (course.schedule?.length ?? 0) > 0);
+    if (!hasSlots) {
+      showToast('No weekly slots to export — add scheduled courses or load the example outline');
+      return;
+    }
+    downloadIcs(plan, PLAN_DISCLAIMER, programmeId, [activeSem]);
+    showToast(`Semester calendar downloaded — ${semShortLabel(activeSem)} weekly slots included`);
   };
 
   const handleImportFile = async (file: File) => {
@@ -467,19 +553,18 @@ function App() {
           ? `Buckets OK — but check: ${caveats.join('; ')}.`
           : 'All buckets OK and no conflict/dispute/schedule caveats flagged.'
         : ev.issues.slice(0, 3).join('; ');
-      const dropped =
-        imported.droppedIds.length > 0
-          ? ` Dropped unknown IDs: ${imported.droppedIds.slice(0, 8).join(', ')}${
-              imported.droppedIds.length > 8 ? '…' : ''
-            }.`
-          : '';
-      const dups =
-        imported.duplicateIds.length > 0
-          ? ` Skipped duplicate placements: ${imported.duplicateIds.slice(0, 6).join(', ')}.`
-          : '';
-      alert(
-        `Imported plan. MSc ${ev.stats.mscTotal}/${ev.rules.mscTotal.target}, grand ${ev.stats.grandTotal}/${ev.rules.grandTotal.target}. ${status}${dropped}${dups}`,
-      );
+      const kept = SEMESTER_IDS.map((sem) => ({
+        semTitle: SEMESTERS.find((s) => s.id === sem)?.title ?? sem,
+        courses: imported.plan[sem],
+      })).filter((section) => section.courses.length > 0);
+      setImportReport({
+        kept,
+        droppedIds: imported.droppedIds,
+        duplicateIds: imported.duplicateIds,
+        summary: `MSc ${ev.stats.mscTotal}/${ev.rules.mscTotal.target}, grand ${ev.stats.grandTotal}/${ev.rules.grandTotal.target}.`,
+        status,
+        caveats,
+      });
     } catch {
       alert('Failed to import plan JSON.');
     }
@@ -530,121 +615,29 @@ function App() {
         </div>
       )}
 
-      <motion.header
-        initial={{ y: -12, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="glass-panel topnav"
-      >
-        <div className="brand">
-          <div className="brand-mark">{manifest.shortName}</div>
-          <div style={{ minWidth: 0 }}>
-            <h1>UniBasel {manifest.shortName} Planner</h1>
-            <div className="brand-sub">{manifest.brandSubtitle}</div>
-          </div>
-          <select
-            aria-label="Programme"
-            value={programmeId}
-            onChange={(event) => changeProgramme(event.target.value as ProgrammeId)}
-            title="Degree programme"
-            style={{ padding: '7px 9px', minWidth: 150 }}
-          >
-            {PROGRAMMES.map((programme) => {
-              const enabled = enabledProgrammeIds.has(programme.id);
-              return (
-                <option
-                  key={programme.id}
-                  value={programme.id}
-                  disabled={!enabled}
-                  title={enabled ? undefined : 'Coming soon'}
-                >
-                  {programme.displayName}{enabled ? '' : ' — Coming soon'}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <div className="topnav-actions no-print">
-          <button
-            className="btn btn--primary"
-            onClick={() => setShowExplorer(true)}
-          >
-            <BookOpen size={15} /> Course Discovery
-          </button>
-          <div className="segmented" role="group" aria-label="View mode">
-            <button
-              onClick={() => setViewMode('board')}
-              aria-label="Board view"
-              className={viewMode === 'board' ? 'is-active' : ''}
-            >
-              <LayoutGrid size={14} /> Board
-            </button>
-            <button
-              onClick={() => setViewMode('timetable')}
-              aria-label="Timetable view"
-              className={viewMode === 'timetable' ? 'is-active' : ''}
-            >
-              <Calendar size={14} /> Timetable
-            </button>
-          </div>
-          <div className="nav-divider" />
-          <button className="btn btn--ghost" onClick={loadPreset}>
-            <Zap size={15} /> Load example outline
-          </button>
-          {ownerSession ? (
-            <button className="btn btn--ghost" onClick={logoutOwner} aria-label="Sign out">
-              <LogOut size={15} /> Sign out
-            </button>
-          ) : (
-            <button className="btn btn--ghost" onClick={() => setShowLogin(true)} aria-label="Owner login">
-              <LogIn size={15} /> Sign in
-            </button>
-          )}
-          <button
-            className="icon-btn"
-            onClick={undo}
-            disabled={undoStack.length === 0}
-            aria-label="Undo last plan change"
-            title="Undo"
-          >
-            <Undo2 size={15} />
-          </button>
-          <button className="icon-btn" onClick={handleExport} aria-label="Export plan JSON" title="Export JSON">
-            <Download size={15} />
-          </button>
-          <button className="icon-btn" onClick={() => fileInputRef.current?.click()} aria-label="Import plan JSON" title="Import JSON">
-            <Upload size={15} />
-          </button>
-          <button className="icon-btn" onClick={() => void handleShare()} aria-label="Copy share link" title="Share plan as link">
-            <Link2 size={15} />
-          </button>
-          <button className="icon-btn" onClick={handleIcs} aria-label="Export timetable to calendar (.ics)" title="Export .ics calendar">
-            <CalendarPlus size={15} />
-          </button>
-          <button className="icon-btn" onClick={() => window.print()} aria-label="Print plan" title="Print / save as PDF">
-            <Printer size={15} />
-          </button>
-          <button
-            className="icon-btn"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Toggle theme"
-            title="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json,.json"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) void handleImportFile(f);
-              e.target.value = '';
-            }}
-          />
-        </div>
-      </motion.header>
+      <TopNav
+        manifest={manifest}
+        programmes={PROGRAMMES}
+        programmeId={programmeId}
+        enabledProgrammeIds={enabledProgrammeIds}
+        onProgrammeChange={changeProgramme}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onOpenExplorer={() => setShowExplorer(true)}
+        onLoadPreset={loadPreset}
+        ownerSession={ownerSession}
+        onLogoutOwner={logoutOwner}
+        onShowLogin={() => setShowLogin(true)}
+        undoCount={undoStack.length}
+        onUndo={undo}
+        onExport={handleExport}
+        fileInputRef={fileInputRef}
+        onImportFile={(f) => void handleImportFile(f)}
+        onShare={openShare}
+        onIcs={handleIcs}
+        theme={theme}
+        onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      />
 
       <div className="subbar" style={{ marginTop: 8 }}>
         <span role="note">{PLAN_DISCLAIMER}</span>
@@ -685,11 +678,11 @@ function App() {
           <motion.div key="board" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
             <DragDropContext onDragEnd={onDragEnd}>
               <div className="board-layout" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, marginTop: 20 }}>
-                <motion.div initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass-panel no-print" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}>
+                <motion.div initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass-panel no-print catalog-panel" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}>
                   <div style={{ padding: 16, borderBottom: '1px solid var(--border-subtle)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                       <h2 style={{ fontSize: 16 }}>Course Catalog</h2>
-                      <span className="micro-label">{catalogCourses.length} available</span>
+                      <span className="micro-label">{catalogCourses.length} of {COURSES.length} shown</span>
                     </div>
                     <div style={{ position: 'relative', marginBottom: 10 }}>
                       <Search size={16} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -769,9 +762,27 @@ function App() {
                             onNoteChange={(text) => updateNote(course.id, text)}
                             onShowDetails={() => setActiveCourseDetails(course)}
                             onQuickAdd={() => quickAddCourse(course)}
+                            quickAddHint={`Add ${courseFullLabel(course)} → ${semShortLabel(semesterFilter || preferredSemesterFor(course))}`}
                           />
                         ))}
                         {provided.placeholder}
+                        {catalogCourses.length === 0 && (
+                          <div style={{ padding: '20px 8px', textAlign: 'center' }}>
+                            <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                              {hasActiveFilters ? 'No courses match your filters' : 'Everything is planned'}
+                            </p>
+                            <p style={{ margin: '0 0 12px', fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                              {hasActiveFilters
+                                ? 'Try a different search term or clear the filters below.'
+                                : 'Nice — every catalog course is already on your board.'}
+                            </p>
+                            {hasActiveFilters && (
+                              <button type="button" className="btn btn--ghost" onClick={clearCatalogFilters}>
+                                Clear search & filters
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </Droppable>
@@ -853,7 +864,7 @@ function App() {
         ) : (
           <motion.div key="timetable" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} style={{ minHeight: 600, marginTop: 20 }}>
             <Suspense fallback={<div style={{ padding: 24, color: 'var(--text-muted)' }}>Loading timetable…</div>}>
-              <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} />
+              <Timetable plan={plan} activeSem={activeSem} setActiveSem={setActiveSem} onExportSemester={handleExportSemester} />
             </Suspense>
           </motion.div>
         )}
@@ -879,24 +890,39 @@ function App() {
               toggleShortlist={toggleShortlist}
               onClose={() => setShowExplorer(false)}
               admissionTarget={admissionTarget}
+              onAddToPlan={addToPlanSemester}
+              plannedCourseIds={[...plannedCourseIds]}
+              plannedProjectGroups={[...plannedProjectGroups]}
             />
           </Suspense>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-        {toast && (
-          <motion.div
-            className="toast no-print"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {toast}
-          </motion.div>
+        {showShare && (
+          <Suspense fallback={null}>
+            <ShareModal
+              plan={plan}
+              onClose={() => setShowShare(false)}
+              onNotify={showToast}
+              onExportJson={handleShareJsonFallback}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {importReport && (
+          <Suspense fallback={null}>
+            <ImportReportModal
+              report={importReport}
+              onClose={() => setImportReport(null)}
+            />
+          </Suspense>
+        )}
+      </AnimatePresence>
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

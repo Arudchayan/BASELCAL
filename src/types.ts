@@ -66,6 +66,14 @@ export const SEMESTERS = [
   { id: 's4' as const, title: 'Sem 4 · provisional (Inc. Thesis)' },
 ];
 
+/**
+ * Single source for honest per-semester load caps (plan step 47).
+ * Previously copy-pasted in App and ProgressPanel. Values are caps on
+ * planned CP per semester, not degree rules — the 120CP exact math is
+ * untouched.
+ */
+export const SEM_LOAD_MAX: Record<SemesterId, number> = { s1: 37, s2: 38, s3: 42, s4: 46 };
+
 /** Public sample outline — not a personal enrollment and not an official recommendation. */
 export const EXAMPLE_PLAN_IDS: Record<SemesterId, string[]> = examplePlan.plan as Record<SemesterId, string[]>;
 export const EXAMPLE_PLAN_ALLOCATIONS: Partial<Record<string, CourseModule>> =
