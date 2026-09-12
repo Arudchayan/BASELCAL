@@ -123,6 +123,48 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(savedHome).toMatch(/^\{"lat":-?\d/);
   });
 
+  test('campus map slides under the sticky header, not over it', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const map = page.locator('.campus-route__map');
+    await expect(map).toBeVisible();
+    // The map box must establish a stacking context containing Leaflet's
+    // internal z-index 400–1000 panes; otherwise map tiles paint over the
+    // sticky topnav when scrolled underneath (verified visually on prod
+    // builds: header controls buried under tiles without this).
+    const stacking = await map.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { position: style.position, zIndex: style.zIndex };
+    });
+    expect(stacking.position).toBe('relative');
+    expect(stacking.zIndex).toBe('0');
+    // Scroll so the map sits directly beneath the sticky topnav, then check
+    // which layer actually receives hits at a header control's position.
+    // Regression: Leaflet's internal z-index 400–1000 panes used to paint
+    // over the sticky topnav (map tiles covering header controls).
+    await map.evaluate((el) => window.scrollTo({
+      top: el.getBoundingClientRect().top + window.scrollY - 20,
+    }));
+    const hit = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('button')].find((b) => /Course Discovery/i.test(b.textContent || ''));
+      const mapEl = document.querySelector('.campus-route__map');
+      if (!btn || !mapEl) return 'missing';
+      const r = btn.getBoundingClientRect();
+      const m = mapEl.getBoundingClientRect();
+      const cx = r.x + r.width / 2;
+      const cy = r.y + r.height / 2;
+      // Guard against a vacuous pass: the button must actually sit over the map.
+      if (!(cx >= m.x && cx <= m.x + m.width && cy >= m.y && cy <= m.y + m.height)) {
+        return 'no-overlap-vacuous';
+      }
+      const el = document.elementFromPoint(cx, cy);
+      if (!el) return 'no-hit';
+      if (el.closest('.leaflet-container')) return 'leaflet-covered';
+      return el.closest('.topnav') ? 'topnav' : 'other';
+    });
+    expect(hit).toBe('topnav');
+  });
+
   test('quick-add announces the destination semester', async ({ page }) => {
     await page.goto('/');
     await page.getByLabel('Search courses').fill('45401');
