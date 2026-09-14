@@ -62,6 +62,29 @@ function icsDate(d: Date, hhmm: string): string {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(Number(h))}${pad(Number(m))}00`;
 }
 
+/** RFC 5545: when DTSTART uses TZID, UNTIL must be UTC. */
+function icsUntilUTC(d: Date, hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number);
+  const y = d.getFullYear();
+  const month = d.getMonth();
+  const day = d.getDate();
+  // Resolve Europe/Zurich offset on that calendar day via Intl (no double local TZ).
+  const probe = new Date(Date.UTC(y, month, day, 12, 0, 0));
+  const offsetLabel = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZID,
+    timeZoneName: 'shortOffset',
+  })
+    .formatToParts(probe)
+    .find((p) => p.type === 'timeZoneName')?.value;
+  const match = offsetLabel?.match(/GMT([+-])(\d+)(?::(\d+))?/i);
+  const sign = match?.[1] === '-' ? -1 : 1;
+  const hours = match ? Number(match[2]) : 1;
+  const mins = match?.[3] ? Number(match[3]) : 0;
+  const offsetMs = sign * (hours * 60 + mins) * 60 * 1000;
+  const utcMs = Date.UTC(y, month, day, h, m, 0) - offsetMs;
+  return icsStampUTC(new Date(utcMs));
+}
+
 function parseTime(time: string): { from: string; to: string } | null {
   const match = time.match(/(\d{1,2}):(\d{2})\s*[-–—]\s*(\d{1,2}):(\d{2})/);
   if (!match) return null;
@@ -149,7 +172,7 @@ export function buildIcs(plan: PlanState, disclaimer: string, sems: SemesterId[]
           `DTSTAMP:${icsStampUTC(now)}`,
           `DTSTART;TZID=${TZID}:${icsDate(first, times.from)}`,
           `DTEND;TZID=${TZID}:${icsDate(first, times.to)}`,
-          `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${icsDate(range.until, '23:59')}`,
+          `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${icsUntilUTC(range.until, '23:59')}`,
           'SEQUENCE:0',
           `SUMMARY:${icsEscape(summary)}`,
           `LOCATION:${icsEscape(session.room || '')}`,

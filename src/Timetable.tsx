@@ -15,11 +15,11 @@ import { addDays, mondayOfWeek, sessionActiveInWeek, toIsoDate } from './schedul
 import { defaultTimetableWeek, formatWeekLabel, weekInputValue } from './ics';
 
 /**
- * Agenda list is the <720px fallback for the grid. It is only mounted on narrow
+ * Agenda list is the ≤720px fallback for the grid. It is only mounted on narrow
  * viewports (not merely hidden with CSS) so desktop DOM queries never match
- * duplicate day/course text twice.
+ * duplicate day/course text twice. Query must match `@media (max-width: 720px)`.
  */
-function useNarrowViewport(query = '(max-width: 719px)'): boolean {
+function useNarrowViewport(query = '(max-width: 720px)'): boolean {
   const [matches, setMatches] = useState<boolean>(
     () => typeof window !== 'undefined' && typeof window.matchMedia !== 'undefined' && window.matchMedia(query).matches,
   );

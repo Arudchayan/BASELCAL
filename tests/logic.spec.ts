@@ -377,6 +377,7 @@ test.describe('Degree accuracy & storage', () => {
     expect(ics).toContain('64323');
     // First meeting Mon 21.09.2026, not semester start Mon 14.09.2026
     expect(ics).toContain('DTSTART;TZID=Europe/Zurich:20260921T141500');
-    expect(ics).toContain('UNTIL=20261214T235900');
+    // UNTIL is UTC (RFC 5545 with TZID DTSTART); 14.12.2026 23:59 Zurich = CET → 22:59Z
+    expect(ics).toMatch(/UNTIL=20261214T225900Z/);
   });
 });
