@@ -1,4 +1,5 @@
-import { BookOpen, Calendar, AlertTriangle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BookOpen, Calendar, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   assignColumns,
   collectDaySessions,
@@ -7,26 +8,44 @@ import {
 } from './conflicts';
 import type { PlanState, SemesterId } from './types';
 import { creditModule, SEMESTERS } from './types';
+import { courseFullLabel, displayCode } from './courseLabel';
 import { CampusRoutePlanner } from './CampusRoutePlanner';
+import { getModuleColor } from './moduleColor';
+import { addDays, mondayOfWeek, sessionActiveInWeek, toIsoDate } from './scheduleDates';
+import { defaultTimetableWeek, formatWeekLabel, weekInputValue } from './ics';
 
-const getModuleColor = (moduleName: string): string => {
-  if (moduleName.includes('Admission')) return 'var(--module-admission)';
-  if (moduleName.includes('Math')) return 'var(--module-math)';
-  if (moduleName.includes('Machine Learning')) return 'var(--module-ml)';
-  if (moduleName.includes('Systems')) return 'var(--module-systems)';
-  if (moduleName.includes('Electives')) return 'var(--module-electives)';
-  if (moduleName.includes('Thesis')) return 'var(--module-thesis)';
-  return 'var(--text-secondary)';
-};
+/**
+ * Agenda list is the <720px fallback for the grid. It is only mounted on narrow
+ * viewports (not merely hidden with CSS) so desktop DOM queries never match
+ * duplicate day/course text twice.
+ */
+function useNarrowViewport(query = '(max-width: 719px)'): boolean {
+  const [matches, setMatches] = useState<boolean>(
+    () => typeof window !== 'undefined' && typeof window.matchMedia !== 'undefined' && window.matchMedia(query).matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia === 'undefined') return;
+    const list = window.matchMedia(query);
+    const onChange = (event: MediaQueryListEvent) => setMatches(event.matches);
+    setMatches(list.matches);
+    list.addEventListener('change', onChange);
+    return () => list.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
 
 export function Timetable({
   plan,
   activeSem,
   setActiveSem,
+  onExportSemester,
+  onImportUnical,
 }: {
   plan: PlanState;
   activeSem: SemesterId;
   setActiveSem: (sem: SemesterId) => void;
+  onExportSemester: () => void;
+  onImportUnical?: () => void;
 }) {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -34,13 +53,24 @@ export function Timetable({
 
   const plannedCourses = plan[activeSem] || [];
   const conflicts = findConflicts(plannedCourses);
+  const isNarrow = useNarrowViewport();
+  const [weekMonday, setWeekMonday] = useState(() => defaultTimetableWeek(activeSem));
+
+  useEffect(() => {
+    setWeekMonday(defaultTimetableWeek(activeSem));
+  }, [activeSem]);
+
   const unscheduledCourses = plannedCourses.filter((course) => !course.schedule || course.schedule.length === 0);
+  const offThisWeek = plannedCourses.filter((course) => {
+    if (!course.schedule || course.schedule.length === 0) return false;
+    return !course.schedule.some((sess) => sessionActiveInWeek(sess, weekMonday));
+  });
 
   const totalCp = plannedCourses.reduce((sum, c) => sum + c.cp, 0);
   let rawHours = 0;
   for (const d of days) {
     const seen = new Set<string>();
-    for (const sess of collectDaySessions(plannedCourses, d)) {
+    for (const sess of collectDaySessions(plannedCourses, d, weekMonday)) {
       const key = `${sess.course.id}|${sess.time}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -62,24 +92,90 @@ export function Timetable({
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <span className="micro-label">≈ {contactHours}h contact / week · {totalCp} CP</span>
           </div>
-          <div className="segmented">
+          <div className="segmented" role="group" aria-label="Timetable semester">
             {SEMESTERS.map((s) => (
               <button
                 key={s.id}
                 onClick={() => setActiveSem(s.id as SemesterId)}
+                aria-pressed={activeSem === s.id}
                 className={activeSem === s.id ? 'is-active' : undefined}
               >
                 {s.title.split('·')[0].trim() || s.id.toUpperCase()}
               </button>
             ))}
           </div>
+          {onImportUnical && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={onImportUnical}
+              title="Paste a UniCal calendar link to fill Sem 1"
+            >
+              Import UniCal
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={onExportSemester}
+            disabled={plannedCourses.length === 0}
+            title="Download this semester only as a calendar file"
+          >
+            Export Sem {activeSem.slice(1)} (.ics)
+          </button>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+        <span className="micro-label" style={{ margin: 0 }}>Week of</span>
+        <button type="button" className="icon-btn" aria-label="Previous week" onClick={() => setWeekMonday((w) => addDays(w, -7))}>
+          <ChevronLeft size={15} />
+        </button>
+        <input
+          type="date"
+          aria-label="Timetable week date"
+          value={weekInputValue(weekMonday)}
+          onChange={(e) => {
+            if (!e.target.value) return;
+            const [y, m, d] = e.target.value.split('-').map(Number);
+            setWeekMonday(mondayOfWeek(new Date(y, m - 1, d)));
+          }}
+          style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 12 }}
+        />
+        <button type="button" className="icon-btn" aria-label="Next week" onClick={() => setWeekMonday((w) => addDays(w, 7))}>
+          <ChevronRight size={15} />
+        </button>
+        <span className="micro" style={{ margin: 0 }}>{formatWeekLabel(weekMonday)}</span>
+        <button type="button" className="btn btn--ghost" onClick={() => setWeekMonday(defaultTimetableWeek(activeSem))}>
+          Reset week
+        </button>
       </div>
 
       {plannedCourses.length === 0 && (
         <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          No courses in this semester. Switch to Board to add some, or load the example outline.
+          No courses in this semester. Switch to Board to add some, load the example outline, or import a UniCal link.
         </p>
+      )}
+
+      {offThisWeek.length > 0 && (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: '10px 14px',
+            borderRadius: 10,
+            background: 'var(--bg-secondary)',
+            borderLeft: '3px solid var(--border-strong)',
+            fontSize: 12.5,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.5,
+          }}
+        >
+          <strong style={{ color: 'var(--text-primary)' }}>
+            Not meeting in week of {toIsoDate(weekMonday)}
+          </strong>
+          {' — '}
+          {offThisWeek.map((c) => courseFullLabel(c)).join('; ')}
+        </div>
       )}
 
       {conflicts.length > 0 && (
@@ -108,7 +204,8 @@ export function Timetable({
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
             {conflicts.map((c, i) => (
               <li key={i}>
-                <strong>{c.day}</strong>: {c.courseA.title} ({c.timeA}) overlaps {c.courseB.title} ({c.timeB})
+                <strong>{c.day}</strong>: {courseFullLabel(c.courseA)} ({c.timeA}) overlaps{' '}
+                {courseFullLabel(c.courseB)} ({c.timeB})
               </li>
             ))}
           </ul>
@@ -154,6 +251,7 @@ export function Timetable({
 
       <CampusRoutePlanner courses={plannedCourses} />
 
+      <div className="timetable-scroll">
       <div className="timetable-grid" style={{ display: 'grid', gridTemplateColumns: '60px repeat(5, 1fr)', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ background: 'var(--bg-secondary)', padding: '12px' }} />
         {days.map((d) => (
@@ -175,7 +273,7 @@ export function Timetable({
         </div>
 
         {days.map((d) => {
-          const sessions = collectDaySessions(plannedCourses, d);
+          const sessions = collectDaySessions(plannedCourses, d, weekMonday);
           const columns = assignColumns(sessions);
 
           return (
@@ -219,7 +317,7 @@ export function Timetable({
                 return (
                   <div
                     key={`${sess.course.id}-${i}`}
-                    title={`${sess.course.title}\n${sess.time}\n${sess.room}\n${mandatory ? 'MANDATORY' : 'FLEXIBLE'}`}
+                    title={`${courseFullLabel(sess.course)}\n${sess.time}\n${sess.room}\n${mandatory ? 'MANDATORY' : 'FLEXIBLE'}`}
                     className={'tt-session' + (isConflict ? ' tt-session--conflict' : '')}
                     style={{
                       top: visualTop + 'px',
@@ -232,20 +330,36 @@ export function Timetable({
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <strong
-                        style={{
-                          display: 'block',
-                          color: 'var(--text-primary)',
-                          marginBottom: '2px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          flex: 1,
-                          fontSize: 11,
-                        }}
-                      >
-                        {sess.course.title}
-                      </strong>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          className="mono"
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: 'var(--accent-primary)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {displayCode(sess.course)}
+                        </div>
+                        <strong
+                          style={{
+                            display: 'block',
+                            color: 'var(--text-primary)',
+                            marginBottom: '2px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            flex: 1,
+                            fontSize: 11,
+                          }}
+                        >
+                          {sess.course.title}
+                        </strong>
+                      </div>
                       {mandatory && (
                         <span
                           className="tt-badge"
@@ -277,6 +391,35 @@ export function Timetable({
           );
         })}
       </div>
+      </div>
+
+      {isNarrow && (
+      <div className="timetable-agenda" aria-label="Day-by-day agenda view">
+        {days.map((d) => {
+          const sessions = collectDaySessions(plannedCourses, d, weekMonday);
+          if (sessions.length === 0) return null;
+          return (
+            <div key={d} className="timetable-agenda__day">
+              <h4 className="timetable-agenda__heading">{d}</h4>
+              <ul className="timetable-agenda__list">
+                {sessions.map((sess, i) => (
+                  <li
+                    key={`${sess.course.id}-${i}`}
+                    className="timetable-agenda__item"
+                    style={{ borderLeftColor: getModuleColor(creditModule(sess.course)) }}
+                  >
+                    <div className="mono timetable-agenda__time">{sess.time}</div>
+                    <div className="timetable-agenda__code">{displayCode(sess.course)}</div>
+                    <div className="timetable-agenda__title">{sess.course.title}</div>
+                    <div className="timetable-agenda__room">{sess.room}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+      )}
 
       {(() => {
         if (unscheduledCourses.length === 0) return null;
@@ -319,9 +462,9 @@ export function Timetable({
               >
                 <span className="module-dot" style={{ background: getModuleColor(creditModule(c)) }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{c.title}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{courseFullLabel(c)}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    {c.cp} CP · {creditModule(c)}
+                    {displayCode(c)} · {c.cp} CP · {creditModule(c)}
                   </div>
                 </div>
               </div>

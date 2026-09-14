@@ -179,7 +179,7 @@ test.describe('Degree accuracy & storage', () => {
     });
     await page.reload();
     await expect(page.getByText(/Disputed module membership/i)).toHaveCount(0);
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
   });
 
   test('cross-listed allocation survives v6 persistence', async ({ page }) => {
@@ -210,7 +210,7 @@ test.describe('Degree accuracy & storage', () => {
       localStorage.setItem('basel-ds-plan-v5', JSON.stringify({ s1: ['ML-45401'], s2: [], s3: [], s4: [] }));
     });
     await page.reload();
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem('basel-plan-v7:data-science'))).toContain('ML-45401');
     expect(await page.evaluate(() => localStorage.getItem('basel-ds-plan-v5'))).toBeNull();
   });
@@ -259,7 +259,7 @@ test.describe('Degree accuracy & storage', () => {
     })));
     await page.reload();
     const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
-    await expect(page.getByText(/Inverse Problems: Computational Aspects and Machine Learning/i).first()).toBeVisible();
+    await expect(page.locator('.semester-grid').getByText(/Inverse Problems: Computational Aspects and Machine Learning/i).first()).toBeVisible();
     await expect(page.getByRole('combobox', { name: /Credit allocation for Inverse Problems/i }))
       .toHaveValue('Electives in Data Science');
     await expect(sem2.getByText(/Foundations of Artificial Intelligence/i)).toHaveCount(0);
@@ -324,5 +324,59 @@ test.describe('Degree accuracy & storage', () => {
     const sem2 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2/ }).first();
     await expect(sem2.getByText('Machine Learning Project (6 CP)')).toBeVisible();
     await expect(sem2.getByText('Machine Learning Project (12 CP)')).toHaveCount(0);
+  });
+
+  test('parses UniCal URLs and maps event ids to Sem 1 catalog courses', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const {
+        parseUnicalUrl,
+        mapEventIdsToCourses,
+        normalizeEventId,
+        sessionActiveInWeek,
+        mondayOfWeek,
+      } = await import('/src/unical.ts');
+      const url =
+        'https://unical.unibas.ch/calendar?e=00302796%2C00302775%2C00301992%2C00302622%2C00301984%2C00301990%2C00302761%2C00302113%2C00303302';
+      const parsed = parseUnicalUrl(url);
+      if (!parsed.ok) return { ok: false as const, error: parsed.error };
+      const mapped = mapEventIdsToCourses(parsed.eventIds);
+      const weekEarly = mondayOfWeek(new Date(2026, 8, 14)); // Mon 14 Sep
+      const weekLater = mondayOfWeek(new Date(2026, 8, 21)); // Mon 21 Sep
+      const app = mapped.matched.find((c) => c.id === 'E-64323');
+      const appSession = app?.schedule?.[0];
+      return {
+        ok: true as const,
+        count: mapped.matched.length,
+        ids: mapped.matched.map((c) => c.id).sort(),
+        normalized: normalizeEventId('00302796'),
+        unknown: mapped.unknownIds,
+        appHiddenEarly: appSession ? !sessionActiveInWeek(appSession, weekEarly) : null,
+        appVisibleLater: appSession ? sessionActiveInWeek(appSession, weekLater) : null,
+      };
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.count).toBe(9);
+    expect(result.normalized).toBe('302796');
+    expect(result.unknown).toEqual([]);
+    expect(result.ids).toContain('E-64323');
+    expect(result.appHiddenEarly).toBe(true);
+    expect(result.appVisibleLater).toBe(true);
+  });
+
+  test('ICS export uses per-session until dates when present', async ({ page }) => {
+    await page.goto('/');
+    const ics = await page.evaluate(async () => {
+      const { buildIcs } = await import('/src/ics.ts');
+      const { COURSES } = await import('/src/courses.ts');
+      const course = COURSES.find((c) => c.id === 'E-64323')!;
+      const plan = { s1: [course], s2: [], s3: [], s4: [] };
+      return buildIcs(plan as never, 'disclaimer', ['s1']);
+    });
+    expect(ics).toContain('64323');
+    // First meeting Mon 21.09.2026, not semester start Mon 14.09.2026
+    expect(ics).toContain('DTSTART;TZID=Europe/Zurich:20260921T141500');
+    expect(ics).toContain('UNTIL=20261214T235900');
   });
 });

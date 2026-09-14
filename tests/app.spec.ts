@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
-import { loadExampleOutline } from './helpers';
+import { readFile, writeFile } from 'node:fs/promises';
+import { clearPlanStorage, loadExampleOutline } from './helpers';
 
 test.describe('BASELCAL App Main Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -123,6 +123,98 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(savedHome).toMatch(/^\{"lat":-?\d/);
   });
 
+  test('campus map slides under the sticky header, not over it', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const map = page.locator('.campus-route__map');
+    await expect(map).toBeVisible();
+    // The map box must establish a stacking context containing Leaflet's
+    // internal z-index 400–1000 panes; otherwise map tiles paint over the
+    // sticky topnav when scrolled underneath (verified visually on prod
+    // builds: header controls buried under tiles without this).
+    const stacking = await map.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { position: style.position, zIndex: style.zIndex };
+    });
+    expect(stacking.position).toBe('relative');
+    expect(stacking.zIndex).toBe('0');
+    // Scroll so the map sits directly beneath the sticky topnav, then check
+    // which layer actually receives hits at a header control's position.
+    // Regression: Leaflet's internal z-index 400–1000 panes used to paint
+    // over the sticky topnav (map tiles covering header controls).
+    await map.evaluate((el) => window.scrollTo({
+      top: el.getBoundingClientRect().top + window.scrollY - 20,
+    }));
+    const hit = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('button')].find((b) => /Course Discovery/i.test(b.textContent || ''));
+      const mapEl = document.querySelector('.campus-route__map');
+      if (!btn || !mapEl) return 'missing';
+      const r = btn.getBoundingClientRect();
+      const m = mapEl.getBoundingClientRect();
+      const cx = r.x + r.width / 2;
+      const cy = r.y + r.height / 2;
+      // Guard against a vacuous pass: the button must actually sit over the map.
+      if (!(cx >= m.x && cx <= m.x + m.width && cy >= m.y && cy <= m.y + m.height)) {
+        return 'no-overlap-vacuous';
+      }
+      const el = document.elementFromPoint(cx, cy);
+      if (!el) return 'no-hit';
+      if (el.closest('.leaflet-container')) return 'leaflet-covered';
+      return el.closest('.topnav') ? 'topnav' : 'other';
+    });
+    expect(hit).toBe('topnav');
+  });
+
+  test('quick-add announces the destination semester', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    const quickAdd = page.locator('button.card-quick-add');
+    await expect(quickAdd).toHaveCount(1);
+    await quickAdd.click();
+    await expect(page.getByText(/Added Bioinformatics Algorithms \(45401\) → Sem 1/i)).toBeVisible();
+  });
+
+  test('catalog shows an empty state with a working clear-filters action', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('zzz-no-such-course');
+    await expect(page.getByText('No courses match your filters')).toBeVisible();
+    await page.getByRole('button', { name: 'Clear search & filters' }).click();
+    await expect(page.getByText('No courses match your filters')).toHaveCount(0);
+    await expect(page.locator('.catalog-panel').getByText(/Bioinformatics Algorithms/)).toBeVisible();
+  });
+
+  test('explorer can add a course straight to a semester', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /Course Discovery/i }).click();
+    await page.getByRole('button', { name: /Read Details/i }).first().click();
+    const courseDialog = page.getByRole('dialog').last();
+    const title = ((await courseDialog.locator('h2').textContent()) ?? '').trim();
+    expect(title.length).toBeGreaterThan(0);
+    await courseDialog.getByRole('button', { name: 'Add to Sem 1' }).click();
+    await expect(page.getByText(/→ Sem 1/)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.semester-grid').getByText(title)).toBeVisible();
+  });
+
+  test('toast Undo button reverts a quick-add', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    await page.locator('button.card-quick-add[aria-label*="Bioinformatics"]').click();
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/)).toHaveCount(0);
+  });
+
+  test('Ctrl+Z reverts the last plan change', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    await page.locator('button.card-quick-add[aria-label*="Bioinformatics"]').click();
+    await expect(page.getByTitle('Undo (1) (Ctrl+Z)')).toBeVisible();
+    await page.locator('.semester-grid').click();
+    await page.keyboard.press('Control+z');
+    await expect(page.locator('.semester-grid').getByText(/Bioinformatics Algorithms/)).toHaveCount(0);
+  });
+
   test('exports the four-semester timetable with official teaching-period end dates', async ({ page }) => {
     await loadExampleOutline(page);
     const downloadPromise = page.waitForEvent('download');
@@ -135,6 +227,53 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).toContain('UNTIL=20270604T235900');
     expect(calendar).toContain('UNTIL=20271223T235900');
     expect(calendar).toContain('UNTIL=20280602T235900');
+    expect(calendar).toContain('BEGIN:VTIMEZONE');
+    expect(calendar).toContain('TZID:Europe/Zurich');
+    expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:');
+    expect(calendar).toContain('BEGIN:VALARM');
+    expect(calendar).toContain('TRIGGER:-PT10M');
+    expect(calendar).toContain('SEQUENCE:0');
+    expect(calendar).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(calendar).toMatch(/UID:baselcal-[A-Za-z0-9-]+-[A-Z]{2}-\d{4}-\d{4}@baselcal\.local/);
+  });
+
+  test('timetable view exports only the active semester', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export Sem 1 (.ics)' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('timetable-s1');
+    const path = await download.path();
+    const calendar = await readFile(path!, 'utf8');
+    expect(calendar).toContain('· S1 ·');
+    expect(calendar).not.toContain('· S2 ·');
+    expect(calendar).not.toContain('· S3 ·');
+    expect(calendar).not.toContain('· S4 ·');
+  });
+
+  test('Import UniCal replaces Sem 1 and hides courses before first meeting', async ({ page }) => {
+    await clearPlanStorage(page);
+    await page.goto('/');
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.getByRole('button', { name: 'Import UniCal calendar link' }).click();
+    await expect(page.getByRole('heading', { name: 'Import UniCal link' })).toBeVisible();
+    await expect(page.getByText('How to get your link')).toBeVisible();
+    const url =
+      'https://unical.unibas.ch/calendar?e=00302796%2C00302775%2C00301992%2C00302622%2C00301984%2C00301990%2C00302761%2C00302113%2C00303302';
+    await page.getByLabel('UniCal URL').fill(url);
+    await page.getByRole('button', { name: 'Preview match' }).click();
+    await expect(page.getByText(/9 courses matched/i)).toBeVisible({ timeout: 30000 });
+    await page.getByRole('button', { name: 'Replace Sem 1' }).click();
+    await expect(page.getByRole('heading', { name: 'Weekly Timetable Preview' })).toBeVisible();
+    // Default s1 week is Mon 14.09.2026 — Applied Programming starts 21.09
+    await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toBeVisible();
+    await expect(page.getByText(/Applied Programming Projects \(64323\)/i)).toBeVisible();
+    const weekInput = page.getByLabel('Timetable week date');
+    await weekInput.fill('2026-09-21');
+    await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toHaveCount(0);
+    // Now visible as a Mon 14:15 grid/agenda session
+    await expect(page.getByText('Applied Programming Projects', { exact: true }).first()).toBeVisible();
   });
 
   test('exports selected cross-list allocations in plan JSON v3', async ({ page }) => {
@@ -152,5 +291,74 @@ test.describe('BASELCAL App Main Functionality', () => {
       id: 'M-12246',
       allocatedModule: 'Electives in Data Science',
     });
+  });
+
+  test('export filename carries the programme id', async ({ page }) => {
+    await loadExampleOutline(page);
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export plan JSON' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('data-science');
+  });
+
+  test('share modal previews placements and discloses what the link omits', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Share plan' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/carries .* courses .* with their semester/)).toBeVisible();
+    await expect(dialog.getByText(/notes, wishlist, and admission target stay/)).toBeVisible();
+    await expect(dialog.getByLabel('QR code for the share link')).toBeVisible();
+    await expect(dialog.getByText(/too long for a share link/i)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  });
+
+  test('import shows an itemised kept/dropped/duplicates report', async ({ page }, testInfo) => {
+    const payload = {
+      version: 3,
+      plan: { s1: ['ML-45401'], s2: ['ML-45401', 'NOPE-99999'], s3: [], s4: [] },
+      notes: {},
+      shortlist: [],
+      admissionTarget: 0,
+    };
+    const filePath = testInfo.outputPath('import-plan.json');
+    await writeFile(filePath, JSON.stringify(payload));
+    page.on('dialog', (dialog) => void dialog.accept());
+    await page.locator('input[type="file"]').setInputFiles(filePath);
+    const report = page.getByRole('dialog', { name: 'Plan imported' });
+    await expect(report).toBeVisible();
+    await expect(report.getByText('Kept — 1 course')).toBeVisible();
+    await expect(report.getByText('Dropped unknown references — 1')).toBeVisible();
+    await expect(report.getByText('Skipped duplicate placements — 1')).toBeVisible();
+    await expect(report.getByText('NOPE-99999')).toBeVisible();
+    await expect(report.getByText(/Bioinformatics Algorithms \(45401\)/)).toHaveCount(2);
+    await report.getByRole('button', { name: 'Close' }).click();
+    await expect(report).toHaveCount(0);
+  });
+
+  test('oversized share links fall back to plan JSON download', async ({ page }) => {
+    await page.goto(`/?${'q'.repeat(2400)}`);
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Share plan' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Share plan' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/too long for a share link/i)).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Copy link' })).toHaveCount(0);
+    await expect(dialog.getByLabel('QR code for the share link')).toHaveCount(0);
+    const downloadPromise = page.waitForEvent('download');
+    await dialog.getByRole('button', { name: 'Download plan JSON' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('data-science');
+  });
+
+  test('malformed stored notes/wishlist fall back instead of crashing', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('basel-notes-v7:data-science', '["not","a","record"]');
+      localStorage.setItem('basel-shortlist-v7:data-science', '{"oops":true}');
+    });
+    await page.reload();
+    await expect(page.getByRole('button', { name: /Course Discovery/i })).toBeVisible();
+    await expect(page.locator('.semester-grid')).toBeVisible();
   });
 });

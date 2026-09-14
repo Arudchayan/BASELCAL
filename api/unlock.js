@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { withUnicalUrl } from './unicalParse.js';
 
 function safeEqual(left, right) {
   const a = Buffer.from(String(left || ''), 'utf8');
@@ -42,6 +43,8 @@ export default async function handler(req, res) {
       return;
     }
   }
+
+  config = withUnicalUrl(config, process.env.UNICAL_URL);
 
   res.status(200).json({ ok: true, config });
 }

@@ -97,7 +97,7 @@ test.describe('OSS flows', () => {
     await page.goto('/');
     await clearPlanStorage(page);
     await page.reload();
-    await page.getByRole('button', { name: 'Copy share link' }).click();
+    await page.getByRole('button', { name: 'Share plan' }).click();
     await expect(page.getByText(/Nothing to share/i)).toBeVisible();
   });
 
@@ -105,7 +105,9 @@ test.describe('OSS flows', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/');
     await loadExampleOutline(page);
-    await page.getByRole('button', { name: 'Copy share link' }).click();
+    await page.getByRole('button', { name: 'Share plan' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Copy link' }).click();
     await expect(page.getByText(/Share link copied/i)).toBeVisible();
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     expect(copied).toContain('#p=');

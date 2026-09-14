@@ -22,12 +22,16 @@ export const COURSES = [
       {
         "day": "Thursday",
         "time": "08:15 - 10:00",
-        "room": "Alte Universität, Hörsaal  -101"
+        "room": "Alte Universität, Hörsaal  -101",
+        "from": "2026-09-17",
+        "until": "2026-12-17"
       },
       {
         "day": "Friday",
         "time": "08:15 - 10:00",
-        "room": "Alte Universität, Hörsaal  -101"
+        "room": "Alte Universität, Hörsaal  -101",
+        "from": "2026-09-18",
+        "until": "2026-12-18"
       }
     ]
   },
@@ -78,7 +82,7 @@ export const COURSES = [
     "description": "s. Vorlesung Analysis I",
     "prerequisites": "keine",
     "exam": "continuous assessment — Die Kreditpunkte werden ausschliesslich durch das Bestehen der Klausur am Ende des Semesters erworben. Während des Semesters werden Übungsserien sowie Tutorien angeboten. Die Teilnahme an den Übungsserien und Tutorien ist freiwillig, wird jedoch zur Unterstützung des Lernprozesses empfohlen.",
-    "lecturer": "Gianluca Crippa",
+    "lecturer": "Gianluca Crippa; Alessandro Violini",
     "syllabus": [
       "Deepen lecture topics by solving exercises."
     ],
@@ -86,7 +90,9 @@ export const COURSES = [
       {
         "day": "Tuesday",
         "time": "14:15 - 16:00",
-        "room": "Spiegelgasse 1, Seminarraum  00.003"
+        "room": "Spiegelgasse 1, Seminarraum  00.003",
+        "from": "2026-09-22",
+        "until": "2026-12-15"
       }
     ]
   },
@@ -142,12 +148,16 @@ export const COURSES = [
       {
         "day": "Monday",
         "time": "10:15 - 12:00",
-        "room": "Biozentrum, Hörsaal U1.141"
+        "room": "Biozentrum, Hörsaal U1.141",
+        "from": "2026-09-21",
+        "until": "2027-01-14"
       },
       {
         "day": "Tuesday",
         "time": "10:15 - 12:00",
-        "room": "Kollegienhaus, Hörsaal 120"
+        "room": "Kollegienhaus, Hörsaal 120",
+        "from": "2026-09-15",
+        "until": "2026-12-15"
       }
     ]
   },
@@ -176,7 +186,9 @@ export const COURSES = [
       {
         "day": "Friday",
         "time": "10:15 - 12:00",
-        "room": "Kollegienhaus, Hörsaal 114"
+        "room": "Kollegienhaus, Hörsaal 114",
+        "from": "2026-09-18",
+        "until": "2026-12-18"
       }
     ]
   },
@@ -367,12 +379,16 @@ export const COURSES = [
       {
         "day": "Wednesday",
         "time": "09:00 - 10:15",
-        "room": "Physik, Seminarzimmer 4.1"
+        "room": "Physik, Seminarzimmer 4.1",
+        "from": "2026-09-16",
+        "until": "2026-12-16"
       },
       {
         "day": "Wednesday",
         "time": "10:15 - 12:00",
-        "room": "Physik, Seminarzimmer 4.1"
+        "room": "Physik, Seminarzimmer 4.1",
+        "from": "2026-09-16",
+        "until": "2026-12-16"
       }
     ]
   },
@@ -903,12 +919,16 @@ export const COURSES = [
       {
         "day": "Tuesday",
         "time": "13:15 - 14:00",
-        "room": "Spiegelgasse 1, Seminarraum U1.001"
+        "room": "Spiegelgasse 1, Seminarraum U1.001",
+        "from": "2026-09-22",
+        "until": "2026-12-15"
       },
       {
         "day": "Thursday",
         "time": "14:15 - 16:00",
-        "room": "Biozentrum, Seminarraum U1.197"
+        "room": "Biozentrum, Seminarraum U1.197",
+        "from": "2026-09-17",
+        "until": "2026-12-17"
       }
     ]
   },
@@ -1222,7 +1242,9 @@ export const COURSES = [
       {
         "day": "Friday",
         "time": "15:15 - 18:00",
-        "room": "Spiegelgasse 5, Seminarraum  05.002"
+        "room": "Spiegelgasse 5, Seminarraum  05.002",
+        "from": "2026-09-18",
+        "until": "2027-01-08"
       }
     ]
   },
@@ -1753,7 +1775,9 @@ export const COURSES = [
       {
         "day": "Friday",
         "time": "12:15 - 14:00",
-        "room": "Spiegelgasse 5, Seminarraum  05.002"
+        "room": "Spiegelgasse 5, Seminarraum  05.002",
+        "from": "2026-09-18",
+        "until": "2026-12-18"
       }
     ]
   },
@@ -1846,7 +1870,7 @@ export const COURSES = [
     "lang": "English",
     "priority": "Medium",
     "type": "Elective",
-    "note": "Project-based programming.",
+    "note": "Project-based programming. HS26 starts 21.09.2026 (UniCal).",
     "url": "https://vorlesungsverzeichnis.unibas.ch/en/course-directory?id=303302",
     "description": "Accompanied realization of programming projects on a self-chosen topic.\nDive into the dynamic world of programming with this hands-on seminar. Here, you get to bring your programming ideas to life by working on a project of your own choice. This seminar provides a unique platform to not only apply your programming skills but also to innovate and explore new possibilities in the realm of computer science and artificial intelligence (AI, ML). Whether your interest lies in developing a database or solving a complex data problem, this seminar is the perfect opportunity to turn your concepts into reality under expert guidance.\n----\nBegleitete Durchführung von Programmierprojekten zu einem selbstgewählten Thema.\nTauchen Sie mit diesem praxisnahen Seminar in die dynamische Welt der Programmierung ein. Hier können Sie Ihre Programmier-Ideen durch die Arbeit an einem Projekt Ihrer Wahl zum Leben erwecken. Dieses Seminar bietet eine einzigartige Plattform, um nicht nur Ihre Programmierkenntnisse anzuwenden, sondern auch innovativ zu sein und neue Möglichkeiten im Bereich der Informatik und der künstlichen Intelligenz (AI, ML) zu erkunden. Ganz gleich, ob Sie sich für die Entwicklung einer Datenbank oder die Lösung eines komplexen Datenproblems interessieren, dieses Seminar ist die perfekte Gelegenheit, um Ihre Konzepte unter fachkundiger Anleitung in die Tat umzusetzen.",
     "prerequisites": "Proven basic knowledge of programming (e.g. a course on the introduction to programming with Python)If the course is oversubscribed, the number of participants will be limited. In this case, students of Digital Humanities will be given preferential admission.Bitte melden Sie sich nach der Anmeldung über die Self Services auch noch in ADAM an / After completing your registration via Self Services please also register in ADAM.",
@@ -1861,7 +1885,9 @@ export const COURSES = [
       {
         "day": "Monday",
         "time": "14:15 - 16:00",
-        "room": "Kollegienhaus, Seminarraum 103"
+        "room": "Kollegienhaus, Seminarraum 103",
+        "from": "2026-09-21",
+        "until": "2026-12-14"
       }
     ]
   },
