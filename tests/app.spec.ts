@@ -223,10 +223,10 @@ test.describe('BASELCAL App Main Functionality', () => {
     const path = await download.path();
     expect(path).toBeTruthy();
     const calendar = await readFile(path!, 'utf8');
-    expect(calendar).toContain('UNTIL=20261218T235900');
-    expect(calendar).toContain('UNTIL=20270604T235900');
-    expect(calendar).toContain('UNTIL=20271223T235900');
-    expect(calendar).toContain('UNTIL=20280602T235900');
+    expect(calendar).toContain('UNTIL=20261218T225900Z');
+    expect(calendar).toContain('UNTIL=20270604T215900Z');
+    expect(calendar).toContain('UNTIL=20271223T225900Z');
+    expect(calendar).toContain('UNTIL=20280602T215900Z');
     expect(calendar).toContain('BEGIN:VTIMEZONE');
     expect(calendar).toContain('TZID:Europe/Zurich');
     expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:');
@@ -250,6 +250,21 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).not.toContain('· S2 ·');
     expect(calendar).not.toContain('· S3 ·');
     expect(calendar).not.toContain('· S4 ·');
+  });
+
+  test('timetable session blob exports only that course', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: /Download calendar for Computational Physics/i }).first().click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/timetable-s1-E-11680/);
+    const path = await download.path();
+    const calendar = await readFile(path!, 'utf8');
+    expect(calendar).toContain('Computational Physics');
+    expect(calendar).toContain('11680');
+    expect(calendar).not.toContain('Concentration');
+    expect(calendar).not.toContain('79161');
   });
 
   test('Import UniCal replaces Sem 1 and hides courses before first meeting', async ({ page }) => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Calendar, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, Calendar, AlertTriangle, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import {
   assignColumns,
   collectDaySessions,
@@ -39,12 +39,14 @@ export function Timetable({
   activeSem,
   setActiveSem,
   onExportSemester,
+  onExportCourse,
   onImportUnical,
 }: {
   plan: PlanState;
   activeSem: SemesterId;
   setActiveSem: (sem: SemesterId) => void;
   onExportSemester: () => void;
+  onExportCourse: (courseId: string) => void;
   onImportUnical?: () => void;
 }) {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -360,14 +362,28 @@ export function Timetable({
                           {sess.course.title}
                         </strong>
                       </div>
-                      {mandatory && (
-                        <span
-                          className="tt-badge"
-                          style={{ background: 'var(--accent-primary)', color: 'var(--on-accent)', marginLeft: 4 }}
+                      <div className="tt-session__actions">
+                        <button
+                          type="button"
+                          className="tt-session__ics"
+                          aria-label={`Download calendar for ${courseFullLabel(sess.course)}`}
+                          title="Download .ics for this course"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onExportCourse(sess.course.id);
+                          }}
                         >
-                          M
-                        </span>
-                      )}
+                          <Download size={11} strokeWidth={2.25} aria-hidden />
+                        </button>
+                        {mandatory && (
+                          <span
+                            className="tt-badge"
+                            style={{ background: 'var(--accent-primary)', color: 'var(--on-accent)' }}
+                          >
+                            M
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="mono" style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, color: 'var(--text-muted)' }}>
                       {sess.time}
@@ -408,7 +424,18 @@ export function Timetable({
                     className="timetable-agenda__item"
                     style={{ borderLeftColor: getModuleColor(creditModule(sess.course)) }}
                   >
-                    <div className="mono timetable-agenda__time">{sess.time}</div>
+                    <div className="timetable-agenda__row">
+                      <div className="mono timetable-agenda__time">{sess.time}</div>
+                      <button
+                        type="button"
+                        className="tt-session__ics"
+                        aria-label={`Download calendar for ${courseFullLabel(sess.course)}`}
+                        title="Download .ics for this course"
+                        onClick={() => onExportCourse(sess.course.id)}
+                      >
+                        <Download size={12} strokeWidth={2.25} aria-hidden />
+                      </button>
+                    </div>
                     <div className="timetable-agenda__code">{displayCode(sess.course)}</div>
                     <div className="timetable-agenda__title">{sess.course.title}</div>
                     <div className="timetable-agenda__room">{sess.room}</div>

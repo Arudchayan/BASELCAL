@@ -135,7 +135,22 @@ function icsEscape(text: string): string {
   return text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
 }
 
-export function buildIcs(plan: PlanState, disclaimer: string, sems: SemesterId[] = SEMESTER_IDS): string {
+export type BuildIcsOptions = {
+  sems?: SemesterId[];
+  /** When set, only emit events for these planned course ids. */
+  courseIds?: readonly string[];
+};
+
+export function buildIcs(
+  plan: PlanState,
+  disclaimer: string,
+  semsOrOptions: SemesterId[] | BuildIcsOptions = SEMESTER_IDS,
+): string {
+  const options: BuildIcsOptions = Array.isArray(semsOrOptions)
+    ? { sems: semsOrOptions }
+    : semsOrOptions;
+  const sems = options.sems ?? SEMESTER_IDS;
+  const courseIdFilter = options.courseIds?.length ? new Set(options.courseIds) : null;
   const now = new Date();
   const lines: string[] = [
     'BEGIN:VCALENDAR',
@@ -153,6 +168,7 @@ export function buildIcs(plan: PlanState, disclaimer: string, sems: SemesterId[]
     if (courses.length === 0) continue;
 
     for (const course of courses) {
+      if (courseIdFilter && !courseIdFilter.has(course.id)) continue;
       if (!course.schedule) continue;
       for (const session of course.schedule) {
         const times = parseTime(session.time);
@@ -192,13 +208,30 @@ export function buildIcs(plan: PlanState, disclaimer: string, sems: SemesterId[]
   return lines.join('\r\n');
 }
 
-export function downloadIcs(plan: PlanState, disclaimer: string, programmeId = 'plan', sems?: SemesterId[]): void {
-  const blob = new Blob([buildIcs(plan, disclaimer, sems ?? SEMESTER_IDS)], { type: 'text/calendar;charset=utf-8' });
+export function downloadIcs(
+  plan: PlanState,
+  disclaimer: string,
+  programmeId = 'plan',
+  semsOrOptions?: SemesterId[] | BuildIcsOptions,
+): void {
+  const options: BuildIcsOptions = Array.isArray(semsOrOptions)
+    ? { sems: semsOrOptions }
+    : (semsOrOptions ?? {});
+  const sems = options.sems ?? SEMESTER_IDS;
+  const blob = new Blob([buildIcs(plan, disclaimer, { ...options, sems })], {
+    type: 'text/calendar;charset=utf-8',
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const scope = sems && sems.length === 1 ? `-${sems[0]}` : '';
-  a.download = `baselcal-${programmeId}-timetable${scope}-${new Date().toISOString().slice(0, 10)}.ics`;
+  const scope = sems.length === 1 ? `-${sems[0]}` : '';
+  const courseScope =
+    options.courseIds?.length === 1
+      ? `-${options.courseIds[0].replace(/[^A-Za-z0-9._-]+/g, '-')}`
+      : options.courseIds && options.courseIds.length > 1
+        ? `-courses`
+        : '';
+  a.download = `baselcal-${programmeId}-timetable${scope}${courseScope}-${new Date().toISOString().slice(0, 10)}.ics`;
   a.click();
   URL.revokeObjectURL(url);
 }
