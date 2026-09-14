@@ -14,6 +14,7 @@ type StudentConfigShape = {
   seedPlan?: boolean;
   plan?: Record<string, unknown>;
   allocations?: Record<string, string>;
+  unicalUrl?: string;
 };
 
 declare const __STUDENT_CONFIG__: StudentConfigShape | null;

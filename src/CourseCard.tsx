@@ -5,16 +5,7 @@ import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { parseOffering, primaryMismatchMessage } from './offering';
 import { isStaleWatch } from './coveragePolicy';
 import { creditModule, eligibleModulesFor, type Course, type CourseModule, type SemesterId } from './types';
-
-const getModuleColor = (moduleName: string): string => {
-  if (moduleName.includes('Admission')) return 'var(--module-admission)';
-  if (moduleName.includes('Math')) return 'var(--module-math)';
-  if (moduleName.includes('Machine Learning')) return 'var(--module-ml)';
-  if (moduleName.includes('Systems')) return 'var(--module-systems)';
-  if (moduleName.includes('Electives')) return 'var(--module-electives)';
-  if (moduleName.includes('Thesis')) return 'var(--module-thesis)';
-  return 'var(--text-secondary)';
-};
+import { getModuleColor } from './moduleColor';
 
 type CourseCardProps = {
   course: Course;
@@ -26,6 +17,7 @@ type CourseCardProps = {
   onNoteChange?: (text: string) => void;
   onShowDetails: () => void;
   onQuickAdd?: () => void;
+  quickAddHint?: string;
   onAllocationChange?: (module: CourseModule) => void;
 };
 
@@ -39,6 +31,7 @@ function CourseCardInner({
   onNoteChange,
   onShowDetails,
   onQuickAdd,
+  quickAddHint,
   onAllocationChange,
 }: CourseCardProps) {
   const [copyToast, setCopyToast] = useState<string | null>(null);
@@ -131,7 +124,7 @@ function CourseCardInner({
               onClick={onRemove}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label={`Remove ${course.title}`}
-              className="btn--quiet"
+              className="btn--quiet card-remove"
               style={{
                 position: 'absolute',
                 top: 8,
@@ -158,8 +151,9 @@ function CourseCardInner({
                 onQuickAdd();
               }}
               onPointerDown={(e) => e.stopPropagation()}
-              aria-label={`Add ${course.title} to plan`}
-              title="Add to first matching semester"
+              aria-label={quickAddHint ?? `Add ${course.title} to plan`}
+              title={quickAddHint ?? 'Add to first matching semester'}
+              className="card-quick-add"
               style={{
                 position: 'absolute',
                 top: 8,

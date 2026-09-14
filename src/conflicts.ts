@@ -1,4 +1,5 @@
 import type { Course, ScheduleSession } from './types';
+import { sessionActiveInWeek } from './scheduleDates.ts';
 
 export type TimedSession = ScheduleSession & {
   course: Course;
@@ -87,12 +88,17 @@ export function assignColumns(sessions: TimedSession[]): Array<{ colIndex: numbe
   }));
 }
 
-export function collectDaySessions(courses: Course[], day: string): TimedSession[] {
+export function collectDaySessions(
+  courses: Course[],
+  day: string,
+  weekMonday?: Date | null,
+): TimedSession[] {
   const out: TimedSession[] = [];
   for (const course of courses) {
     // Synthetic contracts/thesis have empty schedule → naturally excluded, no clash
     for (const sess of course.schedule || []) {
       if (sess.day !== day) continue;
+      if (weekMonday && !sessionActiveInWeek(sess, weekMonday)) continue;
       const range = parseTimeRange(sess.time);
       if (!range) continue;
       // Include sessions even outside 08–19 so they appear in conflict reports

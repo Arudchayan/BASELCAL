@@ -16,6 +16,7 @@ import {
   type SemesterId,
   eligibleModulesFor,
 } from './types';
+import { mapEventIdsToCourses, parseUnicalUrl } from './unical';
 
 export const STORAGE_KEYS = {
   /** v6 persists the selected module allocation for cross-listed courses. */
@@ -121,7 +122,7 @@ const COURSE_BY_ID: Map<string, Course> = new Map(
   COURSES.map((c) => [c.id, c as Course]),
 );
 
-function courseById(id: string): Course | undefined {
+export function courseById(id: string): Course | undefined {
   return COURSE_BY_ID.get(id);
 }
 
@@ -214,6 +215,27 @@ function emptyPlanRefs(): SerializedPlan {
 
 function overlayPlanRefs(config: StudentConfig | null): SerializedPlan | null {
   if (!config?.seedPlan || !config.plan || typeof config.plan !== 'object') {
+    // UniCal-only seed: owner has UNICAL_URL but no explicit plan arrays yet.
+    if (config?.seedPlan && config.unicalUrl) {
+      const parsed = parseUnicalUrl(config.unicalUrl);
+      if (parsed.ok) {
+        const mapped = mapEventIdsToCourses(parsed.eventIds);
+        if (mapped.matched.length > 0) {
+          return applyPresetAllocations(
+            {
+              s1: mapped.matched.map((c) => c.id),
+              s2: [],
+              s3: [],
+              s4: [],
+            },
+            {
+              ...EXAMPLE_PLAN_ALLOCATIONS,
+              ...(config.allocations as Partial<Record<string, CourseModule>> | undefined),
+            },
+          );
+        }
+      }
+    }
     return null;
   }
   const allocations = {
@@ -231,14 +253,29 @@ function overlayPlanRefs(config: StudentConfig | null): SerializedPlan | null {
       return [];
     });
   };
+  let s1Ids = asIds(plan.s1);
+  // Prefer live UniCal Sem 1 when UNICAL_URL is present on the owner overlay.
+  if (config.unicalUrl) {
+    const parsed = parseUnicalUrl(config.unicalUrl);
+    if (parsed.ok) {
+      const mapped = mapEventIdsToCourses(parsed.eventIds);
+      if (mapped.matched.length > 0) {
+        s1Ids = mapped.matched.map((c) => c.id);
+      }
+    }
+  }
   const idMap: Record<SemesterId, string[]> = {
-    s1: asIds(plan.s1),
+    s1: s1Ids,
     s2: asIds(plan.s2),
     s3: asIds(plan.s3),
     s4: asIds(plan.s4),
   };
   const refs = applyPresetAllocations(idMap, allocations);
   for (const sem of SEMESTER_IDS) {
+    if (sem === 's1' && config.unicalUrl) {
+      // refs.s1 already set from UniCal mapping above
+      continue;
+    }
     const items = Array.isArray(plan[sem]) ? plan[sem] as unknown[] : [];
     refs[sem] = items.map((item, index) => {
       if (item && typeof item === 'object' && typeof (item as { allocatedModule?: unknown }).allocatedModule === 'string') {
@@ -386,14 +423,29 @@ export function savePlanToStorage(plan: PlanState): boolean {
   return savePlanForProgramme(DEFAULT_PROGRAMME_ID, plan);
 }
 
-export function loadJson<T>(key: string, fallback: T): T {
+export function loadJson<T>(key: string, fallback: T, validate?: (value: unknown) => boolean): T {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
-    return JSON.parse(raw) as T;
+    const parsed: unknown = JSON.parse(raw);
+    // Plan step 50: persistence boundary is untrusted (user-editable, importable,
+    // cross-version) — wrong-shaped JSON must fall back, never flow into state.
+    if (validate && !validate(parsed)) return fallback;
+    return parsed as T;
   } catch {
     return fallback;
   }
+}
+
+/** Shape guard for the per-course notes record. */
+export function isNotesRecord(value: unknown): value is Record<string, string> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).every((entry) => typeof entry === 'string');
+}
+
+/** Shape guard for the wishlist id list. */
+export function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
 }
 
 export function saveJson(key: string, value: unknown): boolean {

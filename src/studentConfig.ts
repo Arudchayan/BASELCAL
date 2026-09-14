@@ -12,6 +12,8 @@ export type StudentConfig = {
   seedPlan?: boolean;
   plan?: Record<string, unknown>;
   allocations?: Record<string, string>;
+  /** Owner-only UniCal calendar URL (from UNICAL_URL env). Never bake into public bundles. */
+  unicalUrl?: string;
 };
 
 export const STUDENT_CONFIG: StudentConfig | null =

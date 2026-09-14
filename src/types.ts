@@ -1,7 +1,15 @@
 import type { COURSES } from './courses';
 import examplePlan from './examplePlan.json';
 
-export type ScheduleSession = { day: string; time: string; room: string };
+export type ScheduleSession = {
+  day: string;
+  time: string;
+  room: string;
+  /** First meeting date (ISO YYYY-MM-DD), when known from VV/UniCal. */
+  from?: string;
+  /** Last meeting date (ISO YYYY-MM-DD), when known from VV/UniCal. */
+  until?: string;
+};
 
 export type ScheduleStatus = 'scheduled' | 'contract' | 'thesis' | 'unknown';
 
@@ -65,6 +73,15 @@ export const SEMESTERS = [
   { id: 's3' as const, title: 'Sem 3 · Fall 2027 · provisional' },
   { id: 's4' as const, title: 'Sem 4 · provisional (Inc. Thesis)' },
 ];
+
+/**
+ * Single source for honest per-semester load caps (plan step 47).
+ * Defined in ./offering (JSON-free, require()-able from the Node validators —
+ * see plan step 52); re-exported here so app code keeps one import site.
+ * Values are caps on planned CP per semester, not degree rules — the 120CP
+ * exact math is untouched.
+ */
+export { SEM_LOAD_MAX } from './offering';
 
 /** Public sample outline — not a personal enrollment and not an official recommendation. */
 export const EXAMPLE_PLAN_IDS: Record<SemesterId, string[]> = examplePlan.plan as Record<SemesterId, string[]>;

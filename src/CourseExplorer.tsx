@@ -9,7 +9,8 @@ import { useProgramme } from './programmeContext';
 import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { isStaleWatch } from './coveragePolicy';
 import { getPlacementWarnings } from './offering';
-import { eligibleModulesFor, type Course } from './types';
+import { eligibleModulesFor, SEMESTERS, type Course, type SemesterId } from './types';
+import { bucketColor } from './moduleColor';
 
 type ExplorerBucketKey = 'admission' | 'thesis' | 'ml' | 'systems' | 'math' | 'electives';
 
@@ -43,37 +44,37 @@ function bucketsFor(admissionTarget: number, packRules: PackRules): BucketDef[] 
       desc: admissionTarget > 0
         ? `Admission conditions (Auflagen) are student-specific. Current target: exactly ${admissionTarget} CP from your Zulassungsbescheid.`
         : 'Admission conditions (Auflagen) are student-specific. Set your letter total in the planner header; 0 means no extra CP.',
-      color: '#d97706',
+      color: bucketColor('admission'),
     },
     thesis: {
       title: 'Master Thesis Block',
       required: true,
       desc: `Exactly ${packRules.thesis.target} CP: Preparation (6) + Master Thesis (30).`,
-      color: '#f43f5e',
+      color: bucketColor('thesis'),
     },
     ml: {
       title: 'Machine Learning Foundations',
       required: false,
       desc: `Minimum ${packRules.ml.target} CP in core ML/AI.`,
-      color: '#10b981',
+      color: bucketColor('ml'),
     },
     systems: {
       title: 'Systems Foundations',
       required: false,
       desc: `Minimum ${packRules.systems.target} CP in scalable systems & computing.`,
-      color: '#8b5cf6',
+      color: bucketColor('systems'),
     },
     math: {
       title: 'Mathematical Foundations',
       required: false,
       desc: `Minimum ${packRules.math.target} CP in advanced mathematics.`,
-      color: '#2563eb',
+      color: bucketColor('math'),
     },
     electives: {
       title: packRules.electives.module ?? 'Electives',
       required: false,
       desc: `Exactly ${packRules.electives.target} CP in application domains or Data Science projects.`,
-      color: '#ec4899',
+      color: bucketColor('electives'),
     },
   };
 
@@ -100,11 +101,17 @@ export const CourseExplorer = ({
   toggleShortlist,
   onClose,
   admissionTarget,
+  onAddToPlan,
+  plannedCourseIds,
+  plannedProjectGroups,
 }: {
   shortlist: string[];
   toggleShortlist: (id: string) => void;
   onClose: () => void;
   admissionTarget: number;
+  onAddToPlan: (course: Course, sem: SemesterId) => void;
+  plannedCourseIds: string[];
+  plannedProjectGroups: string[];
 }) => {
   const { programmeId } = useProgramme();
   const packRules = getPackRules(programmeId);
@@ -745,9 +752,48 @@ export const CourseExplorer = ({
                   borderTop: '1px solid var(--border-subtle)',
                   background: 'var(--bg-primary)',
                   display: 'flex',
-                  justifyContent: 'flex-end',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px',
+                  flexWrap: 'wrap',
                 }}
               >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  <span className="micro-label">Add to plan</span>
+                  {SEMESTERS.map((s) => {
+                    const dup = plannedCourseIds.includes(selectedCourse.id);
+                    const variantClash =
+                      !dup &&
+                      !!selectedCourse.projectVariantGroup &&
+                      plannedProjectGroups.includes(selectedCourse.projectVariantGroup);
+                    const disabled = dup || variantClash;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className="btn btn--ghost"
+                        style={{ padding: '6px 10px', fontSize: '12.5px' }}
+                        disabled={disabled}
+                        title={
+                          dup
+                            ? 'Already in plan'
+                            : variantClash
+                              ? 'The other 6/12 CP variant is already planned'
+                              : `Add to ${s.title}`
+                        }
+                        aria-label={`Add to ${s.title.split('·')[0].trim()}`}
+                        onClick={() => onAddToPlan(selectedCourse, s.id)}
+                      >
+                        {s.id.replace('s', 'S')}
+                      </button>
+                    );
+                  })}
+                  {(plannedCourseIds.includes(selectedCourse.id) ||
+                    (!!selectedCourse.projectVariantGroup &&
+                      plannedProjectGroups.includes(selectedCourse.projectVariantGroup))) && (
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>In plan</span>
+                  )}
+                </div>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {

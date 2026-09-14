@@ -62,6 +62,10 @@ Admission conditions (Auflagen), your real plan, and an optional home pin are **
 
 3. Restart `npm run dev`. The file is gitignored.
 
+Optional: set `UNICAL_URL` in a local `.env` (see `.env.example`) to your UniCal calendar link. With `seedPlan: true`, Sem 1 is filled from that link’s event ids. On Vercel, set `UNICAL_URL` as a **server** env var (returned only after owner unlock — never `VITE_*`).
+
+Anyone can also use **Import UniCal** in the header: paste a UniCal `?e=…` link to replace Sem 1. The timetable week picker hides sessions outside each course’s first/last meeting dates.
+
 On Vercel, keep `STUDENT_CONFIG` as a **server** env var (used only by `/api/unlock`). Also set `PLANNER_USER` and `PLANNER_PASSWORD`. Do not commit them. Public builds never bake that JSON into JavaScript.
 
 You can also change **Auflagen CP** in the header at any time; that value is stored only in this browser.
