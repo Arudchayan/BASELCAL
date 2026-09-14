@@ -252,6 +252,21 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).not.toContain('· S4 ·');
   });
 
+  test('timetable session blob exports only that course', async ({ page }) => {
+    await loadExampleOutline(page);
+    await page.getByRole('button', { name: 'Timetable view' }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: /Download calendar for Computational Physics/i }).first().click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/timetable-s1-E-11680/);
+    const path = await download.path();
+    const calendar = await readFile(path!, 'utf8');
+    expect(calendar).toContain('Computational Physics');
+    expect(calendar).toContain('11680');
+    expect(calendar).not.toContain('Concentration');
+    expect(calendar).not.toContain('79161');
+  });
+
   test('Import UniCal replaces Sem 1 and hides courses before first meeting', async ({ page }) => {
     await clearPlanStorage(page);
     await page.goto('/');

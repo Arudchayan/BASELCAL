@@ -535,6 +535,16 @@ function App() {
     showToast(`Semester calendar downloaded — ${semShortLabel(activeSem)} weekly slots included`);
   };
 
+  const handleExportCourse = (courseId: string) => {
+    const course = plan[activeSem].find((c) => c.id === courseId);
+    if (!course || !(course.schedule?.length ?? 0)) {
+      showToast('No weekly slots to export for this course');
+      return;
+    }
+    downloadIcs(plan, PLAN_DISCLAIMER, programmeId, { sems: [activeSem], courseIds: [courseId] });
+    showToast(`Calendar downloaded — ${courseFullLabel(course)}`);
+  };
+
   const handleImportFile = async (file: File) => {
     try {
       const text = await file.text();
@@ -892,6 +902,7 @@ function App() {
                 activeSem={activeSem}
                 setActiveSem={setActiveSem}
                 onExportSemester={handleExportSemester}
+                onExportCourse={handleExportCourse}
                 onImportUnical={() => setShowUnicalImport(true)}
               />
             </Suspense>

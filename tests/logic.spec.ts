@@ -380,4 +380,18 @@ test.describe('Degree accuracy & storage', () => {
     // UNTIL is UTC (RFC 5545 with TZID DTSTART); 14.12.2026 23:59 Zurich = CET → 22:59Z
     expect(ics).toMatch(/UNTIL=20261214T225900Z/);
   });
+
+  test('ICS export can filter to a single course id', async ({ page }) => {
+    await page.goto('/');
+    const ics = await page.evaluate(async () => {
+      const { buildIcs } = await import('/src/ics.ts');
+      const { COURSES } = await import('/src/courses.ts');
+      const a = COURSES.find((c) => c.id === 'E-64323')!;
+      const b = COURSES.find((c) => c.id === 'ML-45401')!;
+      const plan = { s1: [a, b], s2: [], s3: [], s4: [] };
+      return buildIcs(plan as never, 'disclaimer', { sems: ['s1'], courseIds: ['ML-45401'] });
+    });
+    expect(ics).toContain('Bioinformatics Algorithms');
+    expect(ics).not.toContain('64323');
+  });
 });
