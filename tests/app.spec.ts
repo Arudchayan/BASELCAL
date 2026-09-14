@@ -223,10 +223,10 @@ test.describe('BASELCAL App Main Functionality', () => {
     const path = await download.path();
     expect(path).toBeTruthy();
     const calendar = await readFile(path!, 'utf8');
-    expect(calendar).toContain('UNTIL=20261218T235900');
-    expect(calendar).toContain('UNTIL=20270604T235900');
-    expect(calendar).toContain('UNTIL=20271223T235900');
-    expect(calendar).toContain('UNTIL=20280602T235900');
+    expect(calendar).toContain('UNTIL=20261218T225900Z');
+    expect(calendar).toContain('UNTIL=20270604T215900Z');
+    expect(calendar).toContain('UNTIL=20271223T225900Z');
+    expect(calendar).toContain('UNTIL=20280602T215900Z');
     expect(calendar).toContain('BEGIN:VTIMEZONE');
     expect(calendar).toContain('TZID:Europe/Zurich');
     expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:');
