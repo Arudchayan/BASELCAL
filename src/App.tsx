@@ -16,6 +16,7 @@ import { evaluatePack, withAdmissionTarget } from './degrees/ruleEngine';
 import { getPackRules, listProgrammes } from './degrees/registry';
 import type { ProgrammeId } from './degrees/types';
 import {
+  ADMISSION_TARGET_MAX,
   clampAdmission,
   isOwnerSession,
   readAdmissionTarget,
@@ -557,7 +558,9 @@ function App() {
       const ok = window.confirm('Import this plan file? It replaces your current board.');
       if (!ok) return;
       const nextAdmission =
-        typeof imported.admissionTarget === 'number' ? imported.admissionTarget : admissionTarget;
+        typeof imported.admissionTarget === 'number'
+          ? clampAdmission(imported.admissionTarget)
+          : admissionTarget;
       if (nextAdmission !== admissionTarget) {
         setAdmissionTarget(nextAdmission);
         reportStorage('admission', writeAdmissionTarget(nextAdmission));
@@ -674,12 +677,12 @@ function App() {
 
       <div className="subbar" style={{ marginTop: 8 }}>
         <span role="note">{PLAN_DISCLAIMER}</span>
-        <label className="admission-control" title="From your Zulassungsbescheid. 0 means no extra admission conditions.">
+        <label className="admission-control" title="From your Zulassungsbescheid. Integer 0–30 CP; 0 means none. Values above 30 are excluded.">
           <span>Auflagen</span>
           <input
             type="number"
             min={0}
-            max={80}
+            max={ADMISSION_TARGET_MAX}
             step={1}
             value={admissionTarget}
             aria-label="Admission conditions in CP"

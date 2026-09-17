@@ -257,6 +257,27 @@ if (!appTsx.includes('PLAN_DISCLAIMER') && !appTsx.includes('not an official Uni
   pass('App shows unofficial planner disclaimer');
 }
 
+const studentConfigSrc = fs.readFileSync('src/studentConfig.ts', 'utf8');
+const ruleEngineSrc = fs.readFileSync('src/degrees/ruleEngine.ts', 'utf8');
+if (studentConfigSrc.includes('Math.min(80') || appTsx.includes('max={80}')) {
+  fail('Auflagen still allows 80 CP; Domain SoT ceiling is exact ≤30 (above excluded)');
+}
+if (!/ADMISSION_TARGET_MAX\s*=\s*30/.test(studentConfigSrc)) {
+  fail('studentConfig.ts must export ADMISSION_TARGET_MAX = 30');
+} else {
+  pass('Auflagen ceiling is ADMISSION_TARGET_MAX = 30');
+}
+if (!appTsx.includes('max={ADMISSION_TARGET_MAX}') && !appTsx.includes('max={30}')) {
+  fail('Auflagen header input must cap at Domain ceiling 30');
+} else {
+  pass('Auflagen header input caps at Domain ceiling 30');
+}
+if (!ruleEngineSrc.includes('clampAdmission')) {
+  fail('withAdmissionTarget must clamp via clampAdmission so >30 is not a valid grand-total target');
+} else {
+  pass('Progress/grand-total path clamps Auflagen via clampAdmission');
+}
+
 console.log('\nCHECK 5: Data quality');
 const placeholderSched = courses.filter(c =>
   (c.schedule||[]).some(s => (s.time||'').includes('not visible') || (s.room||'').includes('not visible'))

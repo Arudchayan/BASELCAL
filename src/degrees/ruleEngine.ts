@@ -1,4 +1,5 @@
 import { creditModule, type Course } from '../types';
+import { clampAdmission } from '../studentConfig';
 import type { PackRuleEntry, RuleKind } from './types';
 
 export type PackRules = Record<string, PackRuleEntry>;
@@ -49,7 +50,7 @@ export function withAdmissionTarget<Rules extends PackRules>(
   rules: Rules,
   admissionTarget: number,
 ): Rules {
-  const admission = Math.max(0, Math.round(admissionTarget));
+  const admission = clampAdmission(admissionTarget);
   const adjusted = Object.fromEntries(
     Object.entries(rules).map(([key, rule]) => {
       if (key === 'admission' && rule.configurable) {
