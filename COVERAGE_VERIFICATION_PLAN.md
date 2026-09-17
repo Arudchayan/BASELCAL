@@ -23,7 +23,7 @@
 - Zero missing courses in foundations + electives vs VV module manifest
 - Zero wrong `module` tags
 - Stale VV semesters flagged (not silent)
-- Admission exactly 28 CP with documented Auflagen risks
+- Configurable Auflagen (student-specific); default 0; official ceiling exact ≤30 CP (above → admission excluded)
 - Three consecutive agent cycles with empty symmetric diff
 - `coverage_policy.lastVerified` stamped
 
@@ -53,7 +53,7 @@ Re-run audit: `npm run audit:modules`; apply updates: `npm run refresh:modules`
 ## Remaining work
 
 - [ ] Three agent passes accepted as merge gate
-- [ ] Admission (Auflagen) is student-specific — set in UI or `config/student.local.json`
+- [ ] Admission (Auflagen) is student-specific, configurable, default 0; official ceiling exact ≤30 CP (above → admission excluded) — set in UI or `config/student.local.json`
 - [ ] Re-run the manifest and field refresh after Spring 2027 is published on 2026-11-30
 - [ ] Add a separate admission-course audit
 
