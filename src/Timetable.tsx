@@ -251,7 +251,7 @@ export function Timetable({
         </div>
       )}
 
-      <CampusRoutePlanner courses={plannedCourses} />
+      <CampusRoutePlanner courses={plannedCourses} weekMonday={weekMonday} />
 
       <div className="timetable-scroll">
       <div className="timetable-grid" style={{ display: 'grid', gridTemplateColumns: '60px repeat(5, 1fr)', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>

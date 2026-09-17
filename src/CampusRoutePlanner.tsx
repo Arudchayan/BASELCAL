@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, Home, Library, MapPin, MapPinned, Navigation, Route } from 'lucide-react';
+import { AlertTriangle, ExternalLink, Home, Library, MapPin, MapPinned, Navigation, Route } from 'lucide-react';
 import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { collectDaySessions } from './conflicts';
+import { collectDaySessions, type TimedSession } from './conflicts';
 import {
   UNIVERSITY_LIBRARIES,
   campusPlaceForRoom,
@@ -12,12 +12,14 @@ import {
 import { configuredHome } from './studentConfig';
 import { HOME_STORAGE_KEY } from './planStorage';
 import type { Course } from './types';
+import { courseFullLabel } from './courseLabel';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const WALKING_KMH = 4.8;
 const STREET_FACTOR = 1.25;
 
-type LocatedSession = ReturnType<typeof collectDaySessions>[number] & { place: CampusPlace };
+type RouteSession = TimedSession & { place?: CampusPlace };
+type LocatedSession = TimedSession & { place: CampusPlace };
 
 type BreakSuggestion = {
   afterIndex: number;
@@ -29,6 +31,22 @@ type BreakSuggestion = {
 };
 
 type SavedHome = { lat: number; lng: number };
+
+function compareSessions(a: TimedSession, b: TimedSession): number {
+  if (a.start !== b.start) return a.start - b.start;
+  if (a.end !== b.end) return a.end - b.end;
+  return a.course.title.localeCompare(b.course.title);
+}
+
+function hasCampusPlace(session: RouteSession): session is LocatedSession {
+  return !!session.place;
+}
+
+function hasOverlappingSessions(sessions: TimedSession[]): boolean {
+  return sessions.some((session, index) => sessions
+    .slice(index + 1)
+    .some((next) => session.start < next.end && session.end > next.start));
+}
 
 function loadHome(): SavedHome | null {
   try {
@@ -98,29 +116,33 @@ function suggestLibrary(current: LocatedSession, next: LocatedSession, gapMinute
   return options[0] ?? null;
 }
 
-export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
+export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[]; weekMonday: Date }) {
   const [home, setHome] = useState<SavedHome | null>(loadHome);
   const [isSettingHome, setIsSettingHome] = useState(false);
   const dailySessions = useMemo(
-    () => Object.fromEntries(DAYS.map((day) => [day, collectDaySessions(courses, day)
-      .map((session) => ({ ...session, place: campusPlaceForRoom(session.room) }))
-      .filter((session): session is LocatedSession => !!session.place)])),
-    [courses],
-  ) as Record<string, LocatedSession[]>;
+    () => Object.fromEntries(DAYS.map((day) => [day, collectDaySessions(courses, day, weekMonday)
+      .sort(compareSessions)
+      .map((session) => ({ ...session, place: campusPlaceForRoom(session.room) }))])),
+    [courses, weekMonday],
+  ) as Record<string, RouteSession[]>;
 
   const availableDays = DAYS.filter((day) => dailySessions[day].length > 0);
   const [selectedDay, setSelectedDay] = useState(availableDays[0] ?? 'Monday');
   const activeDay = availableDays.includes(selectedDay) ? selectedDay : (availableDays[0] ?? 'Monday');
   const sessions = dailySessions[activeDay] ?? [];
+  const mappedSessions = sessions.filter(hasCampusPlace);
+  const unmappedSessions = sessions.filter((session) => !session.place);
+  const hasOverlaps = hasOverlappingSessions(sessions);
+  const routeAvailable = sessions.length > 0 && mappedSessions.length === sessions.length && !hasOverlaps;
 
-  const suggestions = sessions.flatMap((session, index) => {
-    const next = sessions[index + 1];
+  const suggestions = routeAvailable ? mappedSessions.flatMap((session, index) => {
+    const next = mappedSessions[index + 1];
     if (!next) return [];
     const gapMinutes = Math.round((next.start - session.end) * 60);
     if (gapMinutes < 45) return [];
     const suggestion = suggestLibrary(session, next, gapMinutes);
     return suggestion ? [{ ...suggestion, afterIndex: index, gapMinutes }] : [];
-  });
+  }) : [];
 
   const suggestionByIndex = new Map(suggestions.map((suggestion) => [suggestion.afterIndex, suggestion]));
   const configHome = configuredHome();
@@ -135,18 +157,24 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
     lng: home.lng,
     kind: 'home',
   } : null;
-  const campusRoutePoints = sessions.flatMap((session, index) => {
+  const campusRoutePoints = mappedSessions.flatMap((session, index) => {
     const suggestion = suggestionByIndex.get(index);
     return suggestion ? [session.place, suggestion.library] : [session.place];
   });
-  const routePoints = homePlace && campusRoutePoints.length
+  const routePoints = routeAvailable && homePlace && campusRoutePoints.length
     ? [homePlace, ...campusRoutePoints, homePlace]
-    : campusRoutePoints;
-  const mapPoints = [...routePoints, ...suggestions.map((suggestion) => suggestion.library)];
-  const movementMinutes = routePoints.slice(0, -1).reduce(
+    : routeAvailable ? campusRoutePoints : [];
+  const mapPoints = [
+    ...(homePlace ? [homePlace] : []),
+    ...(routeAvailable ? routePoints : mappedSessions.map((session) => session.place)),
+    ...suggestions.map((suggestion) => suggestion.library),
+  ];
+  const movementMinutes = routeAvailable ? routePoints.slice(0, -1).reduce(
     (sum, point, index) => sum + walkingMinutes(point, routePoints[index + 1]),
     0,
-  );
+  ) : null;
+  const firstSession = mappedSessions[0];
+  const lastSession = mappedSessions[mappedSessions.length - 1];
 
   const saveHome = (value: SavedHome) => {
     localStorage.setItem(HOME_STORAGE_KEY, JSON.stringify(value));
@@ -166,7 +194,9 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
         </div>
         <div className="campus-route__actions">
           <div className="campus-route__summary">
-            <Navigation size={16} /> ≈ {movementMinutes} min walking
+            {routeAvailable
+              ? <><Navigation size={16} /> ≈ {movementMinutes} min walking</>
+              : <><AlertTriangle size={16} /> Route unavailable for this day</>}
           </div>
           <button
             type="button"
@@ -188,6 +218,22 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
               ? 'A home pin from your local student config is included at the start and end of every route. Moving it creates a browser-only override.'
               : 'A custom browser-only home pin is included at the start and end of every route.'}
       </div>
+
+      {(unmappedSessions.length > 0 || hasOverlaps) && (
+        <div className="campus-route__notice" role="status">
+          {unmappedSessions.length > 0 && (
+            <p>
+              <strong>Location not mapped:</strong>{' '}
+              {unmappedSessions.map((session) => `${courseFullLabel(session.course)} — ${session.room}`).join('; ')}
+            </p>
+          )}
+          {hasOverlaps && (
+            <p>
+              <strong>Walking route hidden:</strong> classes overlap on {activeDay}; review the timetable conflict above before planning a walk.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="campus-route__days" role="tablist" aria-label="Route day">
         {availableDays.map((day) => (
@@ -215,14 +261,14 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
             {routePoints.length > 1 && (
               <Polyline positions={routePoints.map((point) => [point.lat, point.lng])} pathOptions={{ color: '#3559e0', weight: 4, opacity: 0.75 }} />
             )}
-            {sessions.map((session, index) => (
+            {mappedSessions.map((session) => (
               <CircleMarker
                 key={`${session.course.id}-${session.time}`}
                 center={[session.place.lat, session.place.lng]}
                 radius={8}
                 pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#3559e0', fillOpacity: 1 }}
               >
-                <Popup><strong>{index + 1}. {session.course.title}</strong><br />{session.time}<br />{session.place.name}</Popup>
+                <Popup><strong>{session.course.title}</strong><br />{session.time}<br />{session.place.name}</Popup>
               </CircleMarker>
             ))}
             {homePlace && (
@@ -248,23 +294,23 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
         </div>
 
         <div className="campus-route__timeline">
-          {homePlace && sessions.length > 0 && (
+          {routeAvailable && homePlace && firstSession && (
             <div className="home-route-leg">
               <Home size={15} />
-              <span>Start at home · ≈ {walkingMinutes(homePlace, sessions[0].place)} min to {sessions[0].place.name}</span>
-              <a href={openStreetMapDirectionsUrl(homePlace, sessions[0].place)} target="_blank" rel="noreferrer">Directions</a>
+              <span>Start at home · ≈ {walkingMinutes(homePlace, firstSession.place)} min to {firstSession.place.name}</span>
+              <a href={openStreetMapDirectionsUrl(homePlace, firstSession.place)} target="_blank" rel="noreferrer">Directions</a>
             </div>
           )}
           {sessions.map((session, index) => {
-            const next = sessions[index + 1];
+            const next = mappedSessions[index + 1];
             const suggestion = suggestionByIndex.get(index);
             return (
               <div key={`${session.course.id}-${session.time}`} className="route-stop">
                 <div className="route-stop__marker">{index + 1}</div>
                 <div className="route-stop__body">
                   <strong>{session.course.title}</strong>
-                  <span>{session.time} · {session.place.name}</span>
-                  <small>{session.place.address}</small>
+                  <span>{session.time} · {session.place?.name ?? 'Location not mapped'}</span>
+                  <small>{session.place?.address ?? session.room}</small>
                   {suggestion && (
                     <div className="library-break">
                       <Library size={16} />
@@ -279,7 +325,7 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
                       </div>
                     </div>
                   )}
-                  {next && (
+                  {routeAvailable && session.place && next && (
                     <a
                       className="route-leg"
                       href={openStreetMapDirectionsUrl(suggestion?.library ?? session.place, next.place)}
@@ -293,11 +339,11 @@ export function CampusRoutePlanner({ courses }: { courses: Course[] }) {
               </div>
             );
           })}
-          {homePlace && sessions.length > 0 && (
+          {routeAvailable && homePlace && lastSession && (
             <div className="home-route-leg">
               <Home size={15} />
-              <span>Return home · ≈ {walkingMinutes(sessions[sessions.length - 1].place, homePlace)} min</span>
-              <a href={openStreetMapDirectionsUrl(sessions[sessions.length - 1].place, homePlace)} target="_blank" rel="noreferrer">Directions</a>
+              <span>Return home · ≈ {walkingMinutes(lastSession.place, homePlace)} min</span>
+              <a href={openStreetMapDirectionsUrl(lastSession.place, homePlace)} target="_blank" rel="noreferrer">Directions</a>
             </div>
           )}
         </div>

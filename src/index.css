@@ -968,6 +968,21 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   outline: 1px solid color-mix(in srgb, #d04b75 40%, transparent);
 }
 
+.campus-route__notice {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--warn);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--warn) 10%, var(--bg-primary));
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.campus-route__notice p { margin: 0; }
+.campus-route__notice p + p { margin-top: 6px; }
+.campus-route__notice strong { color: var(--warn); }
+
 .campus-route__days {
   gap: 6px;
   margin: 15px 0 12px;
