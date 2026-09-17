@@ -25,7 +25,7 @@ npm test
 
 ## Catalog and rules
 
-- Official MSc targets live in `degree_rules.json` (120 CP). Admission is runtime/config.
+- Official MSc targets live in `degree_rules.json` (120 CP). Admission (Auflagen) is runtime/config: integer **[0, 30]**, default 0; above 30 is excluded. Grand total = 120 + Auflagen only.
 - Course catalog: `src/courses.ts`. Keep module tags consistent with ID prefixes.
 - Public sample outline: `src/examplePlan.json`. It must keep `npm run validate` green.
 - Do not treat the example outline as an official recommendation.

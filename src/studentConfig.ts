@@ -58,13 +58,17 @@ export function activeStudentConfig(): StudentConfig | null {
   return readUnlockedConfig() ?? STUDENT_CONFIG;
 }
 
+/** Official Auflagen ceiling (inclusive). Above this is not a valid plan state. */
+export const ADMISSION_TARGET_MAX = 30;
+export const ADMISSION_TARGET_DEFAULT = 0;
+
 export function clampAdmission(value: number): number {
-  if (!Number.isFinite(value) || value < 0) return 0;
-  return Math.min(80, Math.round(value));
+  if (!Number.isFinite(value) || value < ADMISSION_TARGET_DEFAULT) return ADMISSION_TARGET_DEFAULT;
+  return Math.min(ADMISSION_TARGET_MAX, Math.round(value));
 }
 
 export function configuredAdmissionTarget(): number {
-  return clampAdmission(activeStudentConfig()?.admissionTarget ?? 0);
+  return clampAdmission(activeStudentConfig()?.admissionTarget ?? ADMISSION_TARGET_DEFAULT);
 }
 
 export function readAdmissionTarget(): number {
@@ -73,7 +77,12 @@ export function readAdmissionTarget(): number {
       const raw = localStorage.getItem(ADMISSION_STORAGE_KEY);
       if (raw != null && raw !== '') {
         const parsed = Number(raw);
-        if (Number.isFinite(parsed)) return clampAdmission(parsed);
+        if (Number.isFinite(parsed)) {
+          const clamped = clampAdmission(parsed);
+          if (String(clamped) !== raw) writeAdmissionTarget(clamped);
+          return clamped;
+        }
+        writeAdmissionTarget(ADMISSION_TARGET_DEFAULT);
       }
     } catch {
       // private mode / blocked storage

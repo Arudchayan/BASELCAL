@@ -17,7 +17,7 @@ Pack rules are canonical. `degree_rules.json` mirrors DS **targets** for `valida
 
 | Bucket | Rule |
 |--------|------|
-| Admission (Auflagen) | Student-specific; default **0**. Set in the UI or `config/student.local.json` |
+| Admission (Auflagen) | Student-specific integer **[0, 30]**, default **0**. Above 30 is excluded (not a valid plan state). Set in the UI or `config/student.local.json` |
 | Mathematical Foundations | **Min 18 CP** |
 | Machine Learning Foundations | **Min 18 CP** |
 | Systems Foundations | **Min 18 CP** |
@@ -25,7 +25,7 @@ Pack rules are canonical. `degree_rules.json` mirrors DS **targets** for `valida
 | Electives in Data Science | **Exactly 20 CP** |
 | Thesis block | **Exactly 36 CP** (Prep 6 + Thesis 30) |
 | Master's total | **Exactly 120 CP** |
-| Grand total | **120 + admission** |
+| Grand total | **120 + Auflagen only** |
 
 Exact buckets **fail on overshoot**. Run `npm run validate` after catalog or example-plan changes.
 

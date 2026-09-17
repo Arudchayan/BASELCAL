@@ -4,6 +4,7 @@ import type { ProgrammeId } from './degrees/types';
 import {
   ADMISSION_STORAGE_KEY,
   STUDENT_CONFIG,
+  clampAdmission,
   clearUnlockedConfig,
   type StudentConfig,
 } from './studentConfig';
@@ -485,7 +486,7 @@ export function importPlanPayload(data: unknown): {
   if (!data || typeof data !== 'object') return null;
   const obj = data as Record<string, unknown>;
   const admissionTarget = typeof obj.admissionTarget === 'number' && Number.isFinite(obj.admissionTarget)
-    ? obj.admissionTarget
+    ? clampAdmission(obj.admissionTarget)
     : undefined;
 
   if ((obj.version === 3 || obj.version === 2) && obj.plan && typeof obj.plan === 'object') {

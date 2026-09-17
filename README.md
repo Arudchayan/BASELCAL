@@ -55,7 +55,7 @@ Admission conditions (Auflagen), your real plan, and an optional home pin are **
    ```
 
 2. Edit `config/student.local.json`:
-   - `admissionTarget` — CP from your Zulassungsbescheid (`0` if none)
+   - `admissionTarget` — integer CP from your Zulassungsbescheid (`0` if none; official ceiling 30, above excluded)
    - `seedPlan` — `true` to fill the board on first visit
    - `plan` / `allocations` — course IDs per semester
    - `home` — optional map pin (`lat` / `lng`); leave null to set it in the browser
@@ -97,9 +97,9 @@ Official MSc Data Science 2026 targets (pack: `degrees/data-science/rules.json`;
 | Electives in Data Science | exactly 20 CP |
 | Thesis block | exactly 36 CP |
 | Master's total | exactly 120 CP |
-| Admission (Auflagen) | **your letter** (default 0) |
+| Admission (Auflagen) | **your letter** (integer 0–30, default 0; above 30 excluded) |
 
-Grand total = 120 + admission. Exact buckets fail on overshoot.
+Grand total = 120 + Auflagen only. Admission CP never fills Math / ML / Systems / Electives / Thesis. Exact buckets fail on overshoot.
 
 ## Docs
 

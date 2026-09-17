@@ -285,6 +285,124 @@ test.describe('Degree accuracy & storage', () => {
     expect(result.defaultId).toBe('data-science');
   });
 
+  test('Auflagen clamp refuses >30 as valid; default 0; grand total is 120+Auflagen', async ({ page }) => {
+    await page.goto('/');
+    await clearPlanStorage(page);
+    await page.reload();
+
+    const math = await page.evaluate(async () => {
+      const cfg = await import('/src/studentConfig.ts');
+      const engine = await import('/src/degrees/ruleEngine.ts');
+      const { DS_RULES } = await import('/src/degrees/dataSciencePack.ts');
+      const { COURSES } = await import('/src/courses.ts');
+      const { importPlanPayload } = await import('/src/planStorage.ts');
+      const admissionCourse = COURSES.find((c) => c.type === 'Admission');
+      const rules80 = engine.withAdmissionTarget(DS_RULES, 80);
+      const rules31 = engine.withAdmissionTarget(DS_RULES, 31);
+      const rules30 = engine.withAdmissionTarget(DS_RULES, 30);
+      const rules0 = engine.withAdmissionTarget(DS_RULES, 0);
+      const evAdmissionOnly = admissionCourse
+        ? engine.evaluatePack([admissionCourse], DS_RULES, 8)
+        : null;
+      const imported = importPlanPayload({
+        version: 3,
+        plan: { s1: [], s2: [], s3: [], s4: [] },
+        admissionTarget: 80,
+      });
+      return {
+        max: cfg.ADMISSION_TARGET_MAX,
+        default: cfg.ADMISSION_TARGET_DEFAULT,
+        clamp: {
+          nan: cfg.clampAdmission(Number.NaN),
+          neg: cfg.clampAdmission(-4),
+          zero: cfg.clampAdmission(0),
+          twelve: cfg.clampAdmission(12),
+          thirty: cfg.clampAdmission(30),
+          thirtyOne: cfg.clampAdmission(31),
+          eighty: cfg.clampAdmission(80),
+        },
+        targets: {
+          eighty: rules80.admission.target,
+          thirtyOne: rules31.admission.target,
+          thirty: rules30.admission.target,
+          zero: rules0.admission.target,
+          grandEighty: rules80.grandTotal.target,
+          grandThirty: rules30.grandTotal.target,
+          grandZero: rules0.grandTotal.target,
+        },
+        importedAdmission: imported?.admissionTarget,
+        admissionOnly: evAdmissionOnly
+          ? {
+              admission: evAdmissionOnly.stats.admission,
+              math: evAdmissionOnly.stats.math,
+              ml: evAdmissionOnly.stats.ml,
+              systems: evAdmissionOnly.stats.systems,
+              electives: evAdmissionOnly.stats.electives,
+              thesis: evAdmissionOnly.stats.thesis,
+              mscTotal: evAdmissionOnly.stats.mscTotal,
+              grandTarget: evAdmissionOnly.rules.grandTotal.target,
+            }
+          : null,
+      };
+    });
+
+    expect(math.max).toBe(30);
+    expect(math.default).toBe(0);
+    expect(math.clamp).toEqual({
+      nan: 0,
+      neg: 0,
+      zero: 0,
+      twelve: 12,
+      thirty: 30,
+      thirtyOne: 30,
+      eighty: 30,
+    });
+    expect(math.targets.eighty).toBe(30);
+    expect(math.targets.thirtyOne).toBe(30);
+    expect(math.targets.thirty).toBe(30);
+    expect(math.targets.zero).toBe(0);
+    expect(math.targets.grandEighty).toBe(150);
+    expect(math.targets.grandThirty).toBe(150);
+    expect(math.targets.grandZero).toBe(120);
+    expect(math.importedAdmission).toBe(30);
+    expect(math.admissionOnly).not.toBeNull();
+    expect(math.admissionOnly!.math).toBe(0);
+    expect(math.admissionOnly!.ml).toBe(0);
+    expect(math.admissionOnly!.systems).toBe(0);
+    expect(math.admissionOnly!.electives).toBe(0);
+    expect(math.admissionOnly!.thesis).toBe(0);
+    expect(math.admissionOnly!.mscTotal).toBe(0);
+    expect(math.admissionOnly!.grandTarget).toBe(128);
+    expect(math.admissionOnly!.admission).toBeGreaterThan(0);
+
+    const input = page.getByLabel('Admission conditions in CP');
+    await expect(input).toHaveValue('0');
+    await expect(input).toHaveAttribute('max', '30');
+
+    await page.evaluate(() => localStorage.setItem('basel-ds-admission-target', '80'));
+    await page.reload();
+    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('30');
+    expect(await page.evaluate(() => localStorage.getItem('basel-ds-admission-target'))).toBe('30');
+
+    await loadExampleOutline(page);
+    await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('0');
+    await expect(page.getByText(/MSc ECTS:/i)).toContainText('120 / 120');
+    await expect(page.getByText(/All degree buckets satisfied \(120 CP\)/i)).toBeVisible();
+
+    const auflagen = page.getByLabel('Admission conditions in CP');
+    await auflagen.fill('12');
+    await expect(auflagen).toHaveValue('12');
+    await expect(page.getByText(/currently 12 CP/i)).toBeVisible();
+    await expect(page.getByText(/grand 120\/132/i)).toBeVisible();
+
+    await auflagen.fill('31');
+    await expect(auflagen).toHaveValue('30');
+    expect(await page.evaluate(() => localStorage.getItem('basel-ds-admission-target'))).toBe('30');
+    await expect(page.getByText(/currently 30 CP/i)).toBeVisible();
+    await expect(page.getByText(/grand 120\/150/i)).toBeVisible();
+    await expect(page.getByText(/All degree buckets satisfied \(150 CP\)/i)).toHaveCount(0);
+  });
+
   test('rule engine matches DS facade on empty admission example shape', async ({ page }) => {
     await page.goto('/');
     const result = await page.evaluate(async () => {
