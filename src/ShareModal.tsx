@@ -2,10 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { buildShareUrl, isShareUrlTooLong, MAX_SHARE_URL_LENGTH } from './share';
 import { courseFullLabel } from './courseLabel';
+import type { ProgrammeId } from './degrees/types';
 import { SEMESTERS, type PlanState } from './types';
 
 interface ShareModalProps {
   plan: PlanState;
+  programmeId: ProgrammeId;
+  admissionTarget: number;
   onClose: () => void;
   onNotify: (message: string) => void;
   /** Fallback when the link would exceed MAX_SHARE_URL_LENGTH — downloads the full JSON instead. */
@@ -13,12 +16,21 @@ interface ShareModalProps {
 }
 
 /**
- * Share dialog: previews exactly what travels inside the link (course placements
- * + credit allocations, refs-only) and is honest about what stays behind
- * (notes, wishlist, admission target — use the JSON export for those).
+ * Share dialog: previews the unsigned v1 blob (placements, allocations, Zulassungsbescheid).
+ * Notes and wishlist stay in this browser — they are not in the link or JSON export.
  */
-export function ShareModal({ plan, onClose, onNotify, onExportJson }: ShareModalProps) {
-  const url = useMemo(() => buildShareUrl(plan), [plan]);
+export function ShareModal({
+  plan,
+  programmeId,
+  admissionTarget,
+  onClose,
+  onNotify,
+  onExportJson,
+}: ShareModalProps) {
+  const url = useMemo(
+    () => buildShareUrl(plan, programmeId, admissionTarget),
+    [admissionTarget, plan, programmeId],
+  );
   const tooLong = isShareUrlTooLong(url);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [copied, setCopied] = useState(false);
@@ -70,8 +82,8 @@ export function ShareModal({ plan, onClose, onNotify, onExportJson }: ShareModal
 
         <p className="micro" style={{ margin: 0 }}>
           This link carries <strong>{totalCourses} courses ({totalCp} CP)</strong> with their semester
-          placements and credit allocations. Personal notes, wishlist, and admission target stay in
-          this browser — use <strong>Export plan JSON</strong> for a full backup.
+          placements, credit allocations, and admission target. Personal notes and wishlist stay in
+          this browser — they are not written into the link or the JSON file.
         </p>
 
         <div className="share-cols">
@@ -100,8 +112,8 @@ export function ShareModal({ plan, onClose, onNotify, onExportJson }: ShareModal
                 <p className="micro" style={{ margin: 0 }}>
                   This plan is too long for a share link ({url.length.toLocaleString()} characters —
                   links over {MAX_SHARE_URL_LENGTH.toLocaleString()} get truncated by some browsers
-                  and chat apps, and the QR code would be unscannable). Send the full JSON file
-                  instead — it also keeps notes, wishlist and admission target.
+                  and chat apps, and the QR code would be unscannable). Send the JSON file instead
+                  — same v1 blob as the link (plan, programme, admission target, unofficial disclaimer).
                 </p>
                 <button type="button" className="btn" onClick={onExportJson}>
                   Download plan JSON

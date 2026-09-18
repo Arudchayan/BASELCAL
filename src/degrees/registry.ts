@@ -27,6 +27,12 @@ export function listEnabledProgrammes(): DegreeManifest[] {
   return listProgrammes().filter((p) => p.enabled);
 }
 
+/** True only for registered, currently enabled packs. CS/Math stubs stay false. */
+export function isEnabledProgrammeId(id: unknown): id is ProgrammeId {
+  if (typeof id !== 'string') return false;
+  return listEnabledProgrammes().some((programme) => programme.id === id);
+}
+
 export function getPackRules(id: ProgrammeId): PackRules {
   switch (id) {
     case 'data-science':
