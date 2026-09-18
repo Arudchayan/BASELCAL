@@ -375,12 +375,18 @@ test.describe('BASELCAL App Main Functionality', () => {
   });
 
   test('malformed stored notes/wishlist fall back instead of crashing', async ({ page }) => {
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
       localStorage.setItem('basel-notes-v7:data-science', '["not","a","record"]');
       localStorage.setItem('basel-shortlist-v7:data-science', '{"oops":true}');
     });
     await page.reload();
     await expect(page.getByRole('button', { name: /Course Discovery/i })).toBeVisible();
     await expect(page.locator('.semester-grid')).toBeVisible();
+    await expect.poll(async () =>
+      page.evaluate(() => localStorage.getItem('basel-shortlist-v7:data-science')),
+    ).toBe('[]');
+    await expect.poll(async () =>
+      page.evaluate(() => localStorage.getItem('basel-notes-v7:data-science')),
+    ).toBe('{}');
   });
 });
