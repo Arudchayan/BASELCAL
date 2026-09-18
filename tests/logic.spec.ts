@@ -75,6 +75,51 @@ test.describe('Degree accuracy & storage', () => {
     }
   });
 
+  test('loadJson shape guards fall back; rehydrate does not invent plan state', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const { loadJson, isNotesRecord, isStringArray, rehydratePlanDetailed } = await import('/src/planStorage.ts');
+      localStorage.setItem('trust-notes', JSON.stringify(['not', 'a', 'record']));
+      localStorage.setItem('trust-list', JSON.stringify({ oops: true }));
+      localStorage.setItem('trust-ok-notes', JSON.stringify({ 'ML-45401': 'keep' }));
+      const notes = loadJson('trust-notes', { fallback: true }, isNotesRecord);
+      const list = loadJson('trust-list', ['fallback'], isStringArray);
+      const okNotes = loadJson('trust-ok-notes', {}, isNotesRecord);
+      const garbage = rehydratePlanDetailed({
+        s1: [123, null, { nope: true }, 'NOT-A-COURSE', 'ML-45401'],
+        s2: 'oops',
+        extra: ['ML-45401'],
+      });
+      return {
+        notes,
+        list,
+        okNotes,
+        s1: garbage.plan.s1.map((course) => course.id),
+        s2: garbage.plan.s2.map((course) => course.id),
+        dropped: garbage.droppedIds,
+      };
+    });
+
+    expect(result.notes).toEqual({ fallback: true });
+    expect(result.list).toEqual(['fallback']);
+    expect(result.okNotes).toEqual({ 'ML-45401': 'keep' });
+    expect(result.s1).toEqual(['ML-45401']);
+    expect(result.s2).toEqual([]);
+    expect(result.dropped).toContain('NOT-A-COURSE');
+  });
+
+  test('corrupt plan JSON falls back to empty and does not invent courses', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('basel-plan-v7:data-science', '{not-json');
+    });
+    await page.goto('/');
+    const sem1 = page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
+    await expect(sem1.getByText(/Drop courses here/i)).toBeVisible();
+    await expect(sem1.getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
+    const stored = await page.evaluate(() => localStorage.getItem('basel-plan-v7:data-science'));
+    expect(stored).toBe(JSON.stringify({ s1: [], s2: [], s3: [], s4: [] }));
+  });
+
   test('fresh storage starts with an empty board', async ({ page }) => {
     await page.goto('/');
     await clearPlanStorage(page);

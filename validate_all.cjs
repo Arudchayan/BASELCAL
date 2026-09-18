@@ -222,30 +222,58 @@ if (!degreeRules.includes('DEGREE_RULES') || !degreeRules.includes('evaluatePlan
 else pass('degreeRules.ts exports DEGREE_RULES + evaluatePlan');
 if (!degreeRules.includes('degree_rules.json')) fail('degreeRules.ts must import degree_rules.json');
 else pass('degreeRules.ts loads degree_rules.json');
-for (const [key, packRule] of Object.entries(packRulesJson)) {
-  const mirrorRule = degreeRulesJson[key];
-  if (!mirrorRule) fail(`degree_rules.json missing mirror key "${key}" from degrees/data-science/rules.json`);
-  else {
+
+// Pack `degrees/data-science/rules.json` is the only rules SoT. Root
+// `degree_rules.json` is a targets-only mirror for this script. Parity FAILs
+// on missing keys and extra keys in both directions.
+function checkMirrorParity(pack, mirror, reportFail) {
+  for (const [key, packRule] of Object.entries(pack)) {
+    const mirrorRule = mirror[key];
+    if (!mirrorRule) {
+      reportFail(`degree_rules.json missing mirror key "${key}" from degrees/data-science/rules.json`);
+      continue;
+    }
     if (mirrorRule.target !== packRule.target) {
-      fail(`degree_rules.json target for "${key}" (${mirrorRule.target}) ≠ pack (${packRule.target})`);
+      reportFail(`degree_rules.json target for "${key}" (${mirrorRule.target}) ≠ pack (${packRule.target})`);
     }
     if (mirrorRule.kind !== packRule.kind) {
-      fail(`degree_rules.json kind for "${key}" (${mirrorRule.kind}) ≠ pack (${packRule.kind})`);
+      reportFail(`degree_rules.json kind for "${key}" (${mirrorRule.kind}) ≠ pack (${packRule.kind})`);
     }
     if (packRule.module !== undefined && mirrorRule.module !== packRule.module) {
-      fail(`degree_rules.json module for "${key}" (${mirrorRule.module}) ≠ pack (${packRule.module})`);
+      reportFail(`degree_rules.json module for "${key}" (${mirrorRule.module}) ≠ pack (${packRule.module})`);
+    }
+  }
+  for (const key of Object.keys(mirror)) {
+    if (!pack[key]) {
+      reportFail(`degree_rules.json has extra key "${key}" with no rule in degrees/data-science/rules.json`);
     }
   }
 }
-if (!issues.some((msg) => msg.includes('degree_rules.json'))) {
-  pass('degree_rules.json target/kind/module mirror degrees/data-science/rules.json');
+
+const parityBefore = issues.length;
+checkMirrorParity(packRulesJson, degreeRulesJson, fail);
+if (issues.length === parityBefore) {
+  pass('degree_rules.json target/kind/module mirror degrees/data-science/rules.json (missing + extra keys both fail)');
 }
-// Plan step 51: parity must hold in both directions — the mirror must not
-// carry rule keys the pack does not define either.
-for (const key of Object.keys(degreeRulesJson)) {
-  if (!packRulesJson[key]) {
-    fail(`degree_rules.json has extra key "${key}" with no rule in degrees/data-science/rules.json`);
-  }
+
+const extraFails = [];
+checkMirrorParity(packRulesJson, { ...degreeRulesJson, __phantom__: { target: 0, kind: 'min' } }, (msg) => extraFails.push(msg));
+if (!extraFails.some((msg) => msg.includes('extra key "__phantom__"'))) {
+  fail('parity check must FAIL extra keys in degree_rules.json');
+} else {
+  pass('parity check FAILs extra keys in degree_rules.json');
+}
+
+const missingFails = [];
+checkMirrorParity(
+  { ...packRulesJson, __must_exist__: { target: 1, kind: 'min' } },
+  degreeRulesJson,
+  (msg) => missingFails.push(msg),
+);
+if (!missingFails.some((msg) => msg.includes('missing mirror key "__must_exist__"'))) {
+  fail('parity check must FAIL missing keys from degree_rules.json');
+} else {
+  pass('parity check FAILs missing keys in degree_rules.json');
 }
 if (!appTsx.includes('ProgressPanel') && !appTsx.includes('evaluatePlan')) fail('App does not use evaluation layer');
 else pass('App wired to ProgressPanel / evaluation');
@@ -290,6 +318,16 @@ if (typoCourses.length) fail(`Title typo "Typology" still present`);
 else pass('No Typology/Topology title typo');
 
 console.log('\nCHECK 6: Preset timetable + semester load (schedulability)');
+
+const validateSrc = fs.readFileSync(__filename, 'utf8');
+if (!validateSrc.includes("require('./src/conflicts.ts')")) {
+  fail('CHECK 6 must require findConflicts from src/conflicts.ts (same implementation the timetable UI runs)');
+} else {
+  pass('CHECK 6 requires findConflicts from src/conflicts.ts');
+}
+if (/\bfunction parseTime\s*\(/.test(validateSrc)) {
+  fail('weaker local parseTime copy must stay deleted; clash checks use src/conflicts.ts');
+}
 
 /** Cached historical overlaps in future, unaudited semesters; keep visible as warnings until live VV publication. */
 const ALLOWED_PRESET_CLASHES = new Set([
