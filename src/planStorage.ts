@@ -1,8 +1,9 @@
 import { COURSES } from './courses';
-import { DEFAULT_PROGRAMME_ID } from './degrees/registry';
+import { DEFAULT_PROGRAMME_ID, isEnabledProgrammeId } from './degrees/registry';
 import type { ProgrammeId } from './degrees/types';
 import {
   ADMISSION_STORAGE_KEY,
+  ADMISSION_TARGET_DEFAULT,
   STUDENT_CONFIG,
   clampAdmission,
   clearUnlockedConfig,
@@ -103,6 +104,19 @@ export function saveActiveProgrammeId(programmeId: ProgrammeId): boolean {
   }
 }
 
+export const PLAN_KIND = 'baselcal-plan' as const;
+
+/** Canonical share/export blob. Disclaimer must stay PLAN_DISCLAIMER — do not add a second line. */
+export type BaselcalPlanV1 = {
+  v: 1;
+  kind: typeof PLAN_KIND;
+  programmeId: ProgrammeId;
+  admissionTarget: number;
+  plan: SerializedPlan;
+  disclaimer: string;
+};
+
+/** @deprecated Old JSON export (`version: 3`). Import still accepts it; writers emit BaselcalPlanV1. */
 export type PlanExport = {
   version: 3;
   exportedAt: string;
@@ -150,7 +164,18 @@ export function rehydratePlan(idMap: Record<string, unknown>): PlanState {
   return rehydratePlanDetailed(idMap).plan;
 }
 
-export function rehydratePlanDetailed(idMap: Record<string, unknown>): RehydrateResult {
+export type RehydrateOptions = {
+  /**
+   * Share/import v1: an allocatedModule that the course is not cross-listed in
+   * drops the whole entry. LocalStorage hydrate keeps the course (clears the module).
+   */
+  dropInvalidAllocatedModule?: boolean;
+};
+
+export function rehydratePlanDetailed(
+  idMap: Record<string, unknown>,
+  options?: RehydrateOptions,
+): RehydrateResult {
   const plan: PlanState = { s1: [], s2: [], s3: [], s4: [] };
   const used = new Set<string>();
   const usedProjectGroups = new Set<string>();
@@ -182,10 +207,15 @@ export function rehydratePlanDetailed(idMap: Record<string, unknown>): Rehydrate
       const requestedAllocation = typeof item === 'object' && item
         ? (item as { allocatedModule?: unknown }).allocatedModule
         : undefined;
-      const allocatedModule = typeof requestedAllocation === 'string' &&
+      const allocationIsString = typeof requestedAllocation === 'string';
+      const allocatedModule = allocationIsString &&
         eligibleModulesFor(course).includes(requestedAllocation as CourseModule)
         ? requestedAllocation as CourseModule
         : undefined;
+      if (options?.dropInvalidAllocatedModule && allocationIsString && !allocatedModule) {
+        droppedIds.push(id);
+        continue;
+      }
       plan[sem].push(allocatedModule ? { ...course, allocatedModule } : course);
       used.add(id);
       if (course.projectVariantGroup) usedProjectGroups.add(course.projectVariantGroup);
@@ -458,33 +488,65 @@ export function saveJson(key: string, value: unknown): boolean {
   }
 }
 
-export function exportPlanPayload(
-  plan: PlanState,
-  notes: Record<string, string>,
-  shortlist: string[],
-  admissionTarget?: number,
-): PlanExport {
-  return {
-    version: 3,
-    exportedAt: new Date().toISOString(),
-    disclaimer: PLAN_DISCLAIMER,
-    plan: planToRefs(plan),
-    notes,
-    shortlist,
-    admissionTarget,
-  };
-}
-
-export function importPlanPayload(data: unknown): {
+export type PlanImportResult = {
   plan: PlanState;
   notes?: Record<string, string>;
   shortlist?: string[];
   droppedIds: string[];
   duplicateIds: string[];
   admissionTarget?: number;
-} | null {
+  programmeId?: ProgrammeId;
+};
+
+export function exportPlanPayload(
+  plan: PlanState,
+  programmeId: ProgrammeId,
+  admissionTarget: number = ADMISSION_TARGET_DEFAULT,
+): BaselcalPlanV1 {
+  return {
+    v: 1,
+    kind: PLAN_KIND,
+    programmeId,
+    admissionTarget: clampAdmission(admissionTarget),
+    plan: planToRefs(plan),
+    disclaimer: PLAN_DISCLAIMER,
+  };
+}
+
+function importV1PlanPayload(obj: Record<string, unknown>): PlanImportResult | null {
+  if (obj.v !== 1) return null;
+  if (typeof obj.programmeId !== 'string' || !isEnabledProgrammeId(obj.programmeId)) return null;
+  // Missing or non-canonical disclaimer rejects the whole blob (do not invent a second line).
+  if (obj.disclaimer !== PLAN_DISCLAIMER) return null;
+  if (!obj.plan || typeof obj.plan !== 'object') return null;
+
+  const admissionTarget = clampAdmission(
+    typeof obj.admissionTarget === 'number' && Number.isFinite(obj.admissionTarget)
+      ? obj.admissionTarget
+      : ADMISSION_TARGET_DEFAULT,
+  );
+  const { plan, droppedIds, duplicateIds } = rehydratePlanDetailed(
+    obj.plan as Record<string, unknown>,
+    { dropInvalidAllocatedModule: true },
+  );
+  return {
+    plan,
+    droppedIds,
+    duplicateIds,
+    admissionTarget,
+    programmeId: obj.programmeId,
+  };
+}
+
+export function importPlanPayload(data: unknown): PlanImportResult | null {
   if (!data || typeof data !== 'object') return null;
   const obj = data as Record<string, unknown>;
+
+  if (obj.kind != null) {
+    if (obj.kind !== PLAN_KIND) return null;
+    return importV1PlanPayload(obj);
+  }
+
   const admissionTarget = typeof obj.admissionTarget === 'number' && Number.isFinite(obj.admissionTarget)
     ? clampAdmission(obj.admissionTarget)
     : undefined;

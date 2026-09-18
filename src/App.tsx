@@ -96,8 +96,12 @@ const sharedBoot = (() => {
     'Load the shared plan from this link?\n\nIt replaces the plan saved in this browser.' +
       (skipped.length > 0 ? `\n\n${skipped.join('\n')}` : ''),
   );
-  if (ok) clearShareHash();
-  return ok ? shared.plan : null;
+  if (!ok) return null;
+  clearShareHash();
+  if (typeof shared.admissionTarget === 'number') {
+    writeAdmissionTarget(clampAdmission(shared.admissionTarget));
+  }
+  return shared.plan;
 })();
 
 const daysSince = (iso: string): number | null => {
@@ -474,7 +478,7 @@ function App() {
   };
 
   const handleExport = () => {
-    const payload = exportPlanPayload(plan, personalNotes, shortlist, admissionTarget);
+    const payload = exportPlanPayload(plan, programmeId, admissionTarget);
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -482,7 +486,7 @@ function App() {
     a.download = `baselcal-${programmeId}-plan-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Plan JSON downloaded — full backup with notes, wishlist and admission target');
+    showToast('Plan JSON downloaded — v1 blob (no notes, accounts, or server copy)');
   };
 
   const openShare = () => {
@@ -946,6 +950,8 @@ function App() {
           <Suspense fallback={null}>
             <ShareModal
               plan={plan}
+              programmeId={programmeId}
+              admissionTarget={admissionTarget}
               onClose={() => setShowShare(false)}
               onNotify={showToast}
               onExportJson={handleShareJsonFallback}

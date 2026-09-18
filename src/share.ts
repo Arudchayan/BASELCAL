@@ -1,5 +1,12 @@
+import type { ProgrammeId } from './degrees/types';
 import type { PlanState } from './types';
-import { planToRefs, rehydratePlanDetailed, type RehydrateResult } from './planStorage';
+import {
+  exportPlanPayload,
+  importPlanPayload,
+  rehydratePlanDetailed,
+  type PlanImportResult,
+  type RehydrateResult,
+} from './planStorage';
 
 const HASH_PREFIX = '#p=';
 
@@ -41,8 +48,12 @@ function fromBase64Url(input: string): string | null {
   }
 }
 
-export function buildShareUrl(plan: PlanState): string {
-  const payload = toBase64Url(JSON.stringify({ v: 2, p: planToRefs(plan) }));
+export function buildShareUrl(
+  plan: PlanState,
+  programmeId: ProgrammeId,
+  admissionTarget: number,
+): string {
+  const payload = toBase64Url(JSON.stringify(exportPlanPayload(plan, programmeId, admissionTarget)));
   const { origin, pathname, search } = window.location;
   return `${origin}${pathname}${search}${HASH_PREFIX}${payload}`;
 }
@@ -59,18 +70,26 @@ export function readSharedPlanFromHash(): PlanState | null {
  * Detailed variant: also reports references the link carries that cannot be
  * honoured (unknown course IDs, duplicate placements), so callers can tell the
  * user what was skipped instead of dropping them silently.
+ *
+ * v1 blobs go through importPlanPayload (programmeId + disclaimer gates).
+ * Legacy `{ v: 1|2, p }` hashes are still readable so existing links open.
  */
-export function readSharedPlanDetailedFromHash(): RehydrateResult | null {
+export function readSharedPlanDetailedFromHash(): PlanImportResult | null {
   try {
     const hash = window.location.hash;
     if (!hash.startsWith(HASH_PREFIX)) return null;
     const raw = fromBase64Url(hash.slice(HASH_PREFIX.length));
     if (!raw) return null;
-    const data = JSON.parse(raw) as { v?: number; p?: Record<string, unknown> };
-    if ((data.v !== 1 && data.v !== 2) || !data.p || typeof data.p !== 'object') return null;
-    const hasAny = Object.values(data.p).some((ids) => Array.isArray(ids) && ids.length > 0);
+    const data: unknown = JSON.parse(raw);
+    const imported = importPlanPayload(data);
+    if (imported) return imported;
+
+    const legacy = data as { v?: number; p?: Record<string, unknown> };
+    if ((legacy.v !== 1 && legacy.v !== 2) || !legacy.p || typeof legacy.p !== 'object') return null;
+    const hasAny = Object.values(legacy.p).some((ids) => Array.isArray(ids) && ids.length > 0);
     if (!hasAny) return null;
-    return rehydratePlanDetailed(data.p);
+    const result: RehydrateResult = rehydratePlanDetailed(legacy.p);
+    return result;
   } catch {
     return null;
   }

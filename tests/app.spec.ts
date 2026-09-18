@@ -291,7 +291,7 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(page.getByText('Applied Programming Projects', { exact: true }).first()).toBeVisible();
   });
 
-  test('exports selected cross-list allocations in plan JSON v3', async ({ page }) => {
+  test('exports selected cross-list allocations in plan JSON v1', async ({ page }) => {
     await loadExampleOutline(page);
     const allocation = page.getByRole('combobox', { name: /Credit allocation for Numerical Methods for Partial Differential Equations/i });
     await allocation.selectOption('Electives in Data Science');
@@ -301,7 +301,13 @@ test.describe('BASELCAL App Main Functionality', () => {
     const download = await downloadPromise;
     const path = await download.path();
     const exported = JSON.parse(await readFile(path!, 'utf8'));
-    expect(exported.version).toBe(3);
+    expect(exported.v).toBe(1);
+    expect(exported.kind).toBe('baselcal-plan');
+    expect(exported.programmeId).toBe('data-science');
+    expect(exported.disclaimer).toMatch(/not an official University of Basel tool/i);
+    expect(exported.notes).toBeUndefined();
+    expect(exported.shortlist).toBeUndefined();
+    expect(exported.version).toBeUndefined();
     expect(exported.plan.s1).toContainEqual({
       id: 'M-12246',
       allocatedModule: 'Electives in Data Science',
@@ -322,7 +328,8 @@ test.describe('BASELCAL App Main Functionality', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(/carries .* courses .* with their semester/)).toBeVisible();
-    await expect(dialog.getByText(/notes, wishlist, and admission target stay/)).toBeVisible();
+    await expect(dialog.getByText(/Personal notes and wishlist stay/)).toBeVisible();
+    await expect(dialog.getByText(/admission target stay/i)).toHaveCount(0);
     await expect(dialog.getByLabel('QR code for the share link')).toBeVisible();
     await expect(dialog.getByText(/too long for a share link/i)).toHaveCount(0);
     await page.keyboard.press('Escape');
