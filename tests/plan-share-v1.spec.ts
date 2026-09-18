@@ -1,6 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { clearPlanStorage } from './helpers';
+
+function sem1Board(page: Page) {
+  return page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 1/ }).first();
+}
 
 function toBase64Url(input: string): string {
   return Buffer.from(input, 'utf8')
@@ -197,7 +201,7 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
       );
     });
     await page.reload();
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
 
     const blob = await page.evaluate(async () => {
       const { PLAN_DISCLAIMER, PLAN_KIND } = await import('/src/planStorage.ts');
@@ -215,16 +219,16 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
     await writeFile(filePath, JSON.stringify(blob));
     page.once('dialog', (dialog) => void dialog.dismiss());
     await page.locator('input[type="file"]').setInputFiles(filePath);
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
-    await expect(page.getByText(/Numerical Methods for Partial Differential Equations/i)).toHaveCount(0);
+    await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
+    await expect(sem1Board(page).getByText(/Numerical Methods for Partial Differential Equations/i)).toHaveCount(0);
 
     page.once('dialog', (dialog) => void dialog.accept());
     await page.locator('input[type="file"]').setInputFiles([]);
     await page.locator('input[type="file"]').setInputFiles(filePath);
     const report = page.getByRole('dialog', { name: 'Plan imported' });
     await expect(report).toBeVisible();
-    await expect(page.getByText(/Numerical Methods for Partial Differential Equations/i).first()).toBeVisible();
-    await expect(page.getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
+    await expect(sem1Board(page).getByText(/Numerical Methods for Partial Differential Equations/i)).toBeVisible();
+    await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
     await report.getByRole('button', { name: 'Close' }).click();
 
     const downloadPromise = page.waitForEvent('download');
@@ -279,14 +283,14 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
       await dialog.dismiss();
     });
     await page.goto(`/?n=dismiss#p=${toBase64Url(JSON.stringify(good))}`);
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
     await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('12');
     expect(sawDialog).toBe(true);
 
     page.once('dialog', (dialog) => void dialog.accept());
     await page.goto(`/?n=accept#p=${toBase64Url(JSON.stringify(good))}`);
-    await expect(page.getByText(/Numerical Methods for Partial Differential Equations/i).first()).toBeVisible();
-    await expect(page.getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
+    await expect(sem1Board(page).getByText(/Numerical Methods for Partial Differential Equations/i)).toBeVisible();
+    await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
     await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('8');
 
     let prompted = false;
@@ -301,7 +305,7 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
       );
     });
     await page.goto(`/?n=missing#p=${toBase64Url(JSON.stringify(bad))}`);
-    await expect(page.getByText(/Bioinformatics Algorithms/i).first()).toBeVisible();
+    await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
     expect(prompted).toBe(false);
   });
 });
