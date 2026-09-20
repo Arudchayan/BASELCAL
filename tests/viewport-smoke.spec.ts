@@ -7,15 +7,16 @@ import { clearPlanStorage, loadExampleOutline } from './helpers';
  */
 test.describe('viewport critical UI smoke', () => {
   test.beforeEach(async ({ page }) => {
-    await clearPlanStorage(page);
     await page.goto('/');
+    await clearPlanStorage(page);
+    await page.reload();
   });
 
   test('shell, progress, and primary nav remain usable', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'UniBasel DS Planner' })).toBeVisible();
     await expect(page.getByText('Curriculum Progress')).toBeVisible();
     await expect(page.getByRole('button', { name: /Course Discovery/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Timetable/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Timetable view' })).toBeVisible();
 
     const discovery = page.getByRole('button', { name: /Course Discovery/i });
     await discovery.click();
@@ -26,7 +27,7 @@ test.describe('viewport critical UI smoke', () => {
 
   test('timetable agenda path works after loading a plan', async ({ page }) => {
     await loadExampleOutline(page);
-    await page.getByRole('button', { name: /Timetable/i }).click();
+    await page.getByRole('button', { name: 'Timetable view' }).click();
     await expect(page.getByRole('heading', { name: /Weekly Timetable Preview/i })).toBeVisible();
 
     const width = page.viewportSize()?.width ?? 1280;
