@@ -217,67 +217,26 @@ export function ProgressPanel({
 
       <div style={{ marginTop: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         {admissionTarget === 0 && stats.admission === 0 ? null : stats.admission === admissionTarget ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: '#10b981',
-              background: 'rgba(16, 185, 129, 0.1)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              flex: 1,
-              minWidth: 220,
-            }}
-          >
+          <div className="audit-chip audit-chip--ok">
             <CheckCircle2 size={18} /> Admission requirements exactly {stats.admission} CP.
           </div>
         ) : stats.admission > admissionTarget ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: '#ef4444',
-              background: 'rgba(239, 68, 68, 0.1)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              flex: 1,
-              minWidth: 220,
-            }}
-          >
+          <div className="audit-chip audit-chip--bad">
             <AlertCircle size={18} /> Admission overshoot: {stats.admission} / {admissionTarget} CP.
           </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: '#d97706',
-              background: 'rgba(245, 158, 11, 0.1)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              flex: 1,
-              minWidth: 220,
-            }}
-          >
+          <div className="audit-chip audit-chip--warn">
             <AlertCircle size={18} /> Missing {admissionTarget - stats.admission} ECTS of admission requirements.
           </div>
         )}
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color:
-              stats.mscTotal === mscTarget ? '#10b981' : stats.mscTotal > mscTarget ? '#ef4444' : 'var(--text-secondary)',
-            background: stats.mscTotal === mscTarget ? 'rgba(16, 185, 129, 0.1)' : 'var(--border-subtle)',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            flex: 1,
-            minWidth: 220,
-          }}
+          className={
+            stats.mscTotal === mscTarget
+              ? 'audit-chip audit-chip--ok'
+              : stats.mscTotal > mscTarget
+                ? 'audit-chip audit-chip--bad'
+                : 'audit-chip'
+          }
         >
           <Info size={18} /> MSc ECTS:{' '}
           <strong style={{ color: 'var(--text-primary)' }}>
@@ -290,45 +249,23 @@ export function ProgressPanel({
           )}
         </div>
         {isComplete && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: '#10b981',
-              background: 'rgba(16, 185, 129, 0.1)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              flex: 1,
-              minWidth: 220,
-            }}
-          >
+          <div className="audit-chip audit-chip--ok">
             <CheckCircle2 size={18} /> All degree buckets satisfied ({grandTarget} CP).
           </div>
         )}
         {isComplete && hardConflicts.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: '#d97706',
-              background: 'rgba(217, 119, 6, 0.12)',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              flex: 1,
-              minWidth: 220,
-            }}
-          >
+          <div className="audit-chip audit-chip--warn">
             <AlertCircle size={18} /> CP-complete but has mandatory timetable overlaps — resolve before enrolling.
           </div>
         )}
       </div>
 
       {issues.length > 0 && (
-        <div style={{ marginTop: 16, fontSize: 13, color: 'var(--text-secondary)' }}>
-          <strong style={{ color: 'var(--text-primary)' }}>Validation issues</strong>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+        <div className="warn-block">
+          <strong style={{ color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 0 }}>
+            Validation issues
+          </strong>
+          <ul>
             {issues.map((issue, i) => (
               <li key={i}>{issue}</li>
             ))}
@@ -337,9 +274,9 @@ export function ProgressPanel({
       )}
 
       {loadIssues.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
+        <div className="warn-block warn-block--warn">
           <strong>Semester load</strong>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {loadIssues.map((issue, i) => (
               <li key={i}>{issue}</li>
             ))}
@@ -348,9 +285,9 @@ export function ProgressPanel({
       )}
 
       {placementIssues.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#ef4444' }}>
+        <div className="warn-block warn-block--bad" role="alert">
           <strong>Semester offering mismatches</strong>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {placementIssues.map((issue, i) => (
               <li key={i}>{issue}</li>
             ))}
@@ -359,9 +296,9 @@ export function ProgressPanel({
       )}
 
       {hardConflicts.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#ef4444' }}>
+        <div className="warn-block warn-block--bad" role="alert">
           <strong>Mandatory timetable conflicts</strong>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {visibleHardConflicts.map((pair) => (
               <li key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}>
                 <button
@@ -383,9 +320,9 @@ export function ProgressPanel({
       )}
 
       {softConflicts.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
+        <div className="warn-block warn-block--warn">
           <strong>Other timetable overlaps</strong>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {visibleSoftConflicts.map((pair) => (
               <li key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}>
                 <button
@@ -409,32 +346,24 @@ export function ProgressPanel({
       {hasHiddenConflicts && (
         <button
           type="button"
+          className="btn btn--ghost"
           aria-expanded={showAllConflicts}
+          aria-label={showAllConflicts ? 'Show fewer timetable conflicts' : 'Show all timetable conflicts'}
           onClick={() => setShowAllConflicts((visible) => !visible)}
-          style={{
-            alignSelf: 'flex-start',
-            marginTop: '8px',
-            padding: '6px 10px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-subtle)',
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-            fontSize: '12px',
-          }}
+          style={{ alignSelf: 'flex-start', marginTop: 8 }}
         >
           {showAllConflicts ? 'Show fewer conflicts' : 'Show all conflicts'}
         </button>
       )}
 
       {disputedInPlan.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
+        <div className="warn-block warn-block--warn">
           <strong>Disputed module membership (pending program PDF)</strong>
-          <p style={{ margin: '8px 0 0', lineHeight: 1.5 }}>
+          <p>
             Catalog module tags follow the program PDF when known; VV Modules tab may list a different bucket.
             Confirm with Studiensekretariat before counting toward a foundation vs elective.
           </p>
-            <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {disputedInPlan.map(({ course, discrepancy }) => (
               <li key={course.id}>
                 <span title={discrepancy.note}>
@@ -448,13 +377,13 @@ export function ProgressPanel({
       )}
 
       {missingSchedule.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
+        <div className="warn-block warn-block--warn">
           <strong>Schedule unknown — conflict check incomplete</strong>
-          <p style={{ margin: '8px 0 0', lineHeight: 1.5 }}>
+          <p>
             These planned courses have no VV timetable slots, so absence of conflicts does not mean they are
             conflict-free.
           </p>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {missingSchedule.map((c) => (
               <li key={c.id}>
                 {c.title} ({c.code})
@@ -465,14 +394,14 @@ export function ProgressPanel({
       )}
 
       {staleInPlan.length > 0 && (
-        <div style={{ marginTop: 12, fontSize: 13, color: '#d97706' }}>
+        <div className="warn-block warn-block--warn">
           <strong>Verify VV offering before enrolling</strong>
-          <p style={{ margin: '8px 0 0', lineHeight: 1.5 }}>
+          <p>
             {staleInPlan.length} course(s) in your plan have VV semester metadata older than{' '}
             {COVERAGE_POLICY.lastVerified?.date ? 'HS/FS 2026' : 'the current audit window'} (irregular or biennial).
             CP counts still apply; confirm the course runs in your target semester.
           </p>
-          <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.5 }}>
+          <ul>
             {staleInPlan.map((c) => (
               <li key={c.id}>
                 {c.title} ({c.code})
