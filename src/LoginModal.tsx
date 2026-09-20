@@ -50,6 +50,7 @@ export function LoginModal({
     >
       <motion.form
         role="dialog"
+        aria-modal="true"
         aria-labelledby="login-title"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

@@ -9,7 +9,7 @@ test('write README screenshots', async ({ page }) => {
   await page.goto('/');
   await page.screenshot({ path: 'docs/screenshots/board-empty.png', fullPage: true });
 
-  await page.getByRole('button', { name: 'Owner login' }).click();
+  await page.getByRole('button', { name: 'Owner sign in' }).click();
   await page.screenshot({ path: 'docs/screenshots/login.png' });
   await page.getByRole('button', { name: 'Close login' }).click();
 

@@ -46,3 +46,8 @@ vv_msc_ds_official.json
 vv_audit_probe.json
 vv_audit_table.json
 tree.json
+
+.worktrees/
+worktrees/
+tmp/
+

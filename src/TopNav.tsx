@@ -149,8 +149,8 @@ export function TopNav({
             <LogOut size={15} /> Sign out
           </button>
         ) : (
-          <button className="btn btn--ghost" onClick={onShowLogin} aria-label="Owner login">
-            <LogIn size={15} /> Sign in
+          <button className="btn btn--ghost" onClick={onShowLogin} aria-label="Owner sign in">
+            <LogIn size={15} /> Owner sign in
           </button>
         )}
         <button

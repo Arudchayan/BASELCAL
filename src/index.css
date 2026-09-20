@@ -276,7 +276,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 4px;
   border-radius: 9px;
   background: var(--accent-primary);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 10px;
   font-weight: 700;
   display: inline-flex;
@@ -697,6 +697,10 @@ input, select, textarea {
   transition: border-color 0.15s ease;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent-primary); }
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
 input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 /* ---------- Toast ---------- */
@@ -829,12 +833,17 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .timetable-agenda { display: none; }
 .timetable-agenda__day { margin-top: 14px; }
 .timetable-agenda__heading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   margin: 0 0 8px;
+  padding: 6px 0;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+  background: var(--bg-primary);
 }
 .timetable-agenda__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .timetable-agenda__item {
