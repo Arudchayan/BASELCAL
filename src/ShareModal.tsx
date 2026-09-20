@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { buildShareUrl, isShareUrlTooLong, MAX_SHARE_URL_LENGTH } from './share';
 import { courseFullLabel } from './courseLabel';
 import type { ProgrammeId } from './degrees/types';
 import { SEMESTERS, type PlanState } from './types';
+import { useFocusTrap } from './useFocusTrap';
 
 interface ShareModalProps {
   plan: PlanState;
@@ -32,17 +33,10 @@ export function ShareModal({
     [admissionTarget, plan, programmeId],
   );
   const tooLong = isShareUrlTooLong(url);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  useFocusTrap(dialogRef, { onEscape: onClose, initialFocusRef: closeRef });
 
   const copyLink = async () => {
     try {
@@ -65,6 +59,7 @@ export function ShareModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-modal-title"

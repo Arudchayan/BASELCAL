@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { courseFullLabel } from './courseLabel';
 import {
   applyResolvedSchedules,
@@ -7,6 +7,7 @@ import {
   resolveUnicalEvents,
 } from './unical';
 import type { Course } from './types';
+import { useFocusTrap } from './useFocusTrap';
 
 export type UnicalImportResult = {
   courses: Course[];
@@ -27,21 +28,14 @@ interface UnicalImportModalProps {
  * when available.
  */
 export function UnicalImportModal({ onClose, onApply }: UnicalImportModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<UnicalImportResult | null>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  useFocusTrap(dialogRef, { onEscape: onClose, initialFocusRef: inputRef });
 
   const runParse = async () => {
     setError(null);
@@ -80,6 +74,7 @@ export function UnicalImportModal({ onClose, onApply }: UnicalImportModalProps) 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="unical-import-title"

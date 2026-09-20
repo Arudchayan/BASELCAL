@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Calendar, Star, ShieldAlert, X, ChevronRight, Info, Target, GraduationCap } from 'lucide-react';
 import { COURSES } from './courses';
@@ -11,6 +11,8 @@ import { isStaleWatch } from './coveragePolicy';
 import { getPlacementWarnings } from './offering';
 import { eligibleModulesFor, SEMESTERS, type Course, type SemesterId } from './types';
 import { bucketColor } from './moduleColor';
+import { useFocusTrap } from './useFocusTrap';
+import { useMotionPrefs } from './useMotionPrefs';
 
 type ExplorerBucketKey = 'admission' | 'thesis' | 'ml' | 'systems' | 'math' | 'electives';
 
@@ -117,17 +119,17 @@ export const CourseExplorer = ({
   const packRules = getPackRules(programmeId);
   const BUCKETS = bucketsFor(admissionTarget, packRules);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (selectedCourse) setSelectedCourse(null);
-        else onClose();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, selectedCourse]);
+  const explorerRef = useRef<HTMLDivElement>(null);
+  const nestedDialogRef = useRef<HTMLDivElement>(null);
+  const motionPrefs = useMotionPrefs();
+  useFocusTrap(explorerRef, {
+    active: !selectedCourse,
+    onEscape: onClose,
+  });
+  useFocusTrap(nestedDialogRef, {
+    active: !!selectedCourse,
+    onEscape: () => setSelectedCourse(null),
+  });
 
   const coursesByBucket = useMemo(() => {
     const grouped: Record<string, Course[]> = {};
@@ -178,10 +180,11 @@ export const CourseExplorer = ({
 
   return (
     <motion.div
+      ref={explorerRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={motionPrefs.fade}
       className="glass-panel"
       role="dialog"
       aria-modal="true"
@@ -472,14 +475,16 @@ export const CourseExplorer = ({
             onClick={() => setSelectedCourse(null)}
           >
             <motion.div
+              ref={nestedDialogRef}
               key="modal-content"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: motionPrefs.scale(0.95), y: motionPrefs.y(20) }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              exit={{ opacity: 0, scale: motionPrefs.scale(0.95), y: motionPrefs.y(20) }}
+              transition={motionPrefs.spring}
               onClick={(e) => e.stopPropagation()}
               className="glass-panel"
               role="dialog"
+              aria-modal="true"
               aria-label={selectedCourse.title}
               style={{
                 position: 'relative',

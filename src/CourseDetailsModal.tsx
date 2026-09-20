@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, BookOpen, Calendar, CheckCircle2, Maximize2, X, Zap } from 'lucide-react';
 import { getModuleDiscrepancy } from './coveragePolicy';
@@ -6,15 +6,14 @@ import { isStaleWatch } from './coveragePolicy';
 import { isMandatoryAttendance } from './conflicts';
 import { parseOffering } from './offering';
 import { creditModule, eligibleModulesFor, type Course } from './types';
+import { useFocusTrap } from './useFocusTrap';
+import { useMotionPrefs } from './useMotionPrefs';
 
 export function CourseDetailsModal({ course, onClose }: { course: Course; onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const motionPrefs = useMotionPrefs();
+  useFocusTrap(dialogRef, { onEscape: onClose, initialFocusRef: closeRef });
 
   if (!course) return null;
 
@@ -34,9 +33,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        role="dialog"
-        aria-modal="true"
-        aria-label={course.title}
+        transition={motionPrefs.fade}
         style={{
           position: 'fixed',
           inset: 0,
@@ -58,10 +55,14 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
         />
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={course.title}
+          initial={{ opacity: 0, scale: motionPrefs.scale(0.95), y: motionPrefs.y(20) }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          exit={{ opacity: 0, scale: motionPrefs.scale(0.95), y: motionPrefs.y(20) }}
+          transition={motionPrefs.spring}
           className="glass-panel"
           style={{
             position: 'relative',
@@ -153,6 +154,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               )}
             </div>
             <button
+              ref={closeRef}
               onClick={onClose}
               aria-label="Close course details"
               style={{

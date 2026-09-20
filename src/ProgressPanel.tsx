@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, BookOpen, CheckCircle2, Info } from 'lucide-react';
 import { MetricBox } from './MetricBox';
@@ -13,6 +13,45 @@ import type { Course, PlanState, SemesterId } from './types';
 import { creditModule, SEMESTER_IDS } from './types';
 import { SEM_LOAD_MAX } from './types';
 import { bucketColor } from './moduleColor';
+import { useMotionPrefs } from './useMotionPrefs';
+
+type ConflictPair = {
+  sem: SemesterId;
+  day: string;
+  timeA: string;
+  timeB: string;
+  courseA: Course;
+  courseB: Course;
+  hard: boolean;
+};
+
+function ConflictRow({ pair }: { pair: ConflictPair }) {
+  const [expanded, setExpanded] = useState(false);
+  const reactId = useId();
+  const detailId = `${reactId}-detail`;
+  const summary = `${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})`;
+  const detail = `Conflict: ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code}). ${pair.day}: ${pair.timeA} overlaps ${pair.timeB} in ${pair.sem.toUpperCase()}.`;
+
+  return (
+    <li>
+      <button
+        type="button"
+        className="conflict-row"
+        aria-expanded={expanded}
+        aria-controls={detailId}
+        title={`Show conflict details for ${pair.courseA.title} (${pair.courseA.code}) and ${pair.courseB.title} (${pair.courseB.code})`}
+        onClick={() => setExpanded((open) => !open)}
+      >
+        {summary}
+      </button>
+      {expanded && (
+        <div id={detailId} className="conflict-suggest" role="region" aria-label="Conflict details">
+          {detail}
+        </div>
+      )}
+    </li>
+  );
+}
 
 const BREAKDOWN_KEYS = ['admission', 'math', 'ml', 'systems', 'electives', 'thesis'] as const;
 
@@ -27,6 +66,7 @@ export function ProgressPanel({
 }) {
   const { programmeId, manifest } = useProgramme();
   const packRules = getPackRules(programmeId);
+  const motionPrefs = useMotionPrefs();
   const [showAllConflicts, setShowAllConflicts] = useState(false);
   const courses = providedCourses ?? allPlannedCourses(plan);
   const { stats, buckets, isComplete, issues, rules } = evaluatePack(
@@ -107,9 +147,9 @@ export function ProgressPanel({
 
   return (
     <motion.div
-      initial={{ y: 20, opacity: 0 }}
+      initial={{ y: motionPrefs.y(20), opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.2 }}
+      transition={motionPrefs.reduceMotion ? motionPrefs.fade : { ...motionPrefs.slide, delay: 0.2 }}
       className="glass-panel"
       style={{ padding: '24px' }}
     >
@@ -300,20 +340,10 @@ export function ProgressPanel({
           <strong>Mandatory timetable conflicts</strong>
           <ul>
             {visibleHardConflicts.map((pair) => (
-              <li key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}>
-                <button
-                  type="button"
-                  className="conflict-row"
-                  title={`Show conflict details for ${pair.courseA.title} (${pair.courseA.code}) and ${pair.courseB.title} (${pair.courseB.code})`}
-                  onClick={() =>
-                    window.alert(
-                      `Conflict: ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
-                    )
-                  }
-                >
-                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})`}
-                </button>
-              </li>
+              <ConflictRow
+                key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}
+                pair={pair}
+              />
             ))}
           </ul>
         </div>
@@ -324,20 +354,10 @@ export function ProgressPanel({
           <strong>Other timetable overlaps</strong>
           <ul>
             {visibleSoftConflicts.map((pair) => (
-              <li key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}>
-                <button
-                  type="button"
-                  className="conflict-row"
-                  title={`Show conflict details for ${pair.courseA.title} (${pair.courseA.code}) and ${pair.courseB.title} (${pair.courseB.code})`}
-                  onClick={() =>
-                    window.alert(
-                      `Conflict: ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})\n${pair.day} ${pair.timeA} vs ${pair.timeB}`,
-                    )
-                  }
-                >
-                  {`${pair.day} ${pair.timeA} vs ${pair.timeB} — ${pair.courseA.title} (${pair.courseA.code}) vs ${pair.courseB.title} (${pair.courseB.code})`}
-                </button>
-              </li>
+              <ConflictRow
+                key={`${pair.sem}-${pair.day}-${pair.courseA.id}-${pair.courseB.id}`}
+                pair={pair}
+              />
             ))}
           </ul>
         </div>

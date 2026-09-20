@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, X } from 'lucide-react';
+import { useFocusTrap } from './useFocusTrap';
+import { useMotionPrefs } from './useMotionPrefs';
 
 export function LoginModal({
   onClose,
@@ -13,6 +15,9 @@ export function LoginModal({
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const dialogRef = useRef<HTMLFormElement>(null);
+  const motionPrefs = useMotionPrefs();
+  useFocusTrap(dialogRef, { onEscape: onClose });
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -45,16 +50,19 @@ export function LoginModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={motionPrefs.fade}
       className="login-backdrop"
       onClick={onClose}
     >
       <motion.form
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="login-title"
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: motionPrefs.y(12) }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 12 }}
+        exit={{ opacity: 0, y: motionPrefs.y(12) }}
+        transition={motionPrefs.fade}
         className="glass-panel login-card"
         onClick={(event) => event.stopPropagation()}
         onSubmit={(event) => void submit(event)}

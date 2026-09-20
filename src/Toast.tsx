@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useMotionPrefs } from './useMotionPrefs';
 
 export type ToastData = {
   message: string;
@@ -16,16 +17,17 @@ export function Toast({
   toast: ToastData | null;
   onDismiss: () => void;
 }) {
+  const motionPrefs = useMotionPrefs();
   return (
     <AnimatePresence>
       {toast && (
         <motion.div
           className="toast no-print"
           role="status"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: motionPrefs.y(10) }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          exit={{ opacity: 0, y: motionPrefs.y(10) }}
+          transition={motionPrefs.slide}
         >
           {toast.message}
           {toast.action && (

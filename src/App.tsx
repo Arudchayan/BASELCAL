@@ -48,6 +48,7 @@ import {
 } from './planStorage';
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { readSharedPlanDetailedFromHash, clearShareHash } from './share';
+import { useMotionPrefs } from './useMotionPrefs';
 import { downloadIcs } from './ics';
 import { courseFullLabel } from './courseLabel';
 import {
@@ -111,6 +112,7 @@ const daysSince = (iso: string): number | null => {
 
 function App() {
   const { programmeId, setProgrammeId, manifest, enabledProgrammes } = useProgramme();
+  const motionPrefs = useMotionPrefs();
   const [initialBoot] = useState(() => loadPlanForProgrammeDetailed(programmeId));
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
     loadJson<'dark' | 'light'>(STORAGE_KEYS.theme, 'light'),
@@ -734,10 +736,10 @@ function App() {
 
       <AnimatePresence mode="wait">
         {viewMode === 'board' ? (
-          <motion.div key="board" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+          <motion.div key="board" initial={{ opacity: 0, y: motionPrefs.y(8) }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: motionPrefs.y(-8) }} transition={motionPrefs.slide}>
             <DragDropContext onDragEnd={onDragEnd}>
               <div className="board-layout" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, marginTop: 20 }}>
-                <motion.div initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass-panel no-print catalog-panel" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}>
+                <motion.div initial={{ x: motionPrefs.reduceMotion ? 0 : -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={motionPrefs.reduceMotion ? motionPrefs.fade : { duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass-panel no-print catalog-panel" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}>
                   <div style={{ padding: 16, borderBottom: '1px solid var(--border-subtle)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                       <h2 style={{ fontSize: 16 }}>Course Catalog</h2>
@@ -851,9 +853,9 @@ function App() {
                   <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} admissionTarget={admissionTarget} />
 
                   <motion.div
-                    initial={{ y: 16, opacity: 0 }}
+                    initial={{ y: motionPrefs.y(16), opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.15, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    transition={motionPrefs.reduceMotion ? motionPrefs.fade : { delay: 0.15, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className="semester-grid"
                     style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, flex: 1 }}
                   >
@@ -922,7 +924,7 @@ function App() {
             </DragDropContext>
           </motion.div>
         ) : (
-          <motion.div key="timetable" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} style={{ minHeight: 600, marginTop: 20 }}>
+          <motion.div key="timetable" initial={{ opacity: 0, y: motionPrefs.y(8) }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: motionPrefs.y(-8) }} transition={motionPrefs.slide} style={{ minHeight: 600, marginTop: 20 }}>
             <Suspense fallback={<div style={{ padding: 24, color: 'var(--text-muted)' }}>Loading timetable…</div>}>
               <Timetable
                 plan={plan}
