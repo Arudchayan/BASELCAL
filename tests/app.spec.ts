@@ -185,7 +185,9 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(moveSelect).toBeVisible();
     await moveSelect.selectOption('s2');
     await expect(page.getByText(/Moved Bioinformatics Algorithms \(45401\) → Sem 2/i)).toBeVisible();
-    await expect(page.locator('[data-rbd-droppable-id="s2"]').getByText(/Bioinformatics Algorithms/)).toBeVisible();
+    await expect(
+      page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2 ·/ }).getByText(/Bioinformatics Algorithms/),
+    ).toBeVisible();
   });
 
   test('catalog shows an empty state with a working clear-filters action', async ({ page }) => {
