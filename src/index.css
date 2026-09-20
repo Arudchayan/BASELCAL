@@ -486,6 +486,16 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--border-strong);
   box-shadow: 0 3px 12px -6px var(--glass-shadow);
 }
+.course-card__code:hover,
+.course-card__code:focus-visible {
+  color: var(--accent-primary) !important;
+  border-color: var(--border-subtle) !important;
+  background: var(--glass-hover-bg) !important;
+}
+.course-card__code:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
 
 .module-dot {
   display: inline-block;

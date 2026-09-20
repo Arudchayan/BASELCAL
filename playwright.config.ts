@@ -18,6 +18,31 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /viewport-smoke\.spec\.ts/,
+    },
+    {
+      name: 'viewport-360',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 360, height: 800 },
+      },
+      testMatch: /viewport-smoke\.spec\.ts/,
+    },
+    {
+      name: 'viewport-390',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 390, height: 844 },
+      },
+      testMatch: /viewport-smoke\.spec\.ts/,
+    },
+    {
+      name: 'viewport-768',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 1024 },
+      },
+      testMatch: /viewport-smoke\.spec\.ts/,
     },
   ],
   webServer: {
