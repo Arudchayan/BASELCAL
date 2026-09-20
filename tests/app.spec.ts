@@ -174,6 +174,22 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(page.getByText(/Added Bioinformatics Algorithms \(45401\) → Sem 1/i)).toBeVisible();
   });
 
+  test('planned card Move to control relocates a course between semesters', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Search courses').fill('45401');
+    const quickAdd = page.locator('button.card-quick-add');
+    await expect(quickAdd).toHaveCount(1);
+    await quickAdd.click();
+    await expect(page.getByText(/Added Bioinformatics Algorithms \(45401\) → Sem 1/i)).toBeVisible();
+    const moveSelect = page.getByLabel(/Move Bioinformatics Algorithms \(45401\) to another semester/i);
+    await expect(moveSelect).toBeVisible();
+    await moveSelect.selectOption('s2');
+    await expect(page.getByText(/Moved Bioinformatics Algorithms \(45401\) → Sem 2/i)).toBeVisible();
+    await expect(
+      page.locator('.semester-grid .glass-panel').filter({ hasText: /Sem 2 ·/ }).getByText(/Bioinformatics Algorithms/),
+    ).toBeVisible();
+  });
+
   test('catalog shows an empty state with a working clear-filters action', async ({ page }) => {
     await page.goto('/');
     await page.getByLabel('Search courses').fill('zzz-no-such-course');

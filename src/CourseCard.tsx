@@ -4,8 +4,9 @@ import { AlertCircle, Maximize2, Plus, StickyNote, X, Zap } from 'lucide-react';
 import { getModuleDiscrepancy, isDisputedModule } from './coveragePolicy';
 import { parseOffering, primaryMismatchMessage } from './offering';
 import { isStaleWatch } from './coveragePolicy';
-import { creditModule, eligibleModulesFor, type Course, type CourseModule, type SemesterId } from './types';
+import { creditModule, eligibleModulesFor, SEMESTERS, type Course, type CourseModule, type SemesterId } from './types';
 import { getModuleColor } from './moduleColor';
+import { courseFullLabel } from './courseLabel';
 
 type CourseCardProps = {
   course: Course;
@@ -19,6 +20,7 @@ type CourseCardProps = {
   onQuickAdd?: () => void;
   quickAddHint?: string;
   onAllocationChange?: (module: CourseModule) => void;
+  onMoveToSemester?: (destSem: SemesterId) => void;
 };
 
 function CourseCardInner({
@@ -33,6 +35,7 @@ function CourseCardInner({
   onQuickAdd,
   quickAddHint,
   onAllocationChange,
+  onMoveToSemester,
 }: CourseCardProps) {
   const [copyToast, setCopyToast] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -207,7 +210,7 @@ function CourseCardInner({
                   alignItems: 'baseline',
                   gap: 5,
                 }}
-                title="Opens official course page (also copies course code)"
+                title={`${courseFullLabel(course)} — opens official course page (also copies course code)`}
               >
                 {course.title}
                 <Zap size={11} style={{ color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'center' }} />
@@ -299,6 +302,32 @@ function CourseCardInner({
             </label>
           )}
 
+          {isPlanned && currentSemId && onMoveToSemester && (
+            <label
+              style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              Move to
+              <select
+                aria-label={`Move ${courseFullLabel(course)} to another semester`}
+                value={currentSemId}
+                onChange={(e) => {
+                  const dest = e.target.value as SemesterId;
+                  if (dest !== currentSemId) onMoveToSemester(dest);
+                }}
+                onClick={(e) => e.stopPropagation()}
+                style={{ flex: 1, minWidth: 0, fontSize: 11, padding: '4px 6px', minHeight: 32 }}
+              >
+                {SEMESTERS.map((sem) => (
+                  <option key={sem.id} value={sem.id}>
+                    {sem.id.toUpperCase()}
+                    {sem.id === currentSemId ? ' · here' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           {mismatchWarning && (
             <div
               style={{
@@ -339,6 +368,7 @@ function CourseCardInner({
                   value={draftNote}
                   onChange={(e) => scheduleFlush(e.target.value)}
                   onBlur={flushNote}
+                  aria-label={`Personal note for ${courseFullLabel(course)}`}
                   placeholder="Add personal notes here (e.g. prerequisite missing)..."
                   style={{
                     width: '100%',
