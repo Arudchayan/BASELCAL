@@ -436,6 +436,25 @@ function App() {
     if (removed) showToast(`Removed ${courseFullLabel(removed)}`, { label: 'Undo', onClick: undo });
   };
 
+  const moveCourseToSemester = (sourceSem: SemesterId, index: number, destSem: SemesterId) => {
+    if (sourceSem === destSem) return;
+    const movedCourse = plan[sourceSem]?.[index];
+    if (!movedCourse) return;
+    if (plan[destSem]?.some((c) => c.id === movedCourse.id)) {
+      showToast(`Already in plan: ${courseFullLabel(movedCourse)}`);
+      return;
+    }
+    updatePlan((prev) => {
+      const newSourceItems = Array.from(prev[sourceSem]);
+      const newDestItems = Array.from(prev[destSem]);
+      const [movedItem] = newSourceItems.splice(index, 1);
+      if (!movedItem || newDestItems.some((c) => c.id === movedItem.id)) return prev;
+      newDestItems.push(movedItem);
+      return { ...prev, [sourceSem]: newSourceItems, [destSem]: newDestItems };
+    });
+    showToast(`Moved ${courseFullLabel(movedCourse)} → ${semShortLabel(destSem)}`, { label: 'Undo', onClick: undo });
+  };
+
   const loadPreset = () => {
     const admissionLine = EXAMPLE_PLAN_ADMISSION_TARGET > 0
       ? `• It also demonstrates a typical ${EXAMPLE_PLAN_ADMISSION_TARGET} CP admission (Auflagen) package\n` +
@@ -887,6 +906,7 @@ function App() {
                                     onNoteChange={(text) => updateNote(course.id, text)}
                                     onShowDetails={() => setActiveCourseDetails(course)}
                                     onAllocationChange={(module) => allocateCourse(semId, index, module)}
+                                    onMoveToSemester={(destSem) => moveCourseToSemester(semId, index, destSem)}
                                   />
                                 ))}
                                 {provided.placeholder}
