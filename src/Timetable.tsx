@@ -182,6 +182,7 @@ export function Timetable({
 
       {conflicts.length > 0 && (
         <div
+          role="alert"
           style={{
             marginBottom: 16,
             padding: '14px 16px',
@@ -244,7 +245,7 @@ export function Timetable({
       </div>
 
       {activeSem !== 's1' && (
-        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'rgba(217, 119, 6, 0.1)', borderLeft: '3px solid var(--warn)', color: 'var(--text-secondary)', fontSize: 12.5, lineHeight: 1.5 }}>
+        <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'var(--warn-bg)', borderLeft: '3px solid var(--warn)', color: 'var(--text-secondary)', fontSize: 12.5, lineHeight: 1.5 }}>
           <strong style={{ color: 'var(--warn)' }}>Provisional timetable.</strong> Spring 2027 and later offerings and
           meeting times have not yet been audited against the live VV semester. Treat this as a planning sketch and
           recheck it before enrollment.

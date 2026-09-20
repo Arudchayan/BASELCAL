@@ -42,7 +42,7 @@ test.describe('OSS flows', () => {
 
   test('owner login dialog opens without creating an account', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'Owner login' }).click();
+    await page.getByRole('button', { name: 'Owner sign in' }).click();
     const dialog = page.getByRole('dialog', { name: 'Owner login' });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(/create account/i)).toHaveCount(0);
@@ -71,7 +71,7 @@ test.describe('OSS flows', () => {
     await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
     await page.getByRole('button', { name: 'Sign out' }).click();
 
-    await expect(page.getByRole('button', { name: 'Owner login' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Owner sign in' })).toBeVisible();
     // Allow post-reload persist effects to settle (they may rewrite empty notes/shortlist).
     await page.waitForTimeout(400);
     const leftover = await page.evaluate(() => ({
