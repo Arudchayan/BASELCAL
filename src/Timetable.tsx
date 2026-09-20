@@ -6,7 +6,7 @@ import {
   findConflicts,
   isMandatoryAttendance,
 } from './conflicts';
-import type { PlanState, SemesterId } from './types';
+import type { Course, PlanState, SemesterId } from './types';
 import { creditModule, SEMESTERS } from './types';
 import { courseFullLabel, displayCode } from './courseLabel';
 import { CampusRoutePlanner } from './CampusRoutePlanner';
@@ -41,6 +41,7 @@ export function Timetable({
   onExportSemester,
   onExportCourse,
   onImportUnical,
+  onShowDetails,
 }: {
   plan: PlanState;
   activeSem: SemesterId;
@@ -48,6 +49,7 @@ export function Timetable({
   onExportSemester: () => void;
   onExportCourse: (courseId: string) => void;
   onImportUnical?: () => void;
+  onShowDetails?: (course: Course) => void;
 }) {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -416,7 +418,7 @@ export function Timetable({
           const sessions = collectDaySessions(plannedCourses, d, weekMonday);
           if (sessions.length === 0) return null;
           return (
-            <div key={d} className="timetable-agenda__day">
+            <section key={d} className="timetable-agenda__day">
               <h4 className="timetable-agenda__heading">{d}</h4>
               <ul className="timetable-agenda__list">
                 {sessions.map((sess, i) => (
@@ -437,13 +439,29 @@ export function Timetable({
                         <Download size={12} strokeWidth={2.25} aria-hidden />
                       </button>
                     </div>
-                    <div className="timetable-agenda__code">{displayCode(sess.course)}</div>
-                    <div className="timetable-agenda__title">{sess.course.title}</div>
-                    <div className="timetable-agenda__room">{sess.room}</div>
+                    {onShowDetails ? (
+                      <button
+                        type="button"
+                        className="timetable-agenda__details"
+                        onClick={() => onShowDetails(sess.course)}
+                        aria-label={`Details for ${courseFullLabel(sess.course)}`}
+                      >
+                        <span className="timetable-agenda__code">{displayCode(sess.course)}</span>
+                        <span className="timetable-agenda__title">{sess.course.title}</span>
+                        <span className="timetable-agenda__room">{sess.room}</span>
+                        <span className="timetable-agenda__hint">Tap for details</span>
+                      </button>
+                    ) : (
+                      <>
+                        <div className="timetable-agenda__code">{displayCode(sess.course)}</div>
+                        <div className="timetable-agenda__title">{sess.course.title}</div>
+                        <div className="timetable-agenda__room">{sess.room}</div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           );
         })}
       </div>
