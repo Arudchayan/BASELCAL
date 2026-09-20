@@ -320,8 +320,8 @@ function CourseCardInner({
               >
                 {SEMESTERS.map((sem) => (
                   <option key={sem.id} value={sem.id}>
-                    {sem.title.split('·')[0].trim()}
-                    {sem.id === currentSemId ? ' (current)' : ''}
+                    {sem.id.toUpperCase()}
+                    {sem.id === currentSemId ? ' · here' : ''}
                   </option>
                 ))}
               </select>
