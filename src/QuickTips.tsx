@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Send, X } from 'lucide-react';
 import { COURSES } from './courses';
 import { getPackRules } from './degrees/registry';
 import { useProgramme } from './programmeContext';
+import { useFocusTrap } from './useFocusTrap';
+import { useMotionPrefs } from './useMotionPrefs';
 
 /** Keyword tip helper — not an LLM. Labeled honestly. */
 export function QuickTips({
@@ -16,6 +18,12 @@ export function QuickTips({
   const { programmeId } = useProgramme();
   const packRules = getPackRules(programmeId);
   const [isOpen, setIsOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const motionPrefs = useMotionPrefs();
+  useFocusTrap(dialogRef, {
+    active: isOpen,
+    onEscape: () => setIsOpen(false),
+  });
   const [messages, setMessages] = useState<{ sender: 'bot' | 'user'; text: string }[]>([
     {
       sender: 'bot',
@@ -54,8 +62,8 @@ export function QuickTips({
   return (
     <>
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.96 }}
+        whileHover={motionPrefs.reduceMotion ? undefined : { scale: 1.05 }}
+        whileTap={motionPrefs.reduceMotion ? undefined : { scale: 0.96 }}
         onClick={() => setIsOpen(true)}
         aria-label="Open quick tips"
         style={{
@@ -82,11 +90,14 @@ export function QuickTips({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            ref={dialogRef}
+            initial={{ opacity: 0, y: motionPrefs.y(40) }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
+            exit={{ opacity: 0, y: motionPrefs.y(40) }}
+            transition={motionPrefs.fade}
             className="glass-panel tips-panel"
             role="dialog"
+            aria-modal="true"
             aria-label="Quick tips"
             style={{
               position: 'fixed',

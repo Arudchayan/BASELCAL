@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { courseById } from './planStorage';
 import { courseFullLabel } from './courseLabel';
 import type { Course } from './types';
+import { useFocusTrap } from './useFocusTrap';
 
 export interface ImportReportData {
   kept: { semTitle: string; courses: Course[] }[];
@@ -23,22 +24,16 @@ interface ImportReportModalProps {
  * as duplicates — replacing the old single-alert summary wall.
  */
 export function ImportReportModal({ report, onClose }: ImportReportModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  useFocusTrap(dialogRef, { onEscape: onClose, initialFocusRef: closeRef });
 
   const keptCount = report.kept.reduce((n, section) => n + section.courses.length, 0);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="import-report-title"
