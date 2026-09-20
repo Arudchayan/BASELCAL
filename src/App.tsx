@@ -933,6 +933,7 @@ function App() {
                 onExportSemester={handleExportSemester}
                 onExportCourse={handleExportCourse}
                 onImportUnical={() => setShowUnicalImport(true)}
+                onShowDetails={setActiveCourseDetails}
               />
             </Suspense>
           </motion.div>
