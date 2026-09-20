@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -8,6 +8,15 @@ const FOCUSABLE_SELECTOR = [
   'select:not([disabled])',
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
+
+type TrapEntry = {
+  id: symbol;
+  container: HTMLElement;
+  onEscapeRef: { current?: () => void };
+};
+
+/** Innermost / most recently activated trap wins Escape and Tab cycling. */
+const trapStack: TrapEntry[] = [];
 
 function listFocusable(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((el) => {
@@ -21,7 +30,8 @@ function listFocusable(container: HTMLElement): HTMLElement[] {
 
 /**
  * Keep keyboard focus inside a dialog while it is active, restore focus on close,
- * and optionally handle Escape. Nested dialogs should activate only the innermost trap.
+ * and optionally handle Escape. Nested dialogs should activate only the innermost trap;
+ * independently stacked modals use a LIFO stack so the topmost layer receives Escape.
  */
 export function useFocusTrap(
   containerRef: RefObject<HTMLElement | null>,
@@ -35,6 +45,11 @@ export function useFocusTrap(
     initialFocusRef?: RefObject<HTMLElement | null>;
   } = {},
 ): void {
+  const onEscapeRef = useRef(onEscape);
+  onEscapeRef.current = onEscape;
+  const initialFocusRefStable = useRef(initialFocusRef);
+  initialFocusRefStable.current = initialFocusRef;
+
   useEffect(() => {
     if (!active) return;
     const container = containerRef.current;
@@ -47,7 +62,7 @@ export function useFocusTrap(
       container.setAttribute('tabindex', '-1');
     }
 
-    const preferred = initialFocusRef?.current;
+    const preferred = initialFocusRefStable.current?.current;
     if (preferred && container.contains(preferred)) {
       preferred.focus();
     } else {
@@ -55,12 +70,21 @@ export function useFocusTrap(
       (first ?? container).focus();
     }
 
+    const id = Symbol('focus-trap');
+    const entry: TrapEntry = { id, container, onEscapeRef };
+    trapStack.push(entry);
+
+    const isTop = () => trapStack[trapStack.length - 1]?.id === id;
+
     const onKeyDown = (event: KeyboardEvent) => {
+      if (!isTop()) return;
+
       if (event.key === 'Escape') {
-        if (!onEscape) return;
+        const handler = onEscapeRef.current;
+        if (!handler) return;
         event.preventDefault();
         event.stopPropagation();
-        onEscape();
+        handler();
         return;
       }
 
@@ -94,7 +118,15 @@ export function useFocusTrap(
     document.addEventListener('keydown', onKeyDown, true);
     return () => {
       document.removeEventListener('keydown', onKeyDown, true);
-      previouslyFocused?.focus?.();
+      const idx = trapStack.findIndex((trap) => trap.id === id);
+      if (idx >= 0) trapStack.splice(idx, 1);
+      const remaining = trapStack[trapStack.length - 1];
+      if (remaining) {
+        const focusable = listFocusable(remaining.container);
+        (focusable[0] ?? remaining.container).focus();
+      } else {
+        previouslyFocused?.focus?.();
+      }
     };
-  }, [active, containerRef, initialFocusRef, onEscape]);
+  }, [active, containerRef]);
 }
