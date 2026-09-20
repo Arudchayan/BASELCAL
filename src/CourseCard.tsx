@@ -185,9 +185,32 @@ function CourseCardInner({
               paddingRight: 30,
             }}
           >
-            <span className="num" style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0 }}>
+            <button
+              type="button"
+              className="num course-card__code"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                void copyCode();
+              }}
+              aria-label={`Copy course code ${course.code}`}
+              title={`Copy course code ${course.code}`}
+              style={{
+                fontSize: 10.5,
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                flexShrink: 0,
+                padding: '2px 4px',
+                margin: '-2px -4px',
+                border: '1px solid transparent',
+                borderRadius: 4,
+                background: 'transparent',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
               {course.code}
-            </span>
+            </button>
             <span className="num" style={{ fontSize: 10.5, color: 'var(--text-muted)', flexShrink: 0 }}>
               {course.cp} CP
             </span>
@@ -199,10 +222,7 @@ function CourseCardInner({
                 target="_blank"
                 rel="noopener noreferrer"
                 onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void copyCode();
-                }}
+                onClick={(e) => e.stopPropagation()}
                 style={{
                   color: 'inherit',
                   textDecoration: 'none',
@@ -210,10 +230,11 @@ function CourseCardInner({
                   alignItems: 'baseline',
                   gap: 5,
                 }}
-                title={`${courseFullLabel(course)} — opens official course page (also copies course code)`}
+                title={`${courseFullLabel(course)} — opens official course page`}
+                aria-label={`${course.title} (opens official course page)`}
               >
                 {course.title}
-                <Zap size={11} style={{ color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'center' }} />
+                <Zap size={11} style={{ color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'center' }} aria-hidden />
               </a>
             </h4>
             <button
