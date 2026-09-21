@@ -246,6 +246,9 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).toContain('BEGIN:VTIMEZONE');
     expect(calendar).toContain('TZID:Europe/Zurich');
     expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:');
+    expect(calendar).not.toMatch(/DTSTART;TZID=Europe\/Zurich:\d{8}T\d{6}Z/);
+    expect(calendar).not.toMatch(/DTEND;TZID=Europe\/Zurich:\d{8}T\d{6}Z/);
+    expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:20260915T081500');
     expect(calendar).toContain('BEGIN:VALARM');
     expect(calendar).toContain('TRIGGER:-PT10M');
     expect(calendar).toContain('SEQUENCE:0');
@@ -266,6 +269,9 @@ test.describe('BASELCAL App Main Functionality', () => {
     expect(calendar).not.toContain('· S2 ·');
     expect(calendar).not.toContain('· S3 ·');
     expect(calendar).not.toContain('· S4 ·');
+    expect(calendar).toContain('DTSTART;TZID=Europe/Zurich:20260915T081500');
+    expect(calendar).toContain('DTEND;TZID=Europe/Zurich:20260915T100000');
+    expect(calendar).not.toMatch(/DTSTART;TZID=Europe\/Zurich:\d{8}T\d{6}Z/);
   });
 
   test('timetable session blob exports only that course', async ({ page }) => {

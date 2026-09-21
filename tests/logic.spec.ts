@@ -557,4 +557,75 @@ test.describe('Degree accuracy & storage', () => {
     expect(ics).toContain('Bioinformatics Algorithms');
     expect(ics).not.toContain('64323');
   });
+
+  test('ICS TRUST: Zurich wall clock, VTIMEZONE, stable UIDs, VALARM does not move DTSTART', async ({ page }) => {
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const { buildIcs } = await import('/src/ics.ts');
+      const { COURSES } = await import('/src/courses.ts');
+      const lti = COURSES.find((c) => c.id === 'E-69469')!;
+      const thesis = COURSES.find((c) => c.id === 'T-THESIS')!;
+      const hpc = COURSES.find((c) => c.id === 'S-17164')!;
+      const plan = { s1: [lti, thesis], s2: [hpc], s3: [], s4: [] };
+      const thesisOnly = { s1: [thesis], s2: [], s3: [], s4: [] };
+      const fullA = buildIcs(plan as never, 'disclaimer');
+      const fullB = buildIcs(plan as never, 'disclaimer');
+      const s1 = buildIcs(plan as never, 'disclaimer', ['s1']);
+      const skipped = buildIcs(thesisOnly as never, 'disclaimer');
+      const uids = (ics: string) => [...ics.matchAll(/^UID:(.+)$/gm)].map((m) => m[1]);
+      const vevents = (ics: string) =>
+        ics
+          .split('BEGIN:VEVENT')
+          .slice(1)
+          .map((block) => block.split('END:VEVENT')[0]);
+      return {
+        fullA,
+        fullB,
+        s1,
+        skipped,
+        uidsA: uids(fullA),
+        uidsB: uids(fullB),
+        events: vevents(fullA),
+      };
+    });
+
+    expect(result.fullA).toContain('BEGIN:VTIMEZONE');
+    expect(result.fullA).toContain('TZID:Europe/Zurich');
+    expect(result.fullA).toContain('TZNAME:CET');
+    expect(result.fullA).toContain('TZNAME:CEST');
+    expect(result.fullA).toContain('TZOFFSETTO:+0100');
+    expect(result.fullA).toContain('TZOFFSETTO:+0200');
+    expect(result.fullA).not.toMatch(/TZOFFSETTO:[+-](?!0100|0200)\d{4}/);
+
+    // VV 08:15 Tuesday stays 08:15 Basel wall clock — TZID, no trailing Z.
+    expect(result.fullA).toContain('DTSTART;TZID=Europe/Zurich:20260915T081500');
+    expect(result.fullA).toContain('DTEND;TZID=Europe/Zurich:20260915T100000');
+    expect(result.fullA).not.toMatch(/DTSTART;TZID=Europe\/Zurich:\d{8}T\d{6}Z/);
+    expect(result.fullA).not.toMatch(/DTEND;TZID=Europe\/Zurich:\d{8}T\d{6}Z/);
+    const afterTimezone = result.fullA.split('END:VTIMEZONE').pop() ?? '';
+    expect(afterTimezone).not.toMatch(/^DTSTART:/m);
+    expect(afterTimezone).not.toMatch(/^DTEND:/m);
+
+    expect(result.fullA).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+    expect(result.uidsA.length).toBeGreaterThan(0);
+    expect(result.uidsA).toEqual(result.uidsB);
+    expect(result.uidsA.join('\n')).not.toMatch(/UTC|GMT|TZID|Europe\/Zurich/i);
+
+    for (const event of result.events) {
+      expect(event).toMatch(/DTSTART;TZID=Europe\/Zurich:\d{8}T\d{6}\r?\n/);
+      expect(event).toContain('BEGIN:VALARM');
+      expect(event).toContain('TRIGGER:-PT10M');
+      const alarm = event.slice(event.indexOf('BEGIN:VALARM'), event.indexOf('END:VALARM'));
+      expect(alarm).not.toContain('DTSTART');
+      expect(alarm).not.toContain('DTEND');
+    }
+
+    expect(result.s1).toContain('DTSTART;TZID=Europe/Zurich:20260915T081500');
+    expect(result.s1).toContain('DTEND;TZID=Europe/Zurich:20260915T100000');
+    expect(result.s1).not.toContain('DTSTART;TZID=Europe/Zurich:20270225T101500');
+    expect(result.fullA).toContain('DTSTART;TZID=Europe/Zurich:20270225T101500');
+
+    expect(result.skipped).toContain('BEGIN:VCALENDAR');
+    expect(result.skipped).not.toContain('BEGIN:VEVENT');
+  });
 });
