@@ -303,10 +303,11 @@ test.describe('BASELCAL App Main Functionality', () => {
     await expect(page.getByText(/9 courses matched/i)).toBeVisible({ timeout: 30000 });
     await page.getByRole('button', { name: 'Replace Sem 1' }).click();
     await expect(page.getByRole('heading', { name: 'Weekly Timetable Preview' })).toBeVisible();
-    // Default s1 week is Mon 14.09.2026 — Applied Programming starts 21.09
+    const weekInput = page.getByLabel('Timetable week date');
+    // Pin HS26 week 1 so this assertion is independent of "today" once teaching has started.
+    await weekInput.fill('2026-09-14');
     await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toBeVisible();
     await expect(page.getByText(/Applied Programming Projects \(64323\)/i)).toBeVisible();
-    const weekInput = page.getByLabel('Timetable week date');
     await weekInput.fill('2026-09-21');
     await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toHaveCount(0);
     // Now visible as a Mon 14:15 grid/agenda session
