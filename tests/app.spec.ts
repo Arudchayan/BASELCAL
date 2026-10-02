@@ -301,10 +301,19 @@ test.describe('BASELCAL App Main Functionality', () => {
       .getByRole('button', { name: 'Replace Sem 1' })
       .click();
     await expect(page.getByRole('heading', { name: 'Weekly Timetable Preview' })).toBeVisible();
-    // Default s1 week is Mon 14.09.2026 — Applied Programming starts 21.09
-    await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toBeVisible();
-    await expect(page.getByText(/Applied Programming Projects \(64323\)/i)).toBeVisible();
+    // Pin the week explicitly to the S1 semester-start Monday (2026-09-14).
+    // Fixture-stable: the imported UniCal events are Sept 2026 fixtures and
+    // Applied Programming starts 21.09, so week 2026-09-14 always hides it —
+    // unlike the default week, which follows today's date via
+    // defaultTimetableWeek and therefore drifts.
     const weekInput = page.getByLabel('Timetable week date');
+    await weekInput.fill('2026-09-14');
+    const offWeekBanner = page.getByText(/Not meeting in week of/i);
+    await expect(offWeekBanner).toBeVisible();
+    // Dynamic: the banner week text must track the pinned input week.
+    const pinnedWeek = await weekInput.inputValue();
+    await expect(offWeekBanner).toContainText(pinnedWeek);
+    await expect(page.getByText(/Applied Programming Projects \(64323\)/i)).toBeVisible();
     await weekInput.fill('2026-09-21');
     await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toHaveCount(0);
     // Now visible as a Mon 14:15 grid/agenda session

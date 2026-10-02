@@ -1450,11 +1450,28 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .campus-route__days button { min-width: 44px; min-height: 44px; padding: 10px 12px; }
   .home-pin-button { min-height: 44px; }
   .route-leg { min-height: 44px; }
-  /* Nit 1 — catalog summary row: let it wrap so the count + chevron stay
-     inside the padding at 360px (row max is the 302px inner width, so
-     scrollWidth stays <= 360). */
-  .catalog-summary > div { flex-wrap: wrap; row-gap: 4px; }
-  .catalog-summary h2 { min-width: 0; }
+  /* Catalog summary: two-line header on narrow screens. Title on line 1,
+     count + chevron on line 2 full-width with the chevron pinned right
+     inside the padding. Basis 100% forces the wrap — flex-shrink alone
+     never triggers it (h2 min-width:0 shrinks while the count span with
+     flexShrink:0 overflows, so the row stays one line and clips at the
+     302px inner width). Count keeps nowrap + ellipsis fallback, so the row
+     max stays the inner width and scrollWidth stays <= 360. */
+  .catalog-summary > div { flex-wrap: wrap; row-gap: 2px; }
+  .catalog-summary h2 { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .catalog-summary > div > span {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  .catalog-summary .micro-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
   /* Nit 2 — schedule pill: show the full time range instead of cutting it
      mid-time ("08:15 - 10:"). Cards are full-width here so it fits. */
   .pill--schedule { max-width: none; white-space: normal; }
