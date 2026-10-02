@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
@@ -8,11 +9,13 @@ import {
   Link2,
   LogIn,
   LogOut,
+  Menu,
   Moon,
   Printer,
   Sun,
   Undo2,
   Upload,
+  X,
   Zap,
 } from 'lucide-react';
 import type { RefObject } from 'react';
@@ -72,7 +75,45 @@ export function TopNav({
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
 }) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  const dismissThen = (fn: () => void) => () => {
+    setMoreOpen(false);
+    fn();
+  };
+
+  // Close the overflow sheet on Escape and return focus to the toggle.
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMoreOpen(false);
+        moreButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [moreOpen]);
+
+  // If the viewport grows back to desktop, dismiss the mobile sheet.
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 720) setMoreOpen(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Move focus into the sheet when it opens so keyboard users land on actions.
+  useEffect(() => {
+    if (moreOpen) panelRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+  }, [moreOpen]);
+
   return (
+    <>
     <motion.header
       initial={{ y: -12, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -87,10 +128,10 @@ export function TopNav({
         </div>
         <select
           aria-label="Programme"
+          className="brand-select"
           value={programmeId}
           onChange={(event) => onProgrammeChange(event.target.value as ProgrammeId)}
           title="Degree programme"
-          style={{ padding: '7px 9px', minWidth: 150 }}
         >
           {programmes.map((programme) => {
             const enabled = enabledProgrammeIds.has(programme.id);
@@ -109,12 +150,12 @@ export function TopNav({
       </div>
       <div className="topnav-actions no-print">
         <button
-          className="btn btn--primary"
+          className="btn btn--primary topnav-keep"
           onClick={onOpenExplorer}
         >
           <BookOpen size={15} /> Course Discovery
         </button>
-        <div className="segmented" role="group" aria-label="View mode">
+        <div className="segmented topnav-keep" role="group" aria-label="View mode">
           <button
             onClick={() => onViewModeChange('board')}
             aria-label="Board view"
@@ -132,62 +173,88 @@ export function TopNav({
             <Calendar size={14} /> Timetable
           </button>
         </div>
-        <div className="nav-divider" />
-        <button className="btn btn--ghost" onClick={onLoadPreset}>
-          <Zap size={15} /> Load example outline
-        </button>
         <button
-          className="btn btn--ghost"
-          onClick={onImportUnical}
-          aria-label="Import UniCal calendar link"
-          title="Paste a UniCal link to prepopulate Sem 1"
+          ref={moreButtonRef}
+          type="button"
+          className="btn btn--ghost topnav-more-toggle"
+          aria-expanded={moreOpen}
+          aria-controls="topnav-more-panel"
+          onClick={() => setMoreOpen((open) => !open)}
         >
-          <Calendar size={15} /> Import UniCal
+          {moreOpen ? <X size={15} /> : <Menu size={15} />}
+          {moreOpen ? 'Close' : 'More'}
         </button>
-        {ownerSession ? (
-          <button className="btn btn--ghost" onClick={onLogoutOwner} aria-label="Sign out">
-            <LogOut size={15} /> Sign out
-          </button>
-        ) : (
-          <button className="btn btn--ghost" onClick={onShowLogin} aria-label="Owner sign in">
-            <LogIn size={15} /> Owner sign in
-          </button>
-        )}
-        <button
-          className="icon-btn"
-          onClick={onUndo}
-          disabled={undoCount === 0}
-          aria-label={undoCount === 0 ? 'Undo last plan change' : `Undo last plan change (${undoCount} available)`}
-          title={undoCount === 0 ? 'Undo (Ctrl+Z)' : `Undo (${undoCount}) (Ctrl+Z)`}
+        <div className="nav-divider topnav-divider" aria-hidden="true" />
+        <div
+          ref={panelRef}
+          id="topnav-more-panel"
+          className={`topnav-overflow${moreOpen ? ' is-open' : ''}`}
+          role={moreOpen ? 'dialog' : undefined}
+          aria-label={moreOpen ? 'More actions' : undefined}
         >
-          <Undo2 size={15} />
-          {undoCount > 0 && (
-            <span className="icon-btn__count" aria-hidden="true">{undoCount}</span>
+          <button className="btn btn--ghost topnav-overflow-item" onClick={dismissThen(onLoadPreset)}>
+            <Zap size={15} /> Load example outline
+          </button>
+          <button
+            className="btn btn--ghost topnav-overflow-item"
+            onClick={dismissThen(onImportUnical)}
+            aria-label="Import UniCal calendar link"
+            title="Paste a UniCal link to prepopulate Sem 1"
+          >
+            <Calendar size={15} /> Import UniCal
+          </button>
+          {ownerSession ? (
+            <button className="btn btn--ghost topnav-overflow-item" onClick={dismissThen(onLogoutOwner)} aria-label="Sign out">
+              <LogOut size={15} /> Sign out
+            </button>
+          ) : (
+            <button className="btn btn--ghost topnav-overflow-item" onClick={dismissThen(onShowLogin)} aria-label="Owner sign in">
+              <LogIn size={15} /> Owner sign in
+            </button>
           )}
-        </button>
-        <button className="icon-btn" onClick={onExport} aria-label="Export plan JSON" title="Export JSON">
-          <Download size={15} />
-        </button>
-        <button className="icon-btn" onClick={() => fileInputRef.current?.click()} aria-label="Import plan JSON" title="Import JSON">
-          <Upload size={15} />
-        </button>
-        <button className="icon-btn" onClick={onShare} aria-label="Share plan" title="Share plan as link">
-          <Link2 size={15} />
-        </button>
-        <button className="icon-btn" onClick={onIcs} aria-label="Export timetable to calendar (.ics)" title="Export .ics calendar">
-          <CalendarPlus size={15} />
-        </button>
-        <button className="icon-btn" onClick={() => window.print()} aria-label="Print plan" title="Print / save as PDF">
-          <Printer size={15} />
-        </button>
-        <button
-          className="icon-btn"
-          onClick={onToggleTheme}
-          aria-label="Toggle theme"
-          title="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
+          <button
+            className="icon-btn topnav-overflow-item"
+            onClick={dismissThen(onUndo)}
+            disabled={undoCount === 0}
+            aria-label={undoCount === 0 ? 'Undo last plan change' : `Undo last plan change (${undoCount} available)`}
+            title={undoCount === 0 ? 'Undo (Ctrl+Z)' : `Undo (${undoCount}) (Ctrl+Z)`}
+          >
+            <Undo2 size={15} />
+            <span className="topnav-overflow-text">{undoCount > 0 ? `Undo (${undoCount})` : 'Undo'}</span>
+            {undoCount > 0 && (
+              <span className="icon-btn__count topnav-overflow-count" aria-hidden="true">{undoCount}</span>
+            )}
+          </button>
+          <button className="icon-btn topnav-overflow-item" onClick={dismissThen(onExport)} aria-label="Export plan JSON" title="Export JSON">
+            <Download size={15} />
+            <span className="topnav-overflow-text">Export plan</span>
+          </button>
+          <button className="icon-btn topnav-overflow-item" onClick={dismissThen(() => fileInputRef.current?.click())} aria-label="Import plan JSON" title="Import JSON">
+            <Upload size={15} />
+            <span className="topnav-overflow-text">Import plan</span>
+          </button>
+          <button className="icon-btn topnav-overflow-item" onClick={dismissThen(onShare)} aria-label="Share plan" title="Share plan as link">
+            <Link2 size={15} />
+            <span className="topnav-overflow-text">Share plan</span>
+          </button>
+          <button className="icon-btn topnav-overflow-item" onClick={dismissThen(onIcs)} aria-label="Export timetable to calendar (.ics)" title="Export .ics calendar">
+            <CalendarPlus size={15} />
+            <span className="topnav-overflow-text">Export calendar</span>
+          </button>
+          <button className="icon-btn topnav-overflow-item" onClick={dismissThen(() => window.print())} aria-label="Print plan" title="Print / save as PDF">
+            <Printer size={15} />
+            <span className="topnav-overflow-text">Print</span>
+          </button>
+          <button
+            className="icon-btn topnav-overflow-item"
+            onClick={dismissThen(onToggleTheme)}
+            aria-label="Toggle theme"
+            title="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            <span className="topnav-overflow-text">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+          </button>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -201,5 +268,17 @@ export function TopNav({
         />
       </div>
     </motion.header>
+    {moreOpen && (
+      <button
+        type="button"
+        className="topnav-sheet-backdrop"
+        aria-label="Close more actions"
+        onClick={() => {
+          setMoreOpen(false);
+          moreButtonRef.current?.focus();
+        }}
+      />
+    )}
+    </>
   );
 }

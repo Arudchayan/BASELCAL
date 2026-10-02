@@ -51,3 +51,5 @@ tree.json
 worktrees/
 tmp/
 
+.slim/deepwork/
+
