@@ -298,7 +298,7 @@ export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[];
             <div className="home-route-leg">
               <Home size={15} />
               <span>Start at home · ≈ {walkingMinutes(homePlace, firstSession.place)} min to {firstSession.place.name}</span>
-              <a href={openStreetMapDirectionsUrl(homePlace, firstSession.place)} target="_blank" rel="noreferrer">Directions</a>
+              <a className="route-leg" href={openStreetMapDirectionsUrl(homePlace, firstSession.place)} target="_blank" rel="noreferrer">Directions</a>
             </div>
           )}
           {sessions.map((session, index) => {
@@ -343,7 +343,7 @@ export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[];
             <div className="home-route-leg">
               <Home size={15} />
               <span>Return home · ≈ {walkingMinutes(lastSession.place, homePlace)} min</span>
-              <a href={openStreetMapDirectionsUrl(lastSession.place, homePlace)} target="_blank" rel="noreferrer">Directions</a>
+              <a className="route-leg" href={openStreetMapDirectionsUrl(lastSession.place, homePlace)} target="_blank" rel="noreferrer">Directions</a>
             </div>
           )}
         </div>

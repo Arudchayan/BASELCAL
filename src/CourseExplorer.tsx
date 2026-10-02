@@ -203,6 +203,7 @@ export const CourseExplorer = ({
       }}
     >
       <div
+        className="explorer-head"
         style={{
           padding: '18px 28px',
           borderBottom: '1px solid var(--border-subtle)',
@@ -250,7 +251,7 @@ export const CourseExplorer = ({
         </motion.button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-primary)' }}>
+      <div className="explorer-scroll" style={{ flex: 1, overflowY: 'auto', padding: '32px', background: 'var(--bg-primary)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '48px' }}>
           {BUCKETS.map((bucket) => {
             const rule = rules[bucket.statsKey];
@@ -361,6 +362,7 @@ export const CourseExplorer = ({
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            className="explorer-star"
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleShortlist(course.id);
@@ -426,6 +428,7 @@ export const CourseExplorer = ({
                           <motion.button
                             whileHover={{ x: 3 }}
                             type="button"
+                            className="explorer-details-link"
                             onClick={() => setSelectedCourse(course)}
                             style={{
                               background: 'transparent',
@@ -456,6 +459,7 @@ export const CourseExplorer = ({
         {selectedCourse && (
           <motion.div
             key="modal-backdrop"
+            className="explorer-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -502,6 +506,7 @@ export const CourseExplorer = ({
               }}
             >
               <div
+                className="explorer-dialog-head"
                 style={{
                   padding: '18px 28px',
                   borderBottom: '1px solid var(--border-subtle)',
@@ -752,6 +757,7 @@ export const CourseExplorer = ({
               </div>
 
               <div
+                className="explorer-dialog-foot"
                 style={{
                   padding: '18px 28px',
                   borderTop: '1px solid var(--border-subtle)',
@@ -776,7 +782,7 @@ export const CourseExplorer = ({
                       <button
                         key={s.id}
                         type="button"
-                        className="btn btn--ghost"
+                        className="btn btn--ghost explorer-sem-btn"
                         style={{ padding: '6px 10px', fontSize: '12.5px' }}
                         disabled={disabled}
                         title={

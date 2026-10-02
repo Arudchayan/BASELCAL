@@ -86,8 +86,8 @@ export function Timetable({
   const formatTime = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
 
   return (
-    <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: 12 }}>
+    <div className="glass-panel timetable-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+      <div className="timetable-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: 12 }}>
         <h2 style={{ margin: 0, fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Calendar size={20} color="var(--accent-primary)" />
           Weekly Timetable Preview
@@ -130,7 +130,7 @@ export function Timetable({
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+      <div className="timetable-weeknav" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
         <span className="micro-label" style={{ margin: 0 }}>Week of</span>
         <button type="button" className="icon-btn" aria-label="Previous week" onClick={() => setWeekMonday((w) => addDays(w, -7))}>
           <ChevronLeft size={15} />

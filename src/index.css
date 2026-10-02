@@ -1426,6 +1426,20 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .semester-conflict { display: inline-flex; }
   .course-card select { min-height: 44px !important; }
   .card-remove { width: 44px !important; height: 44px !important; }
+  /* 44px targets + 16px fields, unconditional (not pointer-gated). */
+  input, select, textarea { font-size: 16px !important; }
+  .icon-btn { min-width: 44px; min-height: 44px; }
+  .segmented button { min-height: 44px; }
+  .modal-close-btn { width: 44px !important; height: 44px !important; }
+  .explorer-star { min-width: 44px !important; min-height: 44px !important; padding: 8px !important; }
+  .explorer-sem-btn { min-width: 44px; min-height: 44px; }
+  .explorer-details-link { min-height: 44px; }
+  .course-card h4 + button { min-width: 44px; min-height: 44px; }
+  .timetable-agenda__item .tt-session__ics { width: 44px; height: 44px; }
+  .tt-session__ics { min-width: 44px; min-height: 44px; }
+  .campus-route__days button { min-width: 44px; min-height: 44px; padding: 10px 12px; }
+  .home-pin-button { min-height: 44px; }
+  .route-leg { min-height: 44px; }
 }
 
 @media (max-width: 480px) {
@@ -1436,6 +1450,15 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .segmented { max-width: 100%; overflow-x: auto; }
   .segmented button { padding: 8px 10px; font-size: 12px; min-height: 44px; }
   .timetable-agenda__item { padding: 12px; }
+  /* Slim dialogs: cut 32/24px gutters on narrow phones. */
+  .modal-backdrop, .login-backdrop { padding: 12px !important; }
+  .share-card { padding: 16px !important; }
+  .login-card { padding: 16px !important; }
+  .details-backdrop, .explorer-backdrop { padding: 12px !important; }
+  .details-body, .explorer-scroll { padding: 16px !important; }
+  .details-head, .explorer-head, .explorer-dialog-head, .explorer-dialog-foot { padding: 12px 16px !important; }
+  .explorer-detail-grid { padding: 16px !important; }
+  .timetable-panel { padding: 16px !important; }
 }
 
 @media (pointer: coarse) {

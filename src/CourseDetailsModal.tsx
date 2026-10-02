@@ -30,6 +30,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
     <AnimatePresence>
       <motion.div
         key="course-details-modal-backdrop"
+        className="details-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -80,6 +81,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
           }}
         >
           <div
+            className="details-head"
             style={{
               padding: '18px 22px',
               borderBottom: '1px solid var(--border-subtle)',
@@ -157,6 +159,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
               ref={closeRef}
               onClick={onClose}
               aria-label="Close course details"
+              className="modal-close-btn"
               style={{
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-subtle)',
@@ -175,6 +178,7 @@ export function CourseDetailsModal({ course, onClose }: { course: Course; onClos
           </div>
 
           <div
+            className="details-body"
             style={{
               flex: 1,
               overflowY: 'auto',
