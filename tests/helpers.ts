@@ -1,8 +1,20 @@
 import { type Page } from '@playwright/test';
 
 export async function loadExampleOutline(page: Page) {
-  page.once('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: /Load example outline/i }).click();
+  // Overflow actions collapse behind the More sheet on narrow viewports.
+  const moreToggle = page.getByRole('button', { name: /^(More|Close)$/ });
+  if (await moreToggle.isVisible()) {
+    if ((await moreToggle.getAttribute('aria-expanded')) !== 'true') {
+      await moreToggle.click();
+    }
+  }
+  await page.getByRole('button', { name: /Load example outline/i }).first().click();
+  // Confirm via the custom dialog (replaced the native confirm in Phase 4).
+  // Selecting the preset closes the More sheet, so only the dialog matches.
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /Load example outline/i })
+    .click();
 }
 
 export async function clearPlanStorage(page: Page) {

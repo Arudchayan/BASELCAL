@@ -286,7 +286,6 @@ test.describe('BASELCAL App Main Functionality', () => {
   test('Import UniCal replaces Sem 1 and hides courses before first meeting', async ({ page }) => {
     await clearPlanStorage(page);
     await page.goto('/');
-    page.once('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Import UniCal calendar link' }).click();
     await expect(page.getByRole('heading', { name: 'Import UniCal link' })).toBeVisible();
     await expect(page.getByText('How to get your link')).toBeVisible();
@@ -296,6 +295,11 @@ test.describe('BASELCAL App Main Functionality', () => {
     await page.getByRole('button', { name: 'Preview match' }).click();
     await expect(page.getByText(/9 courses matched/i)).toBeVisible({ timeout: 30000 });
     await page.getByRole('button', { name: 'Replace Sem 1' }).click();
+    // Custom confirm dialog (replaced the native confirm in Phase 4).
+    await page
+      .getByRole('dialog', { name: /Replace Sem 1 with .* UniCal course/ })
+      .getByRole('button', { name: 'Replace Sem 1' })
+      .click();
     await expect(page.getByRole('heading', { name: 'Weekly Timetable Preview' })).toBeVisible();
     // Default s1 week is Mon 14.09.2026 — Applied Programming starts 21.09
     await expect(page.getByText(/Not meeting in week of 2026-09-14/i)).toBeVisible();
@@ -362,8 +366,12 @@ test.describe('BASELCAL App Main Functionality', () => {
     };
     const filePath = testInfo.outputPath('import-plan.json');
     await writeFile(filePath, JSON.stringify(payload));
-    page.on('dialog', (dialog) => void dialog.accept());
     await page.locator('input[type="file"]').setInputFiles(filePath);
+    // Custom confirm dialog (replaced the native confirm in Phase 4).
+    await page
+      .getByRole('dialog', { name: 'Import this plan file?', exact: true })
+      .getByRole('button', { name: 'Import plan' })
+      .click();
     const report = page.getByRole('dialog', { name: 'Plan imported' });
     await expect(report).toBeVisible();
     await expect(report.getByText('Kept — 1 course')).toBeVisible();

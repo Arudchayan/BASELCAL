@@ -239,15 +239,19 @@ function App() {
     }
     const sharedPlan = pendingSharedBoot.plan;
     setPlan(sharedPlan);
+    openSemestersWithCourses(sharedPlan);
+    setSharedLoaded(true);
+    clearShareHash();
+  };
+
+  const openSemestersWithCourses = (nextPlan: PlanState) => {
     setOpenSemesters((prev) => {
       const next = { ...prev };
       for (const id of SEMESTER_IDS) {
-        if ((sharedPlan[id]?.length ?? 0) > 0) next[id] = true;
+        if ((nextPlan[id]?.length ?? 0) > 0) next[id] = true;
       }
       return next;
     });
-    setSharedLoaded(true);
-    clearShareHash();
   };
 
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(() => {
@@ -579,7 +583,9 @@ function App() {
       onConfirm: () => {
         setAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
         writeAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
-        updatePlan(() => buildPresetPlan(EXAMPLE_PLAN_IDS));
+        const preset = buildPresetPlan(EXAMPLE_PLAN_IDS);
+        updatePlan(() => preset);
+        openSemestersWithCourses(preset);
       },
     });
   };
@@ -633,6 +639,7 @@ function App() {
       variant: 'confirm',
       onConfirm: () => {
         updatePlan((prev) => ({ ...prev, s1: result.courses }));
+        setOpenSemesters((prev) => ({ ...prev, s1: true }));
         setShowUnicalImport(false);
         setActiveSem('s1');
         setViewMode('timetable');
@@ -712,6 +719,7 @@ function App() {
             reportStorage('admission', writeAdmissionTarget(nextAdmission));
           }
           updatePlan(() => imported.plan);
+          openSemestersWithCourses(imported.plan);
           if (imported.notes && typeof imported.notes === 'object') setPersonalNotes(imported.notes);
           if (imported.shortlist) setShortlist(imported.shortlist);
           const courses = allPlannedCourses(imported.plan);
@@ -912,7 +920,10 @@ function App() {
                           key={sem.id}
                           className="glass-panel semester-card"
                           open={narrowViewport ? (openSemesters[semId] ?? true) : true}
-                          onToggle={(e) => setOpenSemesters((prev) => ({ ...prev, [semId]: e.currentTarget.open }))}
+                          onToggle={(e) => {
+                            const isOpen = e.currentTarget.open;
+                            setOpenSemesters((prev) => ({ ...prev, [semId]: isOpen }));
+                          }}
                           style={{ display: 'flex', flexDirection: 'column' }}
                         >
                           <summary className="semester-summary" style={{ cursor: 'pointer' }}>

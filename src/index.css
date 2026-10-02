@@ -1357,7 +1357,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     display: block;
     position: fixed;
     inset: 0;
-    z-index: 80;
+    /* Below the sticky header (z-40): the open sheet lives inside the
+       header's stacking context, so a backdrop above 40 would cover the
+       sheet and intercept every item tap. At 30 it still dims page content
+       (including the z-0 map and z-3 sticky search) while the sheet stays
+       tappable; login/toast/FAB layers (80+) are unaffected. */
+    z-index: 30;
     width: 100%;
     padding: 0;
     border: none;
@@ -1409,6 +1414,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .campus-route__map,
   .campus-route__map .leaflet-container { min-height: 310px; }
   .campus-route__timeline { max-height: none; }
+  /* Let the provenance span wrap: its inline nowrap (desktop) is 365px wide
+     and overflows 360px viewports on its own. */
+  .subbar > span { white-space: normal !important; }
   .audit-chip { min-width: 0; flex: 1 1 100%; }
   /* Stack the toast above the QuickTips FAB (fixed bottom:32px, 52px tall, inline
      styles in QuickTips.tsx) so they never overlap on small screens. */
