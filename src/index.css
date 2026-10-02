@@ -1410,7 +1410,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .campus-route__map .leaflet-container { min-height: 310px; }
   .campus-route__timeline { max-height: none; }
   .audit-chip { min-width: 0; flex: 1 1 100%; }
-  .toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+  /* Stack the toast above the QuickTips FAB (fixed bottom:32px, 52px tall, inline
+     styles in QuickTips.tsx) so they never overlap on small screens. */
+  .toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   /* Touch-first board: plan first, catalog becomes a collapsible drawer. */
   .board-layout > .plan-column { order: 1; min-width: 0; }
   .board-layout > .catalog-panel { order: 2; position: static !important; min-width: 0; }

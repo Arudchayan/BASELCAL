@@ -36,6 +36,7 @@ export function ShareModal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [copied, setCopied] = useState(false);
+  const [manualCopy, setManualCopy] = useState(false);
   useFocusTrap(dialogRef, { onEscape: onClose, initialFocusRef: closeRef });
 
   const copyLink = async () => {
@@ -44,7 +45,9 @@ export function ShareModal({
       setCopied(true);
       onNotify('Share link copied — anyone opening it sees this exact plan');
     } catch {
-      window.prompt('Copy this share link:', url);
+      // Clipboard unavailable: reveal a readonly field to copy manually
+      // instead of window.prompt.
+      setManualCopy(true);
     }
   };
 
@@ -122,6 +125,21 @@ export function ShareModal({
                 <button type="button" className="btn" onClick={() => void copyLink()}>
                   {copied ? 'Copied ✓' : 'Copy link'}
                 </button>
+                {manualCopy && (
+                  <>
+                    <p className="micro" style={{ margin: 0 }}>
+                      Copy unavailable — select and copy the link manually:
+                    </p>
+                    <input
+                      readOnly
+                      value={url}
+                      aria-label="Copy this share link manually"
+                      onFocus={(e) => e.target.select()}
+                      onClick={(e) => e.target.select()}
+                      style={{ width: '100%', fontSize: 11 }}
+                    />
+                  </>
+                )}
               </>
             )}
           </div>

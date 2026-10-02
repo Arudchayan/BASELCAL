@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BookOpen, Calendar, AlertTriangle, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import {
   assignColumns,
@@ -9,10 +9,15 @@ import {
 import type { Course, PlanState, SemesterId } from './types';
 import { creditModule, SEMESTERS } from './types';
 import { courseFullLabel, displayCode } from './courseLabel';
-import { CampusRoutePlanner } from './CampusRoutePlanner';
 import { getModuleColor } from './moduleColor';
 import { addDays, mondayOfWeek, sessionActiveInWeek, toIsoDate } from './scheduleDates';
 import { defaultTimetableWeek, formatWeekLabel, weekInputValue } from './ics';
+
+// Leaflet (via CampusRoutePlanner) is code-split so the timetable chunk stays
+// light; the map section suspends to the existing panel styling below.
+const CampusRoutePlanner = lazy(() =>
+  import('./CampusRoutePlanner').then((m) => ({ default: m.CampusRoutePlanner })),
+);
 
 /**
  * Agenda list is the ≤720px fallback for the grid. It is only mounted on narrow
@@ -58,6 +63,9 @@ export function Timetable({
   const plannedCourses = plan[activeSem] || [];
   const conflicts = findConflicts(plannedCourses);
   const isNarrow = useNarrowViewport();
+  // 721–860px band: the desktop grid is mounted but may overflow horizontally.
+  const isBelow860 = useNarrowViewport('(max-width: 860px)');
+  const showGridScrollHint = !isNarrow && isBelow860;
   const [weekMonday, setWeekMonday] = useState(() => defaultTimetableWeek(activeSem));
 
   useEffect(() => {
@@ -254,8 +262,21 @@ export function Timetable({
         </div>
       )}
 
-      <CampusRoutePlanner courses={plannedCourses} weekMonday={weekMonday} />
+      <Suspense
+        fallback={
+          <div className="campus-route" aria-label="Loading campus map">
+            <p className="micro" style={{ margin: 0 }}>Loading campus map…</p>
+          </div>
+        }
+      >
+        <CampusRoutePlanner courses={plannedCourses} weekMonday={weekMonday} />
+      </Suspense>
 
+      {showGridScrollHint && (
+        <p className="micro-label" aria-hidden="true" style={{ margin: '0 0 6px', textAlign: 'right' }}>
+          scroll →
+        </p>
+      )}
       <div className="timetable-scroll">
       <div className="timetable-grid" style={{ display: 'grid', gridTemplateColumns: '60px repeat(5, 1fr)', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ background: 'var(--bg-secondary)', padding: '12px' }} />

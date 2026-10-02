@@ -119,6 +119,26 @@ function suggestLibrary(current: LocatedSession, next: LocatedSession, gapMinute
 export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[]; weekMonday: Date }) {
   const [home, setHome] = useState<SavedHome | null>(loadHome);
   const [isSettingHome, setIsSettingHome] = useState(false);
+  // Map stays expanded by default (current UX); the toggle only hides it.
+  const [mapVisible, setMapVisible] = useState(true);
+  // Compact map height on narrow screens (matches `@media (max-width: 720px)`).
+  const [isNarrowMap, setIsNarrowMap] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.innerWidth <= 720,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(max-width: 720px)');
+    const syncFromMq = (event: MediaQueryListEvent) => setIsNarrowMap(event.matches);
+    const syncFromResize = () => setIsNarrowMap(window.innerWidth <= 720);
+    setIsNarrowMap(mq.matches);
+    mq.addEventListener('change', syncFromMq);
+    window.addEventListener('resize', syncFromResize);
+    return () => {
+      mq.removeEventListener('change', syncFromMq);
+      window.removeEventListener('resize', syncFromResize);
+    };
+  }, []);
   const dailySessions = useMemo(
     () => Object.fromEntries(DAYS.map((day) => [day, collectDaySessions(courses, day, weekMonday)
       .sort(compareSessions)
@@ -200,6 +220,15 @@ export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[];
           </div>
           <button
             type="button"
+            className="home-pin-button"
+            aria-expanded={mapVisible}
+            aria-controls="campus-route-map"
+            onClick={() => setMapVisible((current) => !current)}
+          >
+            <MapPinned size={14} /> {mapVisible ? 'Hide map' : 'Show map'}
+          </button>
+          <button
+            type="button"
             className={isSettingHome ? 'home-pin-button is-active' : 'home-pin-button'}
             onClick={() => setIsSettingHome((current) => !current)}
           >
@@ -250,8 +279,19 @@ export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[];
       </div>
 
       <div className="campus-route__layout">
-        <div className="campus-route__map" aria-label={`OpenStreetMap route for ${activeDay}`}>
-          <MapContainer center={[47.5598, 7.5848]} zoom={15} scrollWheelZoom={false}>
+        {mapVisible && (
+        <div
+          id="campus-route-map"
+          className="campus-route__map"
+          aria-label={`OpenStreetMap route for ${activeDay}`}
+          style={isNarrowMap ? { minHeight: 240 } : undefined}
+        >
+          <MapContainer
+            center={[47.5598, 7.5848]}
+            zoom={15}
+            scrollWheelZoom={false}
+            style={isNarrowMap ? { height: 240, minHeight: 240 } : undefined}
+          >
             <TileLayer
               url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -292,6 +332,7 @@ export function CampusRoutePlanner({ courses, weekMonday }: { courses: Course[];
             ))}
           </MapContainer>
         </div>
+        )}
 
         <div className="campus-route__timeline">
           {routeAvailable && homePlace && firstSession && (

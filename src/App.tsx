@@ -50,6 +50,7 @@ import {
 import { COVERAGE_POLICY, isDisputedModule } from './coveragePolicy';
 import { readSharedPlanDetailedFromHash, clearShareHash } from './share';
 import { useMotionPrefs } from './useMotionPrefs';
+import { useFocusTrap } from './useFocusTrap';
 import { downloadIcs } from './ics';
 import { courseFullLabel } from './courseLabel';
 import {
@@ -82,7 +83,17 @@ const UnicalImportModal = lazy(() =>
 ensurePlanMigrated();
 const PROGRAMMES = listProgrammes();
 
-const sharedBoot = (() => {
+/**
+ * Shared-plan link detected at boot: read once, without side effects. The load
+ * confirmation is a custom dialog (confirmRequest state) instead of
+ * window.confirm. Confirming applies the plan below; dismissing keeps the URL
+ * hash so a reload asks again (same semantics as the old confirm-cancel path).
+ */
+const pendingSharedBoot: {
+  plan: PlanState;
+  admissionTarget?: number;
+  skipped: string[];
+} | null = (() => {
   const shared = readSharedPlanDetailedFromHash();
   if (!shared) return null;
   const skipped: string[] = [];
@@ -94,17 +105,62 @@ const sharedBoot = (() => {
   if (shared.duplicateIds.length > 0) {
     skipped.push(`${shared.duplicateIds.length} duplicate placement(s) will be skipped.`);
   }
-  const ok = window.confirm(
-    'Load the shared plan from this link?\n\nIt replaces the plan saved in this browser.' +
-      (skipped.length > 0 ? `\n\n${skipped.join('\n')}` : ''),
-  );
-  if (!ok) return null;
-  clearShareHash();
-  if (typeof shared.admissionTarget === 'number') {
-    writeAdmissionTarget(clampAdmission(shared.admissionTarget));
-  }
-  return shared.plan;
+  return { plan: shared.plan, admissionTarget: shared.admissionTarget, skipped };
 })();
+
+type ConfirmRequest = {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  cancelLabel?: string;
+  variant: 'confirm' | 'alert';
+  onConfirm: () => void;
+};
+
+/**
+ * Minimal confirm/alert dialog reusing the ShareModal chrome
+ * (modal-backdrop + glass-panel share-card) with focus trap + Escape.
+ */
+function ConfirmDialog({ request, onClose }: { request: ConfirmRequest; onClose: () => void }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  useFocusTrap(dialogRef, { onEscape: onClose, initialFocusRef: confirmRef });
+  const confirm = () => {
+    request.onConfirm();
+    onClose();
+  };
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
+        className="glass-panel share-card"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <h2 id="confirm-dialog-title" style={{ margin: 0, fontSize: 18 }}>
+            {request.title}
+          </h2>
+        </div>
+        <p className="micro" style={{ margin: 0, whiteSpace: 'pre-line' }}>
+          {request.message}
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+          {request.variant === 'confirm' && (
+            <button type="button" className="btn btn--ghost" onClick={onClose}>
+              {request.cancelLabel ?? 'Cancel'}
+            </button>
+          )}
+          <button ref={confirmRef} type="button" className="btn btn--primary" onClick={confirm}>
+            {request.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const daysSince = (iso: string): number | null => {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -126,10 +182,10 @@ function App() {
   const [importReport, setImportReport] =
     useState<import('./ImportReportModal').ImportReportData | null>(null);
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
-  const [plan, setPlan] = useState<PlanState>(() => sharedBoot ?? initialBoot.plan);
+  const [plan, setPlan] = useState<PlanState>(() => initialBoot.plan);
   const [startupDrops] = useState<string[]>(() => initialBoot.droppedIds);
   const [startupDupes] = useState<string[]>(() => initialBoot.duplicateIds);
-  const [sharedLoaded] = useState<boolean>(() => !!sharedBoot);
+  const [sharedLoaded, setSharedLoaded] = useState<boolean>(false);
   const [storageOk, setStorageOk] = useState(true);
   const storageFlags = useRef({ plan: true, theme: true, notes: true, shortlist: true, admission: true });
   const [undoStack, setUndoStack] = useState<PlanState[]>([]);
@@ -143,7 +199,7 @@ function App() {
   );
   const [openSemesters, setOpenSemesters] = useState<Record<SemesterId, boolean>>(() => {
     const narrow = typeof window !== 'undefined' && window.innerWidth <= 720;
-    const initial = sharedBoot ?? initialBoot.plan;
+    const initial = initialBoot.plan;
     const next = {} as Record<SemesterId, boolean>;
     for (const id of SEMESTER_IDS) next[id] = !narrow || (initial[id]?.length ?? 0) > 0;
     return next;
@@ -173,6 +229,41 @@ function App() {
     () => new Set(enabledProgrammes.map((programme) => programme.id)),
     [enabledProgrammes],
   );
+
+  const applySharedPlan = () => {
+    if (!pendingSharedBoot) return;
+    if (typeof pendingSharedBoot.admissionTarget === 'number') {
+      const next = clampAdmission(pendingSharedBoot.admissionTarget);
+      setAdmissionTarget(next);
+      writeAdmissionTarget(next);
+    }
+    const sharedPlan = pendingSharedBoot.plan;
+    setPlan(sharedPlan);
+    setOpenSemesters((prev) => {
+      const next = { ...prev };
+      for (const id of SEMESTER_IDS) {
+        if ((sharedPlan[id]?.length ?? 0) > 0) next[id] = true;
+      }
+      return next;
+    });
+    setSharedLoaded(true);
+    clearShareHash();
+  };
+
+  const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(() => {
+    if (!pendingSharedBoot) return null;
+    const skippedNote = pendingSharedBoot.skipped.length > 0
+      ? `\n\n${pendingSharedBoot.skipped.join('\n')}`
+      : '';
+    return {
+      title: 'Load the shared plan from this link?',
+      message: 'It replaces the plan saved in this browser.' + skippedNote,
+      confirmLabel: 'Load shared plan',
+      cancelLabel: 'Keep my plan',
+      variant: 'confirm',
+      onConfirm: applySharedPlan,
+    };
+  });
 
   const reportStorage = (key: keyof typeof storageFlags.current, ok: boolean) => {
     storageFlags.current[key] = ok;
@@ -475,19 +566,22 @@ function App() {
       ? `• It also demonstrates a typical ${EXAMPLE_PLAN_ADMISSION_TARGET} CP admission (Auflagen) package\n` +
         `• Loading it sets your admission target to ${EXAMPLE_PLAN_ADMISSION_TARGET} CP — change that later to match your letter\n`
       : '• Master’s courses only — no admission (Auflagen) package. Set your own target from your letter.\n';
-    const ok = confirm(
-      `Load ${EXAMPLE_PLAN_NAME}? This replaces your current board.\n\n` +
+    setConfirmRequest({
+      title: `Load ${EXAMPLE_PLAN_NAME}?`,
+      message:
+        'This replaces your current board.\n\n' +
         'This is a sample outline, not an official University of Basel recommendation.\n' +
         `• It is built to meet the official ${manifest.totalCp} CP MSc rules\n` +
         admissionLine +
-        '• Spring 2027 and later offerings are provisional and need a live VV check\n\n' +
-        'Continue?',
-    );
-    if (ok) {
-      setAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
-      writeAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
-      updatePlan(() => buildPresetPlan(EXAMPLE_PLAN_IDS));
-    }
+        '• Spring 2027 and later offerings are provisional and need a live VV check',
+      confirmLabel: 'Load example outline',
+      variant: 'confirm',
+      onConfirm: () => {
+        setAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
+        writeAdmissionTarget(EXAMPLE_PLAN_ADMISSION_TARGET);
+        updatePlan(() => buildPresetPlan(EXAMPLE_PLAN_IDS));
+      },
+    });
   };
 
   const applyOwnerConfig = (raw: unknown) => {
@@ -532,19 +626,23 @@ function App() {
   };
 
   const handleUnicalImport = (result: import('./UnicalImportModal').UnicalImportResult) => {
-    const ok = window.confirm(
-      `Replace Sem 1 with ${result.courses.length} UniCal course(s)? Sem 2–4 stay unchanged.`,
-    );
-    if (!ok) return;
-    updatePlan((prev) => ({ ...prev, s1: result.courses }));
-    setShowUnicalImport(false);
-    setActiveSem('s1');
-    setViewMode('timetable');
-    const bits = [`Sem 1 filled with ${result.courses.length} UniCal course(s)`];
-    if (result.unknownIds.length) bits.push(`${result.unknownIds.length} unknown id(s)`);
-    if (result.ambiguousIds.length) bits.push(`${result.ambiguousIds.length} ambiguous`);
-    if (!result.datesEnriched) bits.push('date ranges from catalog');
-    showToast(bits.join(' · '));
+    setConfirmRequest({
+      title: `Replace Sem 1 with ${result.courses.length} UniCal course(s)?`,
+      message: 'Sem 2–4 stay unchanged.',
+      confirmLabel: 'Replace Sem 1',
+      variant: 'confirm',
+      onConfirm: () => {
+        updatePlan((prev) => ({ ...prev, s1: result.courses }));
+        setShowUnicalImport(false);
+        setActiveSem('s1');
+        setViewMode('timetable');
+        const bits = [`Sem 1 filled with ${result.courses.length} UniCal course(s)`];
+        if (result.unknownIds.length) bits.push(`${result.unknownIds.length} unknown id(s)`);
+        if (result.ambiguousIds.length) bits.push(`${result.ambiguousIds.length} ambiguous`);
+        if (!result.datesEnriched) bits.push('date ranges from catalog');
+        showToast(bits.join(' · '));
+      },
+    });
   };
 
   const handleShareJsonFallback = () => {
@@ -590,56 +688,74 @@ function App() {
       const data = JSON.parse(text);
       const imported = importPlanPayload(data);
       if (!imported) {
-        alert('Unrecognized plan file format.');
+        setConfirmRequest({
+          title: 'Import plan',
+          message: 'Unrecognized plan file format.',
+          confirmLabel: 'OK',
+          variant: 'alert',
+          onConfirm: () => undefined,
+        });
         return;
       }
-      const ok = window.confirm('Import this plan file? It replaces your current board.');
-      if (!ok) return;
-      const nextAdmission =
-        typeof imported.admissionTarget === 'number'
-          ? clampAdmission(imported.admissionTarget)
-          : admissionTarget;
-      if (nextAdmission !== admissionTarget) {
-        setAdmissionTarget(nextAdmission);
-        reportStorage('admission', writeAdmissionTarget(nextAdmission));
-      }
-      updatePlan(() => imported.plan);
-      if (imported.notes && typeof imported.notes === 'object') setPersonalNotes(imported.notes);
-      if (imported.shortlist) setShortlist(imported.shortlist);
-      const courses = allPlannedCourses(imported.plan);
-      const ev = evaluatePack(courses, packRules, nextAdmission);
-      const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
-      const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
-      const missingSched = courses.filter(
-        (c) =>
-          c.type !== 'Admission' &&
-          c.module !== 'Thesis' &&
-          !(c.when || '').toLowerCase().includes('learning contract') &&
-          (!c.schedule || c.schedule.length === 0),
-      ).length;
-      const caveats: string[] = [];
-      if (conflictCount > 0) caveats.push(`${conflictCount} timetable conflict(s)`);
-      if (disputedCount > 0) caveats.push(`${disputedCount} disputed module(s)`);
-      if (missingSched > 0) caveats.push(`${missingSched} schedule-unknown`);
-      const status = ev.isComplete
-        ? caveats.length
-          ? `Buckets OK — but check: ${caveats.join('; ')}.`
-          : 'All buckets OK and no conflict/dispute/schedule caveats flagged.'
-        : ev.issues.slice(0, 3).join('; ');
-      const kept = SEMESTER_IDS.map((sem) => ({
-        semTitle: SEMESTERS.find((s) => s.id === sem)?.title ?? sem,
-        courses: imported.plan[sem],
-      })).filter((section) => section.courses.length > 0);
-      setImportReport({
-        kept,
-        droppedIds: imported.droppedIds,
-        duplicateIds: imported.duplicateIds,
-        summary: `MSc ${ev.stats.mscTotal}/${ev.rules.mscTotal.target}, grand ${ev.stats.grandTotal}/${ev.rules.grandTotal.target}.`,
-        status,
-        caveats,
+      setConfirmRequest({
+        title: 'Import this plan file?',
+        message: 'It replaces your current board.',
+        confirmLabel: 'Import plan',
+        variant: 'confirm',
+        onConfirm: () => {
+          const nextAdmission =
+            typeof imported.admissionTarget === 'number'
+              ? clampAdmission(imported.admissionTarget)
+              : admissionTarget;
+          if (nextAdmission !== admissionTarget) {
+            setAdmissionTarget(nextAdmission);
+            reportStorage('admission', writeAdmissionTarget(nextAdmission));
+          }
+          updatePlan(() => imported.plan);
+          if (imported.notes && typeof imported.notes === 'object') setPersonalNotes(imported.notes);
+          if (imported.shortlist) setShortlist(imported.shortlist);
+          const courses = allPlannedCourses(imported.plan);
+          const ev = evaluatePack(courses, packRules, nextAdmission);
+          const conflictCount = SEMESTER_IDS.reduce((n, sem) => n + findConflicts(imported.plan[sem]).length, 0);
+          const disputedCount = courses.filter((c) => isDisputedModule(c.id)).length;
+          const missingSched = courses.filter(
+            (c) =>
+              c.type !== 'Admission' &&
+              c.module !== 'Thesis' &&
+              !(c.when || '').toLowerCase().includes('learning contract') &&
+              (!c.schedule || c.schedule.length === 0),
+          ).length;
+          const caveats: string[] = [];
+          if (conflictCount > 0) caveats.push(`${conflictCount} timetable conflict(s)`);
+          if (disputedCount > 0) caveats.push(`${disputedCount} disputed module(s)`);
+          if (missingSched > 0) caveats.push(`${missingSched} schedule-unknown`);
+          const status = ev.isComplete
+            ? caveats.length
+              ? `Buckets OK — but check: ${caveats.join('; ')}.`
+              : 'All buckets OK and no conflict/dispute/schedule caveats flagged.'
+            : ev.issues.slice(0, 3).join('; ');
+          const kept = SEMESTER_IDS.map((sem) => ({
+            semTitle: SEMESTERS.find((s) => s.id === sem)?.title ?? sem,
+            courses: imported.plan[sem],
+          })).filter((section) => section.courses.length > 0);
+          setImportReport({
+            kept,
+            droppedIds: imported.droppedIds,
+            duplicateIds: imported.duplicateIds,
+            summary: `MSc ${ev.stats.mscTotal}/${ev.rules.mscTotal.target}, grand ${ev.stats.grandTotal}/${ev.rules.grandTotal.target}.`,
+            status,
+            caveats,
+          });
+        },
       });
     } catch {
-      alert('Failed to import plan JSON.');
+      setConfirmRequest({
+        title: 'Import plan',
+        message: 'Failed to import plan JSON.',
+        confirmLabel: 'OK',
+        variant: 'alert',
+        onConfirm: () => undefined,
+      });
     }
   };
 
@@ -1066,6 +1182,10 @@ function App() {
           </Suspense>
         )}
       </AnimatePresence>
+
+      {confirmRequest && (
+        <ConfirmDialog request={confirmRequest} onClose={() => setConfirmRequest(null)} />
+      )}
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>

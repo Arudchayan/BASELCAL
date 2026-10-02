@@ -216,7 +216,7 @@ export const CourseExplorer = ({
         }}
       >
         <div>
-          <h1
+          <h2
             style={{
               margin: 0,
               fontSize: '24px',
@@ -228,7 +228,7 @@ export const CourseExplorer = ({
           >
             <Target size={24} color="var(--accent-primary)" />
             Degree Requirements Roadmap
-          </h1>
+          </h2>
           <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
             <strong>Wishlist only</strong> — starring here does not place courses on the board. Need exactly{' '}
             <strong>{rules.grandTotal.target} CP</strong>. Currently wishlisted:{' '}
