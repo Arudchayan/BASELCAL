@@ -35,13 +35,29 @@ test.describe('Chaos Monkey Tests', () => {
     const loadPresetBtn = page.getByRole('button', { name: /Load example outline/i });
 
     await Promise.all([
-      loadPresetBtn.click(),
       discoveryBtn.click(),
       page.keyboard.press('Escape'),
       page.getByRole('button', { name: /Toggle theme/i }).click(),
     ]);
 
+    // The burst is intentionally racy: Escape may or may not have closed the
+    // explorer. Force a deterministic state before continuing.
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Degree requirements roadmap' })).toHaveCount(0);
+
+    // Phase 4: the preset action opens a custom confirm dialog — a real modal
+    // layer that blocks hit-testing (unlike the old native confirm) — so it
+    // runs outside the burst, then is dismissed to leave a clean board.
+    await loadPresetBtn.click();
+    const presetCancel = page.getByRole('dialog').getByRole('button', { name: 'Cancel' });
+    if (await presetCancel.count()) await presetCancel.first().click();
+
     await page.waitForTimeout(500);
+    // Phase 4: the preset click now opens a custom confirm dialog (not a
+    // native one), which legitimately blocks later clicks — dismiss it if
+    // the burst left it open so the chaos run continues on a clean board.
+    const cancelPreset = page.getByRole('dialog').getByRole('button', { name: 'Cancel' });
+    if (await cancelPreset.count()) await cancelPreset.first().click();
     await page.keyboard.press('Escape');
 
     const viewDetailsBtn = page.getByTitle('View Course Details').first();
@@ -61,7 +77,7 @@ test.describe('Chaos Monkey Tests', () => {
       .locator('.glass-panel')
       .filter({ has: page.locator('a[href*="vorlesungsverzeichnis"], a[href*="unibas.ch"]') })
       .first();
-    const destDroppable = page.locator('.semester-grid .glass-panel').filter({ hasText: 'Sem 1' }).locator('> div').nth(1);
+    const destDroppable = page.locator('.semester-grid .glass-panel').filter({ hasText: 'Sem 1' }).locator('.semester-drop');
 
     const cardBox = await firstCourseCard.boundingBox();
     const destBox = await destDroppable.boundingBox();

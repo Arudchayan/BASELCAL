@@ -217,14 +217,21 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
 
     const filePath = testInfo.outputPath('v1-replace.json');
     await writeFile(filePath, JSON.stringify(blob));
-    page.once('dialog', (dialog) => void dialog.dismiss());
     await page.locator('input[type="file"]').setInputFiles(filePath);
+    // Custom confirm dialog (replaced the native confirm in Phase 4): dismiss.
+    await page
+      .getByRole('dialog', { name: 'Import this plan file?', exact: true })
+      .getByRole('button', { name: 'Cancel' })
+      .click();
     await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
     await expect(sem1Board(page).getByText(/Numerical Methods for Partial Differential Equations/i)).toHaveCount(0);
 
-    page.once('dialog', (dialog) => void dialog.accept());
     await page.locator('input[type="file"]').setInputFiles([]);
     await page.locator('input[type="file"]').setInputFiles(filePath);
+    await page
+      .getByRole('dialog', { name: 'Import this plan file?', exact: true })
+      .getByRole('button', { name: 'Import plan' })
+      .click();
     const report = page.getByRole('dialog', { name: 'Plan imported' });
     await expect(report).toBeVisible();
     await expect(sem1Board(page).getByText(/Numerical Methods for Partial Differential Equations/i)).toBeVisible();
@@ -277,27 +284,29 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
       localStorage.setItem('basel-ds-admission-target', '12');
     });
 
-    let sawDialog = false;
-    page.once('dialog', async (dialog) => {
-      sawDialog = true;
-      await dialog.dismiss();
-    });
+    // Custom boot dialog (replaced the native confirm in Phase 4): dismiss keeps
+    // the saved plan and admission target.
     await page.goto(`/?n=dismiss#p=${toBase64Url(JSON.stringify(good))}`);
+    const bootDialog = page.getByRole('dialog', {
+      name: 'Load the shared plan from this link?',
+      exact: true,
+    });
+    await expect(bootDialog).toBeVisible();
+    await bootDialog.getByRole('button', { name: 'Keep my plan' }).click();
     await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
     await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('12');
-    expect(sawDialog).toBe(true);
 
-    page.once('dialog', (dialog) => void dialog.accept());
     await page.goto(`/?n=accept#p=${toBase64Url(JSON.stringify(good))}`);
+    const bootDialogAccept = page.getByRole('dialog', {
+      name: 'Load the shared plan from this link?',
+      exact: true,
+    });
+    await expect(bootDialogAccept).toBeVisible();
+    await bootDialogAccept.getByRole('button', { name: 'Load shared plan' }).click();
     await expect(sem1Board(page).getByText(/Numerical Methods for Partial Differential Equations/i)).toBeVisible();
     await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toHaveCount(0);
     await expect(page.getByLabel('Admission conditions in CP')).toHaveValue('8');
 
-    let prompted = false;
-    page.on('dialog', async (dialog) => {
-      prompted = true;
-      await dialog.dismiss();
-    });
     await page.addInitScript(() => {
       localStorage.setItem(
         'basel-plan-v7:data-science',
@@ -306,6 +315,9 @@ test.describe('v1 share/import blob — QA Hard FAILs', () => {
     });
     await page.goto(`/?n=missing#p=${toBase64Url(JSON.stringify(bad))}`);
     await expect(sem1Board(page).getByText(/Bioinformatics Algorithms/i)).toBeVisible();
-    expect(prompted).toBe(false);
+    // Missing-disclaimer hash never prompts — no boot dialog appears.
+    await expect(
+      page.getByRole('dialog', { name: 'Load the shared plan from this link?', exact: true }),
+    ).toHaveCount(0);
   });
 });

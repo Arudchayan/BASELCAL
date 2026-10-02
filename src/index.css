@@ -1450,6 +1450,21 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .campus-route__days button { min-width: 44px; min-height: 44px; padding: 10px 12px; }
   .home-pin-button { min-height: 44px; }
   .route-leg { min-height: 44px; }
+  /* Nit 1 — catalog summary row: let it wrap so the count + chevron stay
+     inside the padding at 360px (row max is the 302px inner width, so
+     scrollWidth stays <= 360). */
+  .catalog-summary > div { flex-wrap: wrap; row-gap: 4px; }
+  .catalog-summary h2 { min-width: 0; }
+  /* Nit 2 — schedule pill: show the full time range instead of cutting it
+     mid-time ("08:15 - 10:"). Cards are full-width here so it fits. */
+  .pill--schedule { max-width: none; white-space: normal; }
+  /* Nit 3 — QuickTips FAB below sheets/dialogs on mobile. The open More sheet
+     lives inside the sticky header's z-40 stacking context, so 35 sits it
+     truly behind the sheet while staying above its z-30 backdrop; explorer
+     50, login 80, share modal 250, toast 300 all stay above it, and board
+     content plus sticky layers stay below. The Phase 4 toast-above-FAB
+     offset is untouched. */
+  button[aria-label="Open quick tips"] { z-index: 35 !important; }
 }
 
 @media (max-width: 480px) {
