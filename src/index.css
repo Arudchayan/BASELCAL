@@ -1222,6 +1222,45 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .library-break a { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; font-size: 10px; color: #0b8f72; font-weight: 700; }
 .campus-route__footnote { margin-top: 9px; font-size: 10px; }
 
+/* ---------- Board (catalog + semesters, touch-first) ---------- */
+
+/* DOM order is plan-first so screen readers and narrow screens meet the plan
+   before the catalog. On wide desktop the catalog keeps its left column. */
+.board-layout > .plan-column { min-width: 0; }
+.board-layout > .catalog-panel { order: -1; }
+
+.semester-drop { min-height: 380px; }
+
+.catalog-summary { list-style: none; }
+.catalog-summary::-webkit-details-marker { display: none; }
+.semester-summary { list-style: none; cursor: pointer; }
+.semester-summary::-webkit-details-marker { display: none; }
+
+.catalog-chevron,
+.semester-chevron { transition: transform 0.2s ease; flex-shrink: 0; }
+.catalog-panel[open] .catalog-chevron,
+.semester-card[open] .semester-chevron { transform: rotate(180deg); }
+
+/* Labeled quick-add: full-width 44px button, rendered only in touch mode. */
+.card-add-labeled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+}
+
+@media (min-width: 721px) {
+  /* Desktop stays identical: disclosures forced open, no toggle affordance. */
+  .catalog-summary { pointer-events: none; }
+  .catalog-summary .catalog-chevron { display: none; }
+  .semester-summary { pointer-events: none; }
+  .semester-summary .semester-chevron { display: none; }
+  .semester-summary .semester-conflict { display: none; }
+}
+
 /* ---------- Responsive ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1372,7 +1411,21 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .campus-route__timeline { max-height: none; }
   .audit-chip { min-width: 0; flex: 1 1 100%; }
   .toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
-  .catalog-panel { position: static !important; max-height: none !important; }
+  /* Touch-first board: plan first, catalog becomes a collapsible drawer. */
+  .board-layout > .plan-column { order: 1; min-width: 0; }
+  .board-layout > .catalog-panel { order: 2; position: static !important; min-width: 0; }
+  .catalog-panel[open] { max-height: min(72vh, 600px) !important; overflow-y: auto; }
+  .catalog-search {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--glass-bg);
+  }
+  .semester-grid { gap: 12px; }
+  .semester-drop { min-height: 120px; }
+  .semester-conflict { display: inline-flex; }
+  .course-card select { min-height: 44px !important; }
+  .card-remove { width: 44px !important; height: 44px !important; }
 }
 
 @media (max-width: 480px) {

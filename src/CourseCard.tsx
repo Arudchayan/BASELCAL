@@ -56,6 +56,43 @@ function CourseCardInner({
     firstSession && course.scheduleStatus !== 'contract' && course.scheduleStatus !== 'thesis'
       ? `${firstSession.day.slice(0, 3)} ${firstSession.time.replace(/\s*[-–—]\s*/g, '-')}${scheduleCount > 1 ? ` +${scheduleCount - 1}` : ''}`
       : null;
+  // Reactive touch-mode flag, live-synced with the CSS breakpoints. Thresholds are
+  // identical to the old per-render snapshot: narrow width (<=720px, matching
+  // `@media (max-width: 720px)`) or a coarse pointer. Reactive so widening past
+  // 720px re-enables drag handles instead of leaving touch-mode UI stuck. On
+  // narrow screens or coarse pointers the whole card is not a drag handle (that
+  // fights scroll). Quick-add and the Move-to select stay the primary ways to
+  // place courses.
+  const [narrowWidth, setNarrowWidth] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.innerWidth <= 720,
+  );
+  const [coarsePointer, setCoarsePointer] = useState<boolean>(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const widthMq = window.matchMedia('(max-width: 720px)');
+    const coarseMq = window.matchMedia('(pointer: coarse)');
+    const onWidthChange = (event: MediaQueryListEvent) => setNarrowWidth(event.matches);
+    const onCoarseChange = (event: MediaQueryListEvent) => setCoarsePointer(event.matches);
+    const onResize = () => setNarrowWidth(window.innerWidth <= 720);
+    setNarrowWidth(widthMq.matches);
+    setCoarsePointer(coarseMq.matches);
+    widthMq.addEventListener('change', onWidthChange);
+    coarseMq.addEventListener('change', onCoarseChange);
+    window.addEventListener('resize', onResize);
+    return () => {
+      widthMq.removeEventListener('change', onWidthChange);
+      coarseMq.removeEventListener('change', onCoarseChange);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  const touchMode = narrowWidth || coarsePointer;
 
   useEffect(() => {
     setDraftNote(noteText || '');
@@ -105,7 +142,7 @@ function CourseCardInner({
   };
 
   return (
-    <Draggable draggableId={course.id + (isPlanned ? '_planned' : '')} index={index}>
+    <Draggable draggableId={course.id + (isPlanned ? '_planned' : '')} index={index} isDragDisabled={touchMode}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
@@ -118,7 +155,7 @@ function CourseCardInner({
             padding: '12px 14px',
             position: 'relative',
             background: snapshot.isDragging ? 'var(--glass-dragging-bg)' : undefined,
-            cursor: snapshot.isDragging ? 'grabbing' : 'grab',
+            cursor: touchMode ? 'default' : snapshot.isDragging ? 'grabbing' : 'grab',
             boxShadow: snapshot.isDragging ? '0 12px 32px -8px var(--glass-shadow)' : undefined,
           }}
         >
@@ -147,7 +184,7 @@ function CourseCardInner({
               <X size={14} />
             </button>
           )}
-          {!isPlanned && onQuickAdd && (
+          {!isPlanned && onQuickAdd && !touchMode && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -304,6 +341,21 @@ function CourseCardInner({
               </span>
             )}
           </div>
+
+          {!isPlanned && onQuickAdd && touchMode && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onQuickAdd();
+              }}
+              aria-label={quickAddHint ?? `Add ${course.title} to plan`}
+              title={quickAddHint ?? 'Add to first matching semester'}
+              className="btn btn--primary card-add-labeled"
+            >
+              <Plus size={15} /> Add to plan
+            </button>
+          )}
 
           {isPlanned && eligibleModules.length > 1 && onAllocationChange && (
             <label

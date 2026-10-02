@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  ChevronDown,
   Search,
   Star,
 } from 'lucide-react';
@@ -135,6 +136,18 @@ function App() {
   const [toast, setToast] = useState<ToastData | null>(null);
   const toastTimer = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Touch-first board (mobile): catalog starts collapsed so the plan is visible
+  // first; semesters start open only when they already hold courses.
+  const [catalogOpen, setCatalogOpen] = useState<boolean>(
+    () => typeof window === 'undefined' || window.innerWidth > 720,
+  );
+  const [openSemesters, setOpenSemesters] = useState<Record<SemesterId, boolean>>(() => {
+    const narrow = typeof window !== 'undefined' && window.innerWidth <= 720;
+    const initial = sharedBoot ?? initialBoot.plan;
+    const next = {} as Record<SemesterId, boolean>;
+    for (const id of SEMESTER_IDS) next[id] = !narrow || (initial[id]?.length ?? 0) > 0;
+    return next;
+  });
 
   const [personalNotes, setPersonalNotes] = useState<Record<string, string>>(() =>
     loadJson(notesStorageKey(programmeId), {}, isNotesRecord),
@@ -631,6 +644,28 @@ function App() {
   };
 
   const verifiedDays = daysSince(COVERAGE_POLICY.lastVerified.date);
+  // Reactive narrow-viewport flag, live-synced with CSS `@media (max-width: 720px)`.
+  // On narrow screens the plan column renders first and catalog/semesters become
+  // collapsible; on desktop every disclosure is forced open. Reactive (not a
+  // per-render snapshot) so widening past 720px re-opens them instead of leaving
+  // them collapsed under desktop-inert CSS.
+  const [narrowViewport, setNarrowViewport] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.innerWidth <= 720,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(max-width: 720px)');
+    const syncFromMq = (event: MediaQueryListEvent) => setNarrowViewport(event.matches);
+    const syncFromResize = () => setNarrowViewport(window.innerWidth <= 720);
+    setNarrowViewport(mq.matches);
+    mq.addEventListener('change', syncFromMq);
+    window.addEventListener('resize', syncFromResize);
+    return () => {
+      mq.removeEventListener('change', syncFromMq);
+      window.removeEventListener('resize', syncFromResize);
+    };
+  }, []);
 
   return (
     <div className="app-shell" style={{ padding: '20px 32px 48px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
@@ -739,12 +774,110 @@ function App() {
           <motion.div key="board" initial={{ opacity: 0, y: motionPrefs.y(8) }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: motionPrefs.y(-8) }} transition={motionPrefs.slide}>
             <DragDropContext onDragEnd={onDragEnd}>
               <div className="board-layout" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, marginTop: 20 }}>
-                <motion.div initial={{ x: motionPrefs.reduceMotion ? 0 : -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={motionPrefs.reduceMotion ? motionPrefs.fade : { duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="glass-panel no-print catalog-panel" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}>
-                  <div style={{ padding: 16, borderBottom: '1px solid var(--border-subtle)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-                      <h2 style={{ fontSize: 16 }}>Course Catalog</h2>
-                      <span className="micro-label">{catalogCourses.length} of {COURSES.length} shown</span>
+                <div className="plan-column" style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+                  <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} admissionTarget={admissionTarget} />
+
+                  <motion.div
+                    initial={{ y: motionPrefs.y(16), opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={motionPrefs.reduceMotion ? motionPrefs.fade : { delay: 0.15, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className="semester-grid"
+                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, flex: 1 }}
+                  >
+                    {SEMESTERS.map((sem) => {
+                      const semId = sem.id as SemesterId;
+                      const cp = plan[semId].reduce((sum, c) => sum + c.cp, 0);
+                      const max = SEM_LOAD_MAX[semId];
+                      const ratio = cp / max;
+                      const loadColor = ratio > 1.05 ? 'var(--bad)' : ratio > 0.95 ? 'var(--warn)' : 'var(--module-math)';
+                      const semConflicts = findConflicts(plan[semId]);
+                      return (
+                        <details
+                          key={sem.id}
+                          className="glass-panel semester-card"
+                          open={narrowViewport ? (openSemesters[semId] ?? true) : true}
+                          onToggle={(e) => setOpenSemesters((prev) => ({ ...prev, [semId]: e.currentTarget.open }))}
+                          style={{ display: 'flex', flexDirection: 'column' }}
+                        >
+                          <summary className="semester-summary" style={{ cursor: 'pointer' }}>
+                            <div style={{ padding: '12px 16px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                                <h3 style={{ fontSize: 13.5 }}>{sem.title}</h3>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                                  {semConflicts.length > 0 && (
+                                    <span className="pill pill--red semester-conflict">
+                                      {semConflicts.length} {semConflicts.length === 1 ? 'conflict' : 'conflicts'}
+                                    </span>
+                                  )}
+                                  <span className="num" style={{ fontSize: 12, fontWeight: 600, color: ratio > 1 ? 'var(--bad)' : 'var(--text-muted)' }}>
+                                    {cp} CP
+                                  </span>
+                                  <ChevronDown size={14} className="semester-chevron" aria-hidden="true" />
+                                </span>
+                              </div>
+                              <div className="load-bar" title={`Recommended max ${max} CP`}>
+                                <div className="load-bar-fill" style={{ width: `${Math.min(100, ratio * 100)}%`, background: loadColor }} />
+                              </div>
+                            </div>
+                          </summary>
+                          <Droppable droppableId={sem.id}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}
+                                className="semester-drop"
+                                style={{
+                                  padding: 14,
+                                  flex: 1,
+                                  background: snapshot.isDraggingOver ? 'var(--glass-hover-bg)' : 'transparent',
+                                  transition: 'background 0.2s ease',
+                                }}
+                              >
+                                {plan[semId].length === 0 && (
+                                  <p style={{ margin: '8px 4px 12px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                                    Drop courses here, or load the example outline.
+                                  </p>
+                                )}
+                                {plan[semId].map((course, index) => (
+                                  <CourseCard
+                                    key={course.id + '_planned'}
+                                    course={course}
+                                    index={index}
+                                    isPlanned
+                                    currentSemId={semId}
+                                    onRemove={() => removeCourse(semId, index)}
+                                    noteText={personalNotes[course.id]}
+                                    onNoteChange={(text) => updateNote(course.id, text)}
+                                    onShowDetails={() => setActiveCourseDetails(course)}
+                                    onAllocationChange={(module) => allocateCourse(semId, index, module)}
+                                    onMoveToSemester={(destSem) => moveCourseToSemester(semId, index, destSem)}
+                                  />
+                                ))}
+                                {provided.placeholder}
+                              </div>
+                            )}
+                          </Droppable>
+                        </details>
+                      );
+                    })}
+                  </motion.div>
+                </div>
+                <details
+                  className="glass-panel no-print catalog-panel"
+                  open={narrowViewport ? catalogOpen : true}
+                  onToggle={(e) => setCatalogOpen(e.currentTarget.open)}
+                  style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 140px)', position: 'sticky', top: 84 }}
+                >
+                  <summary className="catalog-summary" style={{ padding: '16px 16px 0', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <h2 style={{ fontSize: 16 }}>Course catalog</h2>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span className="micro-label">{catalogCourses.length} of {COURSES.length} shown</span>
+                        <ChevronDown size={15} className="catalog-chevron" aria-hidden="true" />
+                      </span>
                     </div>
+                  </summary>
+                  <div className="catalog-search" style={{ padding: '0 16px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
                     <div style={{ position: 'relative', marginBottom: 10 }}>
                       <Search size={16} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                       <input
@@ -806,6 +939,7 @@ function App() {
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
+                        className="catalog-list"
                         style={{
                           padding: 16,
                           overflowY: 'auto',
@@ -847,79 +981,7 @@ function App() {
                       </div>
                     )}
                   </Droppable>
-                </motion.div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                  <ProgressPanel plan={plan} courses={allPlannedCourses(plan)} admissionTarget={admissionTarget} />
-
-                  <motion.div
-                    initial={{ y: motionPrefs.y(16), opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={motionPrefs.reduceMotion ? motionPrefs.fade : { delay: 0.15, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="semester-grid"
-                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, flex: 1 }}
-                  >
-                    {SEMESTERS.map((sem) => {
-                      const semId = sem.id as SemesterId;
-                      const cp = plan[semId].reduce((sum, c) => sum + c.cp, 0);
-                      const max = SEM_LOAD_MAX[semId];
-                      const ratio = cp / max;
-                      const loadColor = ratio > 1.05 ? 'var(--bad)' : ratio > 0.95 ? 'var(--warn)' : 'var(--module-math)';
-                      return (
-                        <div key={sem.id} className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ padding: '12px 16px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                              <h3 style={{ fontSize: 13.5 }}>{sem.title}</h3>
-                              <span className="num" style={{ fontSize: 12, fontWeight: 600, color: ratio > 1 ? 'var(--bad)' : 'var(--text-muted)' }}>
-                                {cp} CP
-                              </span>
-                            </div>
-                            <div className="load-bar" title={`Recommended max ${max} CP`}>
-                              <div className="load-bar-fill" style={{ width: `${Math.min(100, ratio * 100)}%`, background: loadColor }} />
-                            </div>
-                          </div>
-                          <Droppable droppableId={sem.id}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                                style={{
-                                  padding: 14,
-                                  flex: 1,
-                                  minHeight: 380,
-                                  background: snapshot.isDraggingOver ? 'var(--glass-hover-bg)' : 'transparent',
-                                  transition: 'background 0.2s ease',
-                                }}
-                              >
-                                {plan[semId].length === 0 && (
-                                  <p style={{ margin: '8px 4px 12px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.45 }}>
-                                    Drop courses here, or load the example outline.
-                                  </p>
-                                )}
-                                {plan[semId].map((course, index) => (
-                                  <CourseCard
-                                    key={course.id + '_planned'}
-                                    course={course}
-                                    index={index}
-                                    isPlanned
-                                    currentSemId={semId}
-                                    onRemove={() => removeCourse(semId, index)}
-                                    noteText={personalNotes[course.id]}
-                                    onNoteChange={(text) => updateNote(course.id, text)}
-                                    onShowDetails={() => setActiveCourseDetails(course)}
-                                    onAllocationChange={(module) => allocateCourse(semId, index, module)}
-                                    onMoveToSemester={(destSem) => moveCourseToSemester(semId, index, destSem)}
-                                  />
-                                ))}
-                                {provided.placeholder}
-                              </div>
-                            )}
-                          </Droppable>
-                        </div>
-                      );
-                    })}
-                  </motion.div>
-                </div>
+                </details>
               </div>
             </DragDropContext>
           </motion.div>
