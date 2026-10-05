@@ -749,6 +749,11 @@
     "frequency": "Every fall sem.",
     "schedule": [
       {
+        "day": "Tuesday",
+        "time": "13:15 - 14:00",
+        "room": "Alte Universität, Seminarraum -201"
+      },
+      {
         "day": "Thursday",
         "time": "14:15 - 16:00",
         "room": "Biozentrum, Seminarraum U1.197"

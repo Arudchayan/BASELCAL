@@ -919,7 +919,7 @@ export const COURSES = [
       {
         "day": "Tuesday",
         "time": "13:15 - 14:00",
-        "room": "Spiegelgasse 1, Seminarraum U1.001",
+        "room": "Alte Universität, Seminarraum -201",
         "from": "2026-09-22",
         "until": "2026-12-15"
       },
